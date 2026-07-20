@@ -1,8 +1,8 @@
-import type { AppSettings, LearningSnapshot } from "./models";
+import type { AISettings, AppSettings, LearningSnapshot } from "./models";
 
 export const APP_NAME = "LinguaStep";
 export const APP_NAME_ZH = "日英阶梯";
-export const APP_VERSION = "0.2.0";
+export const APP_VERSION = "0.3.0";
 export const REVIEW_ALGORITHM_VERSION = 2;
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -27,6 +27,24 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fontSize: "standard",
 };
 
+export const DEFAULT_AI_SETTINGS: AISettings = {
+  enabled: true,
+  connectionMode: "server",
+  apiKeyPersistence: "session",
+  proxyTokenPersistence: "session",
+  autoSave: true,
+  defaultWordCount: 5,
+  defaultJapaneseLevel: "N2",
+  defaultEnglishLevel: "四级",
+  defaultFrequency: "高频",
+  defaultPurpose: "综合",
+  defaultQuality: "fast",
+  qualityReview: false,
+  autoRetry: true,
+  maxRetries: 3,
+  dailyRequestSoftLimit: 30,
+};
+
 export const EMPTY_SNAPSHOT: LearningSnapshot = {
   wordProgress: [],
   grammarProgress: [],
@@ -35,6 +53,14 @@ export const EMPTY_SNAPSHOT: LearningSnapshot = {
   testResults: [],
   dailyRecords: [],
   dailyPlans: [],
+  aiWords: [],
+  aiGrammar: [],
+  aiComparisons: [],
+  aiGenerations: [],
+  aiUsage: [],
+  aiExplanations: [],
+  aiCollections: [],
+  aiContentReports: [],
 };
 
 export const MISTAKE_MASTERY_STREAK = 3;

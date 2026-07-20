@@ -11,9 +11,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
-import { WORD_PAIRS } from "@/data/words";
-import { GRAMMAR_POINTS } from "@/data/grammar";
-import { GRAMMAR_COMPARISONS } from "@/data/grammar-comparisons";
 import { useLearning } from "@/context/LearningContext";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
@@ -22,7 +19,14 @@ import { FilterPanel } from "@/components/filters/FilterPanel";
 type FavoriteLanguage = "all" | "japanese" | "english" | "comparison";
 
 export function FavoritesView() {
-  const { snapshot, toggleFavorite, removeFavorites } = useLearning();
+  const {
+    snapshot,
+    allWords,
+    allGrammar,
+    allComparisons,
+    toggleFavorite,
+    removeFavorites,
+  } = useLearning();
   const [query, setQuery] = useState("");
   const [language, setLanguage] = useState<FavoriteLanguage>("all");
   const [difficulty, setDifficulty] = useState("all");
@@ -33,7 +37,7 @@ export function FavoritesView() {
   const normalized = debouncedQuery.trim().toLocaleLowerCase("zh-CN");
   const favoriteWords = useMemo(
     () =>
-      WORD_PAIRS.filter((word) => {
+      allWords.filter((word) => {
         if (!snapshot.favorites.includes(`word:${word.id}`)) return false;
         if (language === "comparison") return false;
         if (
@@ -53,11 +57,11 @@ export function FavoritesView() {
         ) return false;
         return true;
       }),
-    [difficulty, language, normalized, snapshot.favorites],
+    [allWords, difficulty, language, normalized, snapshot.favorites],
   );
   const favoriteGrammar = useMemo(
     () =>
-      GRAMMAR_POINTS.filter((point) => {
+      allGrammar.filter((point) => {
         if (!snapshot.favorites.includes(`grammar:${point.id}`)) return false;
         if (language === "comparison") return false;
         if (language !== "all" && point.language !== language) return false;
@@ -69,11 +73,11 @@ export function FavoritesView() {
         ) return false;
         return difficulty === "all" || point.level === difficulty;
       }),
-    [difficulty, language, normalized, snapshot.favorites],
+    [allGrammar, difficulty, language, normalized, snapshot.favorites],
   );
   const favoriteComparisons = useMemo(
     () =>
-      GRAMMAR_COMPARISONS.filter((item) => {
+      allComparisons.filter((item) => {
         if (!snapshot.favorites.includes(`comparison:${item.id}`)) return false;
         if (language !== "all" && language !== "comparison") return false;
         if (
@@ -84,22 +88,22 @@ export function FavoritesView() {
         ) return false;
         return difficulty === "all" || item.level === difficulty;
       }),
-    [difficulty, language, normalized, snapshot.favorites],
+    [allComparisons, difficulty, language, normalized, snapshot.favorites],
   );
   const total =
     favoriteWords.length + favoriteGrammar.length + favoriteComparisons.length;
   const levels = useMemo(
     () => [
       ...new Set([
-        ...WORD_PAIRS.flatMap((word) => [
+        ...allWords.flatMap((word) => [
           word.japanese.difficulty,
           word.english.difficulty,
         ]),
-        ...GRAMMAR_POINTS.map((point) => point.level),
-        ...GRAMMAR_COMPARISONS.map((item) => item.level),
+        ...allGrammar.map((point) => point.level),
+        ...allComparisons.map((item) => item.level),
       ]),
     ],
-    [],
+    [allComparisons, allGrammar, allWords],
   );
 
   const toggleSelected = (key: string) =>

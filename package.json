@@ -1,6 +1,6 @@
 {
   "name": "lingua-step",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -12,15 +12,17 @@
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
-    "test:components": "vitest run --config vitest.config.ts tests/components.test.tsx",
-    "test:e2e": "vitest run --config vitest.config.ts tests/workflow.e2e.test.ts",
+    "test:components": "vitest run --config vitest.config.ts tests/components.test.tsx tests/ai-components.test.tsx",
+    "test:e2e": "vitest run --config vitest.config.ts tests/workflow.e2e.test.ts tests/ai-workflow.e2e.test.ts",
+    "test:deepseek": "node scripts/deepseek-smoke.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },
   "dependencies": {
     "lucide-react": "^1.25.0",
     "next": "16.2.6",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",

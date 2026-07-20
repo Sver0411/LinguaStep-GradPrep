@@ -1,58 +1,63 @@
-# DeepSeek 接入方案
+# DeepSeek 集成
 
-## 当前状态
+## 运行配置
 
-第二阶段仍只提供 `AiService` 抽象、统一请求/结果类型与 `MockAiService`。模拟实现始终抛出“AI 生成功能将在后续版本开放”，设置页入口禁用；项目不会请求 DeepSeek，也不会要求用户填写 API Key。
+配置统一由 `lib/ai/config/ai-config.ts` 读取和限界：
 
-## 统一接口
-
-`AiGenerationRequest.kind` 预留四类任务：
-
-- `word`：生成词条、例句、搭配与解释；
-- `grammar`：生成结构化语法讲解；
-- `test`：生成四选一题和合理干扰项；
-- `mistake-explanation`：根据题目与用户选择生成中文错因解释。
-
-调用方只依赖 `AiService.generate<T>()`，不接触供应商 SDK。未来应为每类结果增加运行时 schema 校验，禁止把未经验证的 JSON 写入内容库。
-
-## 方案 A：后端代理（生产默认）
-
-```text
-浏览器 → /api/ai/generate → 身份/限流/校验 → DeepSeek API
-                                      ↓
-                               结构化结果与审计信息
+```env
+AI_PROVIDER=deepseek
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_API_KEY=
+DEEPSEEK_MODEL_FAST=deepseek-v4-flash
+DEEPSEEK_MODEL_QUALITY=deepseek-v4-pro
+AI_ENABLED=true
+AI_TIMEOUT_MS=45000
+AI_MAX_RETRIES=3
+AI_MAX_CONCURRENCY=2
+AI_PROXY_ACCESS_TOKEN=
 ```
 
-- API Key 只存在于部署环境变量，永不发送到浏览器。
-- 路由校验登录状态、请求种类、长度和频率。
-- 服务层设置超时、有限重试、错误映射和输出 schema 校验。
-- 记录用量与错误元数据，不记录用户密钥或不必要的完整提示词。
-- 保存生成内容前执行去重、敏感内容、难度和语言准确性检查，并要求用户确认。
+只允许 `deepseek` Provider。普通词汇、语法和题目生成使用 Fast 模型并显式 `thinking: disabled`；Quality、N1、日英对比、错题解释和二次复核使用 Quality 模型，复杂审查可启用思考。模型只能从服务器允许列表选择。
 
-## 方案 B：本地 API Key 测试（个人可选）
+请求使用 `POST /chat/completions`、Bearer 鉴权、非流式输出和 `response_format: {"type":"json_object"}`。连接测试通过 `GET /models` 确认两个配置模型均可用。实现依据 DeepSeek 官方 [Models](https://api-docs.deepseek.com/api/list-models)、[Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion) 和 [Thinking Mode](https://api-docs.deepseek.com/guides/thinking_mode)。
 
-- 只在明确开启“本地测试模式”后显示 Key 输入框。
-- Key 最多保存在当前浏览器的 localStorage，界面必须明确提示：浏览器存储无法提供服务器级保密。
-- 提供“仅本次会话”和“记住在本机”两种选择，默认仅本次会话。
-- 每次调用直接从浏览器访问 API 前显示将要发送的数据范围；日志中不得输出 Key。
-- 一键清除 Key，重置全部数据时同时清除。
+## 两种 Key 模式
 
-该方案仅适合个人本地测试，不作为公开部署的默认方式。
+### 服务器托管
 
-## 内容生命周期
+浏览器请求同源代理；代理从 `DEEPSEEK_API_KEY` 读取 Key。生产域名还必须配置并验证 `AI_PROXY_ACCESS_TOKEN`，localhost 可豁免。健康接口只返回布尔配置状态和模型名。
 
-生成结果应标记 `source: "ai-generated"`，并区分：
+### BYOK
 
-1. **临时使用**：只存在内存或当前测试轮次；
-2. **待确认**：保存到草稿区，用户检查后入库；
-3. **已保存**：通过 schema、重复、语言与难度检查后进入内容仓库。
+用户 Key 存在 sessionStorage（默认）或用户明确选择的 localStorage。AIAPIClient 将它放入 `x-linguastep-api-key` 专用请求头，同源代理只在当前请求内构造 Provider；不写数据库、不缓存、不返回。
 
-人工精选内容 `source: "curated"` 不允许被 AI 自动覆盖。
+## 业务接口
 
-## 错误与安全
+`AIProvider.generateJSON()` 负责供应商通信，`AIContentService` 暴露：
 
-- 区分网络失败、限流、鉴权、上游格式错误和内容校验失败。
-- 所有错误向用户提供中文、可恢复的操作建议。
-- 使用幂等请求 ID 防止重复保存。
-- 限制提示词和响应大小，避免无限上下文与成本失控。
-- 不将测试历史或个人学习数据发送给 AI，除非功能所需且用户明确触发。
+- `generateWords`
+- `generateGrammar`（含 comparison）
+- `generateQuiz`
+- `explainMistake`
+
+页面只能调用 AIContext，不能调用 Provider 或 DeepSeek。
+
+## JSON 修复和质量复核
+
+1. 首次响应解析 JSON 并通过严格 Zod Schema。
+2. 格式失败时，用版本化 repair Prompt 修复一次。
+3. 修复仍失败时，用 Quality 模型按原约束重生成一次。
+4. 用户开启复核，或 N1/日英对比触发复杂审查时，质量模型返回 pass/needsRepair/reject。
+5. 最终内容继续经过本地规则；全部拒绝则失败，部分通过则返回 partial。
+
+不会让同一输出无限自我确认，也不会存储模型内部推理。
+
+## 重试和取消
+
+只重试 429、500/503、网络、超时、空响应、截断和可恢复资源不足；指数退避从约 500ms 开始并带小幅 jitter，最多由服务器和用户设置的较小值决定。401/403、402、400/422、模型不可用和内容校验失败不盲目重试。
+
+每个浏览器操作有 AbortController；Provider 超时使用子 AbortController。全局 Provider 并发限制默认为 2，相同在途请求按非敏感指纹去重。
+
+## 数据最小化
+
+词汇和语法生成发送表单参数及用于去重的摘要；出题最多发送 100 条相关内容摘要；错题解释只发送当前题、选择、深度和可选相关摘要。不发送用户全部测试历史、姓名、邮箱或无关数据。

@@ -1,28 +1,35 @@
-# IndexedDB v1 → v2 数据迁移
+# IndexedDB v1/v2 → v3 迁移
 
 ## 原则
 
-- 不清空旧对象仓库，不修改内容 ID。
-- 在 IndexedDB 的 `onupgradeneeded` 同一事务中逐游标更新；任何异常都会让浏览器回滚整个升级。
-- 每个迁移函数同时接受 v1 和 v2 记录，重复执行结果保持一致。
-- 读取快照和接收跨标签页消息时再次规范化，兼容部分字段或旧测试夹具。
+- 原地升级，不清库、不改变旧内容 ID。
+- `onupgradeneeded` 的单一事务创建缺失 store/索引并迁移旧记录；失败由浏览器回滚。
+- 迁移函数接受部分损坏、v1、v2 和已迁移数据，重复执行保持幂等。
+- 读取快照时再次规范化；旧数据没有 AI 数组或元数据时补安全空值。
+- 迁移错误不打印学习正文，也不自动删除数据库。
 
-## 结构变化
+## v1 → v2 保留规则
 
-- 新增 `dailyPlans` store。
-- 单词 v1 的单条进度变为 `modes.combined` 下的 ReviewState；不伪造 `japanese` 或 `english` 轨迹。
-- 语法增加统一 ReviewState、首次学习时间、下次复习时间和状态。
-- 错题增加 `contentRef`、四阶段 `state`、独立收藏和答题历史；旧的 `active` 与 `correctStreak` 映射到合理状态。
-- 测试增加语言模式、内容来源、开始时间和用时；旧记录默认为日英混合与全部已学内容。
-- 每日记录增加新学/复习拆分、三种单词模式和日英语法计数；旧单词数保留到 combined 计数。
+- 单词旧进度映射到 `modes.combined`，不伪造单语言轨迹。
+- 语法补 ReviewState；错题补 contentRef、状态和历史；测试补来源、开始时间和用时。
+- 每日记录补新学/复习、语言模式和日英语法计数。
+- 新增 `dailyPlans`。
 
-## 失败处理
+## v2 → v3
 
-若数据库打开、升级或写入失败，Repository 抛出可识别的不可用错误。应用不删除旧数据库，而是进入内存降级模式并显示提示；用户可关闭其他占用数据库的标签页后刷新重试。
+新增八个 AI store：`aiWords`、`aiGrammar`、`aiComparisons`、`aiGenerations`、`aiUsage`、`aiExplanations`、`aiCollections`、`aiContentReports`。
 
-## 测试覆盖
+第二阶段七个 store 不改名、不清空。没有 AI 数据的旧快照得到空数组；人工精选内容保持既有 `source: "curated"`。AI 业务内容只有通过第三阶段服务生成时才带 `aiMetadata`。
 
-- 纯记录迁移和完整快照迁移。
-- v1/v2 重复迁移幂等性。
-- 使用 fake-indexeddb 创建真实 v1 数据库，再通过正式 Repository 打开为 v2，核对旧单词、语法、错题、收藏、测试和每日记录均保留。
-- 学习、测试、错题、收藏和全部数据的重置范围。
+## 失败与降级
+
+数据库打开、升级或写入失败时抛出 `IndexedDbUnavailableError`。应用切换到本次会话内存仓库并显示提示，原数据库保留，用户关闭占用数据库的其他标签页后可刷新重试。
+
+## 测试
+
+- 纯迁移：旧记录映射、部分字段默认值、完整快照幂等。
+- fake-indexeddb v1 → v3：核对词汇、语法、错题、收藏、测试和每日记录。
+- fake-indexeddb v2 → v3：核对第二阶段七类数据逐项完全保留，同时新增 AI store 为空。
+- v3 快照：15 个 store 往返保存；独立重置范围不越界。
+
+任何迁移测试都不使用真实 DeepSeek，也不需要清除用户数据库。

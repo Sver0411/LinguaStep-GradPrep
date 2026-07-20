@@ -13,8 +13,6 @@ import {
   Search,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { GRAMMAR_POINTS } from "@/data/grammar";
-import { GRAMMAR_COMPARISONS } from "@/data/grammar-comparisons";
 import { useLearning } from "@/context/LearningContext";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -37,7 +35,13 @@ const STATUS_LABEL: Record<LearningStatus, string> = {
 };
 
 export function GrammarView() {
-  const { snapshot, isFavorite, toggleFavorite } = useLearning();
+  const {
+    snapshot,
+    allGrammar,
+    allComparisons,
+    isFavorite,
+    toggleFavorite,
+  } = useLearning();
   const now = useCurrentTime();
   const [viewMode, setViewMode] = useState<GrammarViewMode>("japanese");
   const [selectedId, setSelectedId] = useState("");
@@ -57,7 +61,7 @@ export function GrammarView() {
       viewMode === "comparison"
         ? []
         : searchGrammar(
-            GRAMMAR_POINTS,
+            allGrammar,
             {
               query: debouncedQuery,
               language: viewMode,
@@ -76,6 +80,7 @@ export function GrammarView() {
           ),
     [
       debouncedQuery,
+      allGrammar,
       dueOnly,
       favoriteOnly,
       level,
@@ -90,7 +95,7 @@ export function GrammarView() {
   );
   const filteredComparisons = useMemo(() => {
     const normalized = debouncedQuery.trim().toLocaleLowerCase("zh-CN");
-    return GRAMMAR_COMPARISONS.filter((item) => {
+    return allComparisons.filter((item) => {
       if (
         normalized &&
         ![
@@ -115,7 +120,7 @@ export function GrammarView() {
       ) return false;
       return true;
     });
-  }, [debouncedQuery, favoriteOnly, level, mistakeOnly, snapshot.favorites, snapshot.mistakes]);
+  }, [allComparisons, debouncedQuery, favoriteOnly, level, mistakeOnly, snapshot.favorites, snapshot.mistakes]);
   const selected = filtered.find((point) => point.id === selectedId) ?? filtered[0];
   const progressMap = useMemo(
     () => new Map(snapshot.grammarProgress.map((item) => [item.grammarId, item])),
@@ -124,15 +129,15 @@ export function GrammarView() {
   const levels = useMemo(
     () =>
       viewMode === "comparison"
-        ? [...new Set(GRAMMAR_COMPARISONS.map((item) => item.level))]
+        ? [...new Set(allComparisons.map((item) => item.level))]
         : [
             ...new Set(
-              GRAMMAR_POINTS.filter((point) => point.language === viewMode).map(
+              allGrammar.filter((point) => point.language === viewMode).map(
                 (point) => point.level,
               ),
             ),
           ],
-    [viewMode],
+    [allComparisons, allGrammar, viewMode],
   );
 
   const changeMode = (next: GrammarViewMode) => {
@@ -162,12 +167,12 @@ export function GrammarView() {
       <PageHeader
         eyebrow="第二阶段 · 语法系统"
         title="分别学习，也按相似语义进行比较"
-        description="日语 35 项、英语 15 项，并提供 15 组非逐字对应的日英语法对比。"
+        description={`日语 ${allGrammar.filter((item) => item.language === "japanese").length} 项、英语 ${allGrammar.filter((item) => item.language === "english").length} 项，并提供 ${allComparisons.length} 组非逐字对应的日英语法对比。`}
         actions={
           <div className="segmented-control" aria-label="语法学习模式">
-            <button className={viewMode === "japanese" ? "active" : ""} onClick={() => changeMode("japanese")}>日语 · 35</button>
-            <button className={viewMode === "english" ? "active" : ""} onClick={() => changeMode("english")}>英语 · 15</button>
-            <button className={viewMode === "comparison" ? "active" : ""} onClick={() => changeMode("comparison")}>日英对比 · 15</button>
+            <button className={viewMode === "japanese" ? "active" : ""} onClick={() => changeMode("japanese")}>日语 · {allGrammar.filter((item) => item.language === "japanese").length}</button>
+            <button className={viewMode === "english" ? "active" : ""} onClick={() => changeMode("english")}>英语 · {allGrammar.filter((item) => item.language === "english").length}</button>
+            <button className={viewMode === "comparison" ? "active" : ""} onClick={() => changeMode("comparison")}>日英对比 · {allComparisons.length}</button>
           </div>
         }
       />
@@ -252,7 +257,7 @@ export function GrammarView() {
               <section className="comparison-box"><div className="comparison-heading"><Languages size={19} /><strong>日英表达对比</strong></div><div className="comparison-lines"><p><span className="language-label jp">日</span>{selected.comparison.japanese}</p><p><span className="language-label en">英</span>{selected.comparison.english}</p><small>{selected.comparison.translationZh}</small></div></section>
               <div className="warning-grid">
                 <section className="warning-panel"><h3><AlertCircle size={18} />常见错误</h3><ul>{selected.commonErrors.map((item) => <li key={item}>{item}</li>)}</ul></section>
-                <section className="warning-panel confusion"><h3><Languages size={18} />易混淆语法</h3><ul>{selected.confusables.map((item) => <li key={item}>{item}</li>)}</ul></section>
+                <section className="warning-panel confusion"><h3><Languages size={18} />易混淆语法</h3><ul>{selected.confusables.map((item) => <li key={item}>{item}</li>)}</ul>{selected.confusableDifferences && <ul>{selected.confusableDifferences.map((item) => <li key={item}>{item}</li>)}</ul>}</section>
               </div>
               <div className="grammar-cta"><div><strong>准备好了吗？</strong><span>完成练习后会立即计算下次复习时间</span></div><Button onClick={() => setPracticing(true)}><Play size={18} fill="currentColor" />开始练习</Button></div>
             </article>

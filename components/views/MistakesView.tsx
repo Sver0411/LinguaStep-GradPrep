@@ -13,12 +13,12 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GRAMMAR_POINTS } from "@/data/grammar";
 import { useLearning } from "@/context/LearningContext";
 import { isAnswerCorrect } from "@/lib/learning";
 import type { MistakeRecord, MistakeState, QuestionSource } from "@/lib/models";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { FilterPanel } from "@/components/filters/FilterPanel";
+import { AIExplanationPanel } from "@/components/ai/AIExplanationPanel";
 
 type MistakeLanguage = "all" | "japanese" | "english" | "mixed";
 
@@ -31,16 +31,16 @@ function formatDate(value: string): string {
   }).format(new Date(value));
 }
 
-function sourceLabel(mistake: MistakeRecord): string {
+function sourceLabel(mistake: MistakeRecord, grammar: ReturnType<typeof useLearning>["allGrammar"]): string {
   if (mistake.contentRef.source === "comparison") return "日英对比";
   if (mistake.contentRef.source === "word") return "单词";
-  const grammar = GRAMMAR_POINTS.find(
+  const point = grammar.find(
     (point) => point.id === mistake.contentRef.sourceId,
   );
-  return grammar?.language === "english" ? "英语语法" : "日语语法";
+  return point?.language === "english" ? "英语语法" : "日语语法";
 }
 
-function mistakeLanguage(mistake: MistakeRecord): Exclude<MistakeLanguage, "all"> {
+function mistakeLanguage(mistake: MistakeRecord, grammar: ReturnType<typeof useLearning>["allGrammar"]): Exclude<MistakeLanguage, "all"> {
   if (mistake.contentRef.source === "comparison") return "mixed";
   if (mistake.contentRef.source === "word") {
     return mistake.question.language === "english"
@@ -49,7 +49,7 @@ function mistakeLanguage(mistake: MistakeRecord): Exclude<MistakeLanguage, "all"
         ? "japanese"
         : "mixed";
   }
-  return GRAMMAR_POINTS.find(
+  return grammar.find(
     (point) => point.id === mistake.contentRef.sourceId,
   )?.language ?? "japanese";
 }
@@ -64,6 +64,7 @@ const STATE_LABEL: Record<MistakeState, string> = {
 export function MistakesView() {
   const {
     snapshot,
+    allGrammar,
     answerMistake,
     setMistakeState,
     removeMistake,
@@ -85,7 +86,7 @@ export function MistakesView() {
     const values = snapshot.mistakes.filter((item) => {
       if (stateFilter !== "all" && item.state !== stateFilter) return false;
       if (sourceFilter !== "all" && item.contentRef.source !== sourceFilter) return false;
-      if (languageFilter !== "all" && mistakeLanguage(item) !== languageFilter) return false;
+      if (languageFilter !== "all" && mistakeLanguage(item, allGrammar) !== languageFilter) return false;
       if (difficultyFilter !== "all" && item.question.difficulty !== difficultyFilter) return false;
       if (favoriteOnly && !item.favorite) return false;
       return true;
@@ -95,7 +96,7 @@ export function MistakesView() {
       if (sortBy === "streak") return right.correctStreak - left.correctStreak;
       return right.lastAnsweredAt.localeCompare(left.lastAnsweredAt);
     });
-  }, [difficultyFilter, favoriteOnly, languageFilter, snapshot.mistakes, sortBy, sourceFilter, stateFilter]);
+  }, [allGrammar, difficultyFilter, favoriteOnly, languageFilter, snapshot.mistakes, sortBy, sourceFilter, stateFilter]);
   const difficultyOptions = useMemo(
     () => [...new Set(snapshot.mistakes.map((item) => item.question.difficulty).filter((item): item is string => Boolean(item)))],
     [snapshot.mistakes],
@@ -146,9 +147,9 @@ export function MistakesView() {
       selectedIndex !== null && isAnswerCorrect(question, selectedIndex);
     return (
       <section className="quiz-session mistake-review-session">
-        <div className="session-topline"><span>{sourceLabel(reviewing)}再次练习</span><strong>连续答对 {reviewing.correctStreak} 次</strong></div>
+        <div className="session-topline"><span>{sourceLabel(reviewing, allGrammar)}再次练习</span><strong>连续答对 {reviewing.correctStreak} 次</strong></div>
         <article className="question-card card">
-          <span className="question-type">{sourceLabel(reviewing)}</span>
+          <span className="question-type">{sourceLabel(reviewing, allGrammar)}</span>
           {question.context && <p className="question-context">{question.context}</p>}
           <h1>{question.prompt}</h1>
           <div className="option-list">
@@ -170,6 +171,7 @@ export function MistakesView() {
               <p>{question.explanation}</p>
             </div>
           )}
+          {reviewResult && !correct && selectedIndex !== null && <AIExplanationPanel question={question} selectedIndex={selectedIndex} />}
           <div className="question-footer">
             <button className="text-button" onClick={() => { setReviewing(null); setFocusMode(false); }}>退出练习</button>
             {!reviewResult ? <Button onClick={() => void submitReview()} disabled={selectedIndex === null || submitting}>提交答案</Button> : <Button onClick={() => { const latest = snapshot.mistakes.find((item) => item.id === reviewing.id); if (latest?.active) startReview(latest); else { setReviewing(null); setReviewResult(null); } }}>继续复习<ArrowRight size={18} /></Button>}
@@ -214,10 +216,11 @@ export function MistakesView() {
                 <span className="priority-bars" aria-label={`优先级 ${mistake.priority}`}>{[1,2,3,4,5].map((level) => <i className={level <= Math.min(5, mistake.priority) ? "active" : ""} key={level} />)}</span>
               </div>
               <div className="mistake-main">
-                <div className="mistake-meta"><span>{sourceLabel(mistake)} · {STATE_LABEL[mistake.state]}</span><span><Clock3 size={14} />{formatDate(mistake.lastWrongAt)}</span></div>
+                <div className="mistake-meta"><span>{sourceLabel(mistake, allGrammar)} · {STATE_LABEL[mistake.state]}</span><span><Clock3 size={14} />{formatDate(mistake.lastWrongAt)}</span></div>
                 <h2>{mistake.question.prompt}</h2>
                 <p>正确答案：<strong>{mistake.question.options[mistake.question.correctIndex]}</strong></p>
                 <div className="mistake-explanation">{mistake.question.explanation}</div>
+                <AIExplanationPanel question={mistake.question} selectedIndex={mistake.selectedIndex} />
                 <div className="mistake-stats"><span>错误 <b>{mistake.errorCount}</b> 次</span><span>连续答对 <b>{mistake.correctStreak}</b></span><span>历史记录 <b>{mistake.history.length}</b> 条</span></div>
                 <details className="history-details"><summary>查看错误历史</summary><ul>{[...mistake.history].reverse().slice(0, 8).map((item, index) => <li key={`${item.answeredAt}-${index}`}>{formatDate(item.answeredAt)} · {item.correct ? "答对" : "答错"} · 选择 {String.fromCharCode(65 + item.selectedIndex)}</li>)}</ul></details>
               </div>

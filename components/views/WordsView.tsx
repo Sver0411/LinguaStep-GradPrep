@@ -9,7 +9,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { WORD_PAIRS } from "@/data/words";
 import { useLearning } from "@/context/LearningContext";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -37,6 +36,7 @@ const MODE_LABELS: Record<StudyMode, string> = {
 export function WordsView() {
   const {
     snapshot,
+    allWords,
     settings,
     updateSettings,
     isFavorite,
@@ -75,7 +75,7 @@ export function WordsView() {
   const nowTimestamp = now ?? Number.NEGATIVE_INFINITY;
   const needsReview = useMemo(
     () =>
-      WORD_PAIRS.filter((word) => {
+      allWords.filter((word) => {
         const progress = progressMap.get(word.id);
         return Boolean(
           progress && needsWordReview(progress, nowTimestamp, mode),
@@ -91,12 +91,12 @@ export function WordsView() {
           nowTimestamp,
         );
       }),
-    [mode, nowTimestamp, progressMap],
+    [allWords, mode, nowTimestamp, progressMap],
   );
   const filteredWords = useMemo(
     () =>
       searchWords(
-        WORD_PAIRS,
+        allWords,
         { ...filters, query: debouncedQuery, mode },
         {
           progress: snapshot.wordProgress,
@@ -107,6 +107,7 @@ export function WordsView() {
       ),
     [
       debouncedQuery,
+      allWords,
       filters,
       mode,
       nowTimestamp,
@@ -116,12 +117,12 @@ export function WordsView() {
     ],
   );
   const japaneseLevels = useMemo(
-    () => [...new Set(WORD_PAIRS.map((word) => word.japanese.difficulty))],
-    [],
+    () => [...new Set(allWords.map((word) => word.japanese.difficulty))],
+    [allWords],
   );
   const englishLevels = useMemo(
-    () => [...new Set(WORD_PAIRS.map((word) => word.english.difficulty))],
-    [],
+    () => [...new Set(allWords.map((word) => word.english.difficulty))],
+    [allWords],
   );
 
   const startSession = useCallback(
@@ -134,9 +135,9 @@ export function WordsView() {
         sourceWords = needsReview;
       } else if (source === "new") {
         const ids = new Set(todayPlan?.newWordIds ?? []);
-        sourceWords = WORD_PAIRS.filter((word) => ids.has(word.id));
+        sourceWords = allWords.filter((word) => ids.has(word.id));
       } else if (source === "favorites") {
-        sourceWords = WORD_PAIRS.filter((word) =>
+        sourceWords = allWords.filter((word) =>
           snapshot.favorites.includes(`word:${word.id}`),
         );
       } else {
@@ -158,6 +159,7 @@ export function WordsView() {
     },
     [
       filteredWords,
+      allWords,
       mode,
       needsReview,
       progressMap,
@@ -260,13 +262,13 @@ export function WordsView() {
         <article className="card deck-card">
           <div className="deck-card-top">
             <span className="deck-icon"><BookOpenText size={28} /></span>
-            <div className="deck-stat"><strong>{WORD_PAIRS.length}</strong><span>组词汇</span></div>
+            <div className="deck-stat"><strong>{allWords.length}</strong><span>组词汇</span></div>
             <div className="deck-stat"><strong>{modeProgress.length}</strong><span>已学习</span></div>
             <div className="deck-stat"><strong>{masteredCount}</strong><span>已掌握</span></div>
             <div className="deck-stat"><strong>{needsReview.length}</strong><span>今日到期</span></div>
           </div>
           <ProgressBar
-            value={(masteredCount / WORD_PAIRS.length) * 100}
+            value={(masteredCount / Math.max(1, allWords.length)) * 100}
             label={`${MODE_LABELS[mode]}掌握进度`}
           />
           <div className="deck-controls">

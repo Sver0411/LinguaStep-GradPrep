@@ -2,86 +2,84 @@
 
 ## 目标与边界
 
-第二阶段面向单人、本地优先的长期学习：复习算法和数据升级必须可解释、可测试、可恢复；页面不能直接耦合 IndexedDB。当前无登录、无云端业务数据、无在线 AI 调用，也不实现 PWA、发音或自由输入题型。
+第三阶段继续采用“本地学习优先、AI 按需增强”。AI 故障、断网或未配置密钥时，原有学习功能不依赖网络；页面不直接调用 DeepSeek，也不直接写 IndexedDB。
 
 ## 分层
 
 ```text
-页面 views / 练习组件 / 图表
-              ↓
-      LearningContext 编排
-       ↙       ↓        ↘
-学习领域逻辑  每日计划   搜索/统计
-              ↓
-      LearningRepository
-         ↙           ↘
- IndexedDB v2      Memory fallback
-
-设置 → LocalStorageSettingsRepository
-AI   → AiService → MockAiService（禁用）
+页面 / AI 组件
+  ├─ LearningContext ─→ 学习纯函数 ─→ LearningRepository ─→ IndexedDB v3
+  └─ AIContext ─→ AIAPIClient ─→ /api/ai/*
+                                      ↓
+                              Request Guard
+                                      ↓
+                       AIContentService（业务编排）
+                         ↙       ↓        ↘
+                      Prompt   Zod      本地校验
+                                      ↓
+                             AIProvider 接口
+                           ↙                 ↘
+                  DeepSeekProvider       MockAIProvider
+                           ↓
+               https://api.deepseek.com
 ```
 
-- 视图层只处理展示、键盘、表单和当前会话状态。
-- Context 把一次操作涉及的词汇/语法进度、每日记录、错题和测试结果合并为一致快照，并通过 Web Locks 和 BroadcastChannel 降低多标签页覆盖风险。
-- 领域层由纯函数组成，负责复习调度、出题、判题、错题生命周期、计划和统计。
-- 仓库层定义统一接口；IndexedDB 打开或写入失败时切换内存仓库，并向界面暴露降级状态。
-- 迁移层对 v1/v2 记录均保持幂等，可在数据库升级和快照读取时重复调用。
+- `AIContext` 只管理前端操作状态、最小化上下文、临时结果和保存编排，与 `LearningContext` 分离。
+- `AIAPIClient` 只访问同源路由，负责离线判断、BYOK/代理令牌专用请求头和取消。
+- `request-guard` 负责同源检查、64 KiB 请求体、代理令牌、Key 模式解析和内存限流。
+- `AIContentService` 选择模板和模型，解析/修复 JSON、运行质量复核、本地校验并生成业务 ID 和来源元数据。
+- `AIProvider` 屏蔽供应商调用；生产使用原生 fetch 的 DeepSeek Provider，测试使用 Mock Provider。
+- 所有可保存内容必须先通过 Schema 和业务规则；页面收到的是已校验的应用模型。
 
 ## 路由
 
-| 路径 | 页面 |
+| 路径 | 职责 |
 | --- | --- |
-| `/` | 今日计划、概览和下一步建议 |
-| `/words` | 三模式词卡、到期队列、搜索与词库 |
-| `/grammar` | 日语、英语语法与日英对比 |
-| `/test` | 可配置测试与分项结果 |
-| `/mistakes` | 错题生命周期、历史和专项练习 |
-| `/favorites` | 单词、语法和对比收藏 |
-| `/stats` | 7/30 天趋势与掌握分布 |
-| `/settings` | 学习计划、外观和数据重置 |
+| `/ai` | 单词、语法、练习题生成；预览、保存、历史和用量 |
+| `/settings#deepseek-ai` | AI 开关、Key 模式、连接测试、默认生成和清理 |
+| `/api/ai/health` | 返回非敏感运行配置 |
+| `/api/ai/models` | 测试连接与允许模型 |
+| `/api/ai/generate-words` | 结构化词卡生成 |
+| `/api/ai/generate-grammar` | 语法或日英对比生成 |
+| `/api/ai/generate-quiz` | 基于最小内容摘要出题 |
+| `/api/ai/explain-mistake` | 当前错题中文解释 |
 
-应用壳使用真实链接，允许刷新和直接访问。桌面为侧栏，860px 以下切换为顶部品牌栏与底部导航；学习和测试会话进入专注模式。
+其他学习路由保持第二阶段不变。AI 保存的词汇、语法和对比通过 `allWords/allGrammar/allComparisons` 进入同一学习、收藏、搜索、测试与统计流程。
 
-## 核心数据流
+## 请求序列
 
 ```text
-用户评分/答题
-  → 领域纯函数计算 ReviewState、MistakeRecord、DailyRecord
-  → Context 合并当前快照
-  → Web Lock 内读取最新 IndexedDB 快照并合并本标签页变更
-  → 单事务保存七类数据
-  → BroadcastChannel 通知其他标签页
+用户提交
+ → AIContext 阻止重复操作并创建 AbortController
+ → AIAPIClient 加入接入模式专用 Header
+ → 服务端认证、限流和输入 Schema
+ → DeepSeek JSON Output（普通任务显式关闭思考）
+ → JSON 解析；失败时一次修复，再失败则一次受约束重生成
+ → 可选质量模型复核
+ → 本地语言/难度/重复/题目引用校验
+ → 返回合格项、拒绝原因、Generation 和 Usage
+ → 自动保存或保留为当前会话临时结果
 ```
 
-单词的 `combined`、`japanese`、`english` 三条 ReviewState 相互独立；聚合字段只用于快速统计和索引。语法使用同一个 v2 ReviewState 结构。完整字段和索引见 [本地存储](storage.md)。
+服务端仅对 429、500/503、网络、超时、空响应和截断等瞬时错误进行有界指数退避；鉴权、余额、参数和业务校验错误不盲目重试。
 
-## 复习与计划
+## 保存边界
 
-- `spaced-repetition.ts` 只接收旧状态、评分和时间，输出新的 ReviewState。
-- `daily-plan.ts` 在本地日期首次访问时生成一次计划；刷新不重复生成，跨日自动补建。
-- 到期队列按“遗忘程度权重 + 逾期时长”排序；暂停项不会进入队列。
-- 自动补足开启时，优先承接过去计划中仍未学习的新词与语法，再按内容库顺序填足。
+- AI 内容、历史、用量、解释、练习集和纠错记录与学习数据在一个快照事务中保存。
+- 密钥不属于 `LearningSnapshot` 或 `AppSettings`。非敏感 AI 设置使用独立 localStorage 键；密钥使用独立 session/localStorage 键。
+- 临时词汇/语法/题目只在 AIContext 内存中。生成历史和用量可持久化，但不保存完整系统 Prompt。
+- 删除内容会清理进度、收藏、错题、练习集和报告引用。
 
-具体规则见 [间隔重复算法](spaced-repetition.md) 和 [每日计划](daily-plan.md)。
+## 安全与部署
 
-## 可访问性与响应式
-
-- 使用语义标题、链接、按钮、表单标签、状态文本和原生 progress。
-- 趋势和分布图包含 `role="img"`、可读标签、图例和精确数值，不只依赖颜色。
-- 单词卡支持 Space、1/2/3、左右方向键和 Esc；测试支持 1–4。
-- 破坏性操作使用焦点陷阱、Esc 关闭、返回触发点和再次勾选确认。
-- 支持浅色、深色、系统主题、较大字体、关闭动画和减少动态效果。
+运行时配置集中在 `lib/ai/config/ai-config.ts`。服务器 Key 从 `process.env` 读取；客户端代码不读取服务器环境变量。远程生产服务器模式必须同时验证 `AI_PROXY_ACCESS_TOKEN`，localhost 才豁免。CSP 限制浏览器连接为同源，因此浏览器不会直接联系 DeepSeek。
 
 ## 测试策略
 
-- 纯领域单测：复习、计划、搜索、统计、判题和错题。
-- 内容校验：数量、ID 唯一性、难度分布、题型和 5 道语法练习约束。
-- 迁移与仓库：纯迁移幂等性、fake-indexeddb 的真实 v1 → v2 升级和重置边界。
-- 组件测试：词卡评分、计划、筛选、测试结果、错题和设置对话框。
-- 工作流集成测试：计划 → 学习 → 测试 → 错题 → 仓库持久化。
+- 单元：配置、错误映射、Provider 请求/重试/去重、Schema、校验、服务编排、密钥存储。
+- 接口：接入保护、同源、请求体、非法输入、安全错误、成功结构。
+- 组件：生成表单、加载/取消、部分成功、保存、设置、遮挡 Key、解释和历史。
+- 数据：真实 fake-indexeddb 的 v1/v2 → v3 升级与快照往返。
+- 工作流：Mock Provider 生成 → 校验 → 保存 → 学习 → 出题 → 错题 → 解释 → 刷新 → 删除。
 
-## 扩展点
-
-- 第三阶段可用后端代理实现 AiService，但生成内容必须经过 schema、重复和质量校验。
-- 未来可以新增 CloudLearningRepository；这需要单独设计账号、冲突解决、删除标记和加密策略，不属于第二阶段。
-- 若升级为 FSRS，应通过新的 `algorithmVersion` 与独立迁移兼容现有 ReviewState，不在组件中重写调度逻辑。
+真实 DeepSeek 只由手动 `npm run test:deepseek` 冒烟脚本访问，不进入常规测试或 CI。

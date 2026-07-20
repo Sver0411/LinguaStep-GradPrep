@@ -6,6 +6,7 @@ import { useLearning } from "@/context/LearningContext";
 import { isAnswerCorrect } from "@/lib/learning";
 import type { GrammarPoint, TestAnswer } from "@/lib/models";
 import { Button, ProgressBar } from "@/components/ui";
+import { AIExplanationPanel } from "@/components/ai/AIExplanationPanel";
 
 export function GrammarPractice({
   point,
@@ -135,6 +136,7 @@ export function GrammarPractice({
             <p>{question.explanation}</p>
           </div>
         )}
+        {selectedIndex !== null && !correct && <AIExplanationPanel question={question} selectedIndex={selectedIndex} />}
         <div className="question-footer">
           <span>按 1–4 选择答案</span>
           <Button onClick={() => void next()} disabled={selectedIndex === null || submitting}>

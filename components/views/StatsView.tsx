@@ -12,8 +12,6 @@ import {
   Trophy,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { WORD_PAIRS } from "@/data/words";
-import { GRAMMAR_POINTS } from "@/data/grammar";
 import { useLearning } from "@/context/LearningContext";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { dateKey } from "@/lib/learning";
@@ -28,7 +26,7 @@ import { PageHeader } from "@/components/ui";
 import { DistributionChart, TrendChart } from "@/components/stats/TrendChart";
 
 export function StatsView() {
-  const { snapshot } = useLearning();
+  const { snapshot, allWords, allGrammar } = useLearning();
   const now = useCurrentTime();
   const [range, setRange] = useState<7 | 30>(7);
   const [mode, setMode] = useState<StudyMode>("combined");
@@ -46,20 +44,20 @@ export function StatsView() {
     () =>
       wordMasteryDistribution(
         snapshot.wordProgress,
-        WORD_PAIRS.length,
+        allWords.length,
         mode,
         nowTimestamp,
       ),
-    [mode, nowTimestamp, snapshot.wordProgress],
+    [allWords.length, mode, nowTimestamp, snapshot.wordProgress],
   );
   const grammarDistribution = useMemo(
     () =>
       grammarMasteryDistribution(
         snapshot.grammarProgress,
-        GRAMMAR_POINTS.length,
+        allGrammar.length,
         nowTimestamp,
       ),
-    [nowTimestamp, snapshot.grammarProgress],
+    [allGrammar.length, nowTimestamp, snapshot.grammarProgress],
   );
 
   const metrics = [

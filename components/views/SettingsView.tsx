@@ -1,12 +1,10 @@
 "use client";
 
 import {
-  Bot,
   Check,
   Database,
   Info,
   Laptop,
-  LockKeyhole,
   Moon,
   RotateCcw,
   SlidersHorizontal,
@@ -24,6 +22,8 @@ import type {
 } from "@/lib/models";
 import { useLearning, type ResetScope } from "@/context/LearningContext";
 import { Button, PageHeader } from "@/components/ui";
+import { AISettingsPanel } from "@/components/ai/AISettingsPanel";
+import { useAI } from "@/context/AIContext";
 
 const resetCopy: Record<
   ResetScope,
@@ -115,6 +115,7 @@ function greatestCommonDivisor(left: number, right: number): number {
 
 export function SettingsView() {
   const { settings, updateSettings, resetData, rebuildTodayPlan } = useLearning();
+  const { resetAISettings, clearAllSecrets } = useAI();
   const [resetScope, setResetScope] = useState<ResetScope | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -171,6 +172,10 @@ export function SettingsView() {
     setResetting(true);
     try {
       await resetData(resetScope);
+      if (resetScope === "all") {
+        resetAISettings();
+        clearAllSecrets();
+      }
       closeReset();
     } finally {
       setResetting(false);
@@ -199,7 +204,7 @@ export function SettingsView() {
 
   return (
     <div className="page-stack settings-page">
-      <PageHeader eyebrow="第二阶段 · 设置" title="把计划、复习和显示调成你的节奏" description="设置保存在当前浏览器；修改计划参数后可选择立即重算今日计划。" actions={<Button variant="secondary" onClick={() => void rebuildTodayPlan()}><RotateCcw size={17} />重算今日计划</Button>} />
+      <PageHeader eyebrow="第三阶段 · 设置" title="把计划、AI 和显示调成你的节奏" description="学习设置与 AI 非敏感设置保存在当前浏览器；密钥使用独立存储，不进入学习数据库。" actions={<Button variant="secondary" onClick={() => void rebuildTodayPlan()}><RotateCcw size={17} />重算今日计划</Button>} />
 
       <section className="settings-section card">
         <div className="settings-section-heading"><span className="settings-icon"><SlidersHorizontal size={20} /></span><div><h2>学习与每日计划</h2><p>控制模式、任务数量和复习优先级</p></div></div>
@@ -229,10 +234,7 @@ export function SettingsView() {
         <SettingRow title="减少动态效果" description="强制减少运动，优先于基础动画开关。"><Switch value={settings.reduceMotion} label="减少动态效果" onChange={() => updateSettings({ reduceMotion:!settings.reduceMotion })} /></SettingRow>
       </section>
 
-      <section className="settings-section card disabled-ai-section">
-        <div className="settings-section-heading"><span className="settings-icon ai"><Bot size={21} /></span><div><h2>DeepSeek AI</h2><p>第三阶段扩展能力</p></div><span className="coming-soon"><LockKeyhole size={14} />第三阶段开放</span></div>
-        <div className="disabled-ai-content"><div><strong>内容生成、测试和个性化错因解释</strong><p>生产环境将采用后端代理保管密钥；个人本地测试可选仅会话 API Key。第二阶段不会保存密钥，也不会发送网络请求。</p></div><button className="button button-secondary" disabled>尚未开放</button></div>
-      </section>
+      <div id="deepseek-ai"><AISettingsPanel /></div>
 
       <section className="settings-section card">
         <div className="settings-section-heading"><span className="settings-icon"><Database size={20} /></span><div><h2>本地数据</h2><p>每项危险操作都需要再次勾选确认</p></div></div>
@@ -245,7 +247,7 @@ export function SettingsView() {
         </div>
       </section>
 
-      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><div><strong>LinguaStep 日英阶梯</strong><p>数据库 v2 · 复习算法 v2 · 日语与英语，一起稳步进阶</p></div><span>版本 {APP_VERSION} · 第二阶段</span></section>
+      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><div><strong>LinguaStep 日英阶梯</strong><p>数据库 v3 · 复习算法 v2 · DeepSeek AI 安全代理</p></div><span>版本 {APP_VERSION} · 第三阶段</span></section>
 
       {resetScope && (
         <div className="modal-backdrop" role="presentation" onClick={closeReset}>

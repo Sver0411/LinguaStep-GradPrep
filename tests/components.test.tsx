@@ -10,7 +10,10 @@ import {
   waitFor,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { DEFAULT_SETTINGS } from "../lib/constants";
+import { DEFAULT_AI_SETTINGS, DEFAULT_SETTINGS } from "../lib/constants";
+import { WORD_PAIRS } from "../data/words";
+import { GRAMMAR_POINTS } from "../data/grammar";
+import { GRAMMAR_COMPARISONS } from "../data/grammar-comparisons";
 import {
   makeDailyPlan,
   makeSnapshot,
@@ -28,10 +31,15 @@ import { SettingsView } from "../components/views/SettingsView";
 
 const mocked = vi.hoisted(() => ({
   learning: {} as ReturnType<typeof learningMock>,
+  ai: {} as ReturnType<typeof aiMock>,
 }));
 
 vi.mock("@/context/LearningContext", () => ({
   useLearning: () => mocked.learning,
+}));
+
+vi.mock("@/context/AIContext", () => ({
+  useAI: () => mocked.ai,
 }));
 
 vi.mock("next/link", () => ({
@@ -54,9 +62,39 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+function aiMock() {
+  return {
+    settings: DEFAULT_AI_SETTINGS,
+    health: null,
+    online: true,
+    busyOperation: null,
+    error: null,
+    transientResult: null,
+    usageSummary: { todayRequests: 0, monthRequests: 0, todayTokens: 0, monthTokens: 0, successRate: 0, averageDurationMs: 0 },
+    updateSettings: vi.fn(),
+    setSecret: vi.fn(),
+    clearSecret: vi.fn(),
+    getSecretStatus: vi.fn().mockReturnValue({ configured: false, masked: "未设置" }),
+    testConnection: vi.fn().mockResolvedValue(undefined),
+    generateWords: vi.fn().mockResolvedValue(null),
+    generateGrammar: vi.fn().mockResolvedValue(null),
+    generateQuiz: vi.fn().mockResolvedValue(null),
+    explainMistake: vi.fn().mockResolvedValue(null),
+    saveTransient: vi.fn().mockResolvedValue(undefined),
+    saveQuizCollection: vi.fn().mockResolvedValue(null),
+    undoLastSave: vi.fn().mockResolvedValue(undefined),
+    cancel: vi.fn(),
+    resetAISettings: vi.fn(),
+    clearAllSecrets: vi.fn(),
+  };
+}
+
 function learningMock(overrides: Record<string, unknown> = {}) {
   return {
     snapshot: makeSnapshot(),
+    allWords: WORD_PAIRS,
+    allGrammar: GRAMMAR_POINTS,
+    allComparisons: GRAMMAR_COMPARISONS,
     settings: DEFAULT_SETTINGS,
     ready: true,
     storageDegraded: false,
@@ -79,12 +117,18 @@ function learningMock(overrides: Record<string, unknown> = {}) {
     isFavorite: vi.fn().mockReturnValue(false),
     updateSettings: vi.fn(),
     rebuildTodayPlan: vi.fn().mockResolvedValue(makeSnapshot().dailyPlans[0]),
+    saveAIArtifacts: vi.fn().mockResolvedValue(undefined),
+    removeAIContent: vi.fn().mockResolvedValue(undefined),
+    undoAIGeneration: vi.fn().mockResolvedValue(undefined),
+    removeAIGeneration: vi.fn().mockResolvedValue(undefined),
+    clearAIData: vi.fn().mockResolvedValue(undefined),
     resetData: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }
 
 describe("phase-two components", () => {
+  mocked.ai = aiMock();
   it("reveals and rates a word in the selected independent mode", async () => {
     mocked.learning = learningMock();
     const word = makeWord("word-component", "组件");

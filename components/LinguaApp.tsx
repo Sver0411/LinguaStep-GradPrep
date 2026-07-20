@@ -12,11 +12,13 @@ import { SettingsView } from "@/components/views/SettingsView";
 import { StatsView } from "@/components/views/StatsView";
 import { TestView } from "@/components/views/TestView";
 import { WordsView } from "@/components/views/WordsView";
+import { AIView } from "@/components/views/AIView";
 
 const views = {
   words: WordsView,
   grammar: GrammarView,
   test: TestView,
+  ai: AIView,
   mistakes: MistakesView,
   favorites: FavoritesView,
   stats: StatsView,

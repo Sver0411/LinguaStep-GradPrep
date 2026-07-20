@@ -7,6 +7,7 @@ import {
   isIndexedDbSupported,
 } from "../lib/repositories";
 import { makeDailyPlan, makeSnapshot } from "./fixtures";
+import { EMPTY_SNAPSHOT } from "../lib/constants";
 
 function openLegacyDatabase(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -105,7 +106,38 @@ function openLegacyDatabase(): Promise<void> {
   });
 }
 
-describe("IndexedDbLearningRepository v2", () => {
+function openPhaseTwoDatabase(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(LEARNING_DATABASE_NAME, 2);
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      database.createObjectStore("wordProgress", { keyPath: "wordId" });
+      database.createObjectStore("grammarProgress", { keyPath: "grammarId" });
+      database.createObjectStore("mistakes", { keyPath: "id" });
+      database.createObjectStore("favorites", { keyPath: "contentId" });
+      database.createObjectStore("testResults", { keyPath: "id" });
+      database.createObjectStore("dailyRecords", { keyPath: "date" });
+      database.createObjectStore("dailyPlans", { keyPath: "date" });
+    };
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const database = request.result;
+      const snapshot = makeSnapshot();
+      const transaction = database.transaction(["wordProgress", "grammarProgress", "mistakes", "favorites", "testResults", "dailyRecords", "dailyPlans"], "readwrite");
+      transaction.objectStore("wordProgress").put(snapshot.wordProgress[0]);
+      transaction.objectStore("grammarProgress").put(snapshot.grammarProgress[0]);
+      transaction.objectStore("mistakes").put(snapshot.mistakes[0]);
+      snapshot.favorites.forEach((contentId, position) => transaction.objectStore("favorites").put({ contentId, position }));
+      transaction.objectStore("testResults").put(snapshot.testResults[0]);
+      transaction.objectStore("dailyRecords").put(snapshot.dailyRecords[0]);
+      transaction.objectStore("dailyPlans").put(snapshot.dailyPlans[0]);
+      transaction.oncomplete = () => { database.close(); resolve(); };
+      transaction.onerror = () => reject(transaction.error);
+    };
+  });
+}
+
+describe("IndexedDbLearningRepository v3", () => {
   beforeEach(() => {
     Object.defineProperty(globalThis, "indexedDB", {
       value: new IDBFactory(),
@@ -113,18 +145,10 @@ describe("IndexedDbLearningRepository v2", () => {
     });
   });
 
-  it("initializes seven stores and round-trips a structured snapshot", async () => {
+  it("initializes all v3 stores and round-trips a structured snapshot", async () => {
     expect(isIndexedDbSupported()).toBe(true);
     const repository = new IndexedDbLearningRepository();
-    expect(await repository.getSnapshot()).toEqual({
-      wordProgress: [],
-      grammarProgress: [],
-      mistakes: [],
-      favorites: [],
-      testResults: [],
-      dailyRecords: [],
-      dailyPlans: [],
-    });
+    expect(await repository.getSnapshot()).toEqual(EMPTY_SNAPSHOT);
     const expected = makeSnapshot();
     await repository.saveSnapshot(expected);
     expect(await repository.getSnapshot()).toEqual(expected);
@@ -160,7 +184,7 @@ describe("IndexedDbLearningRepository v2", () => {
     await openLegacyDatabase();
     const repository = new IndexedDbLearningRepository();
     const migrated = await repository.getSnapshot();
-    expect(LEARNING_DATABASE_VERSION).toBe(2);
+    expect(LEARNING_DATABASE_VERSION).toBe(3);
     expect(migrated.wordProgress).toHaveLength(1);
     expect(migrated.wordProgress[0].modes.combined).toMatchObject({
       mastery: "known",
@@ -183,5 +207,22 @@ describe("IndexedDbLearningRepository v2", () => {
     });
     expect(migrated.favorites).toEqual(["word:word-legacy"]);
     expect(migrated.dailyPlans).toEqual([]);
+    expect(migrated.aiWords).toEqual([]);
+    expect(migrated.aiGenerations).toEqual([]);
+  });
+
+  it("upgrades a phase-two database in place and preserves every existing store", async () => {
+    await openPhaseTwoDatabase();
+    const migrated = await new IndexedDbLearningRepository().getSnapshot();
+    const expected = makeSnapshot();
+    expect(migrated.wordProgress).toEqual(expected.wordProgress);
+    expect(migrated.grammarProgress).toEqual(expected.grammarProgress);
+    expect(migrated.mistakes).toEqual(expected.mistakes);
+    expect(migrated.favorites).toEqual(expected.favorites);
+    expect(migrated.testResults).toEqual(expected.testResults);
+    expect(migrated.dailyRecords).toEqual(expected.dailyRecords);
+    expect(migrated.dailyPlans).toEqual(expected.dailyPlans);
+    expect(migrated.aiWords).toEqual([]);
+    expect(migrated.aiContentReports).toEqual([]);
   });
 });

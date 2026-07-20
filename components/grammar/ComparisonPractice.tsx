@@ -6,6 +6,7 @@ import { useLearning } from "@/context/LearningContext";
 import { isAnswerCorrect } from "@/lib/learning";
 import type { GrammarComparison } from "@/lib/models";
 import { Button } from "@/components/ui";
+import { AIExplanationPanel } from "@/components/ai/AIExplanationPanel";
 
 export function ComparisonPractice({
   comparison,
@@ -65,6 +66,7 @@ export function ComparisonPractice({
             <p>{question.explanation}</p>
           </div>
         )}
+        {submitted && !correct && selected !== null && <AIExplanationPanel question={question} selectedIndex={selected} />}
         <div className="question-footer">
           <span>答错会进入“日英对比错题”</span>
           {submitted ? (

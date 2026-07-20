@@ -13,6 +13,7 @@ import {
   Menu,
   NotebookPen,
   Settings,
+  Sparkles,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -22,6 +23,7 @@ const navigation = [
   { path: "/words", label: "单词", icon: BookOpenText },
   { path: "/grammar", label: "语法", icon: NotebookPen },
   { path: "/test", label: "测试", icon: CircleHelp },
+  { path: "/ai", label: "AI 学习", icon: Sparkles },
   { path: "/mistakes", label: "错题本", icon: BookMarked },
   { path: "/favorites", label: "收藏", icon: Heart },
   { path: "/stats", label: "学习统计", icon: BarChart3 },

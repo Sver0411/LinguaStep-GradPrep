@@ -21,6 +21,45 @@ export type TestSourceFilter =
   | "mistakes"
   | "favorites"
   | "due";
+export type AIProviderName = "deepseek" | "mock";
+export type AIConnectionMode = "server" | "byok";
+export type AISecretPersistence = "session" | "device";
+export type AISaveMode = "saved" | "temporary";
+export type AIValidationStatus = "passed" | "repaired" | "rejected";
+export type AIGenerationKind = "words" | "grammar" | "quiz" | "explanation";
+export type AIGenerationStatus = "running" | "succeeded" | "partial" | "failed" | "cancelled";
+export type AIErrorCode =
+  | "NOT_CONFIGURED"
+  | "INVALID_API_KEY"
+  | "PROXY_ACCESS_DENIED"
+  | "INSUFFICIENT_BALANCE"
+  | "RATE_LIMITED"
+  | "INVALID_REQUEST"
+  | "MODEL_UNAVAILABLE"
+  | "TIMEOUT"
+  | "NETWORK_ERROR"
+  | "SERVER_OVERLOADED"
+  | "EMPTY_RESPONSE"
+  | "TRUNCATED_RESPONSE"
+  | "INVALID_JSON"
+  | "SCHEMA_VALIDATION_FAILED"
+  | "CONTENT_VALIDATION_FAILED"
+  | "REQUEST_CANCELLED"
+  | "DAILY_LIMIT_REACHED"
+  | "OFFLINE"
+  | "UNKNOWN";
+
+export interface AIContentMetadata {
+  source: "ai";
+  provider: "deepseek";
+  model: string;
+  promptName: string;
+  promptVersion: string;
+  generationId: string;
+  generatedAt: string;
+  validationStatus: AIValidationStatus;
+  contentHash: string;
+}
 
 export interface WordLanguageEntry {
   term: string;
@@ -42,7 +81,9 @@ export interface WordPair {
   note: string;
   highFrequency: boolean;
   frequency?: FrequencyLevel;
+  tags?: string[];
   source: ContentSource;
+  aiMetadata?: AIContentMetadata;
   audioUrl?: string;
   spellingHint?: string;
 }
@@ -84,8 +125,10 @@ export interface GrammarPoint {
   };
   commonErrors: string[];
   confusables: string[];
+  confusableDifferences?: string[];
   exercises: ChoiceQuestion[];
   source: ContentSource;
+  aiMetadata?: AIContentMetadata;
 }
 
 export interface GrammarComparison {
@@ -94,12 +137,16 @@ export interface GrammarComparison {
   japanese: string;
   english: string;
   difference: string;
+  samePoints?: string;
+  nonInterchangeable?: string[];
   japaneseExample: string;
   englishExample: string;
   translationZh: string;
   pitfalls: string[];
   exercise: ChoiceQuestion;
   level: string;
+  source?: ContentSource;
+  aiMetadata?: AIContentMetadata;
 }
 
 /** Version 2 review state used by both word modes and grammar items. */
@@ -244,6 +291,108 @@ export interface AppSettings {
   fontSize: FontSize;
 }
 
+export interface AISettings {
+  enabled: boolean;
+  connectionMode: AIConnectionMode;
+  apiKeyPersistence: AISecretPersistence;
+  proxyTokenPersistence: AISecretPersistence;
+  autoSave: boolean;
+  defaultWordCount: 1 | 5 | 10;
+  defaultJapaneseLevel: "N3" | "N2" | "N1";
+  defaultEnglishLevel: "高中基础" | "四级" | "六级" | "TOEIC 过渡";
+  defaultFrequency: "高频" | "常用" | "普通";
+  defaultPurpose: "日常" | "考试" | "综合";
+  defaultQuality: "fast" | "quality";
+  qualityReview: boolean;
+  autoRetry: boolean;
+  maxRetries: number;
+  dailyRequestSoftLimit: number;
+}
+
+export interface AIGenerationRecord {
+  id: string;
+  requestId: string;
+  kind: AIGenerationKind;
+  createdAt: string;
+  completedAt: string;
+  provider: AIProviderName;
+  model: string;
+  promptName: string;
+  promptVersion: string;
+  status: AIGenerationStatus;
+  saveMode: AISaveMode;
+  validationStatus: AIValidationStatus;
+  requestedCount: number;
+  acceptedCount: number;
+  rejectedCount: number;
+  contentIds: string[];
+  previewLabels: string[];
+  parameters?: Record<string, string | number | boolean | undefined>;
+  usageId?: string;
+  errorCode?: AIErrorCode;
+  errorMessage?: string;
+}
+
+export interface AIUsageRecord {
+  id: string;
+  requestId: string;
+  operation: AIGenerationKind | "health" | "models" | "repair" | "review";
+  model: string;
+  promptName: string;
+  promptVersion: string;
+  startedAt: string;
+  completedAt: string;
+  durationMs: number;
+  success: boolean;
+  retryCount: number;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  cacheHitTokens: number;
+  errorCode?: AIErrorCode;
+}
+
+export interface AIExplanationContent {
+  whyCorrect: string;
+  whyUserChoiceWrong: string;
+  keyPoint: string;
+  languageDifference: string;
+  example: string;
+  preventionTip: string;
+}
+
+export interface AIExplanationRecord {
+  id: string;
+  cacheKey: string;
+  questionId: string;
+  selectedIndex: number;
+  correctIndex: number;
+  variant: "simple" | "detailed";
+  content: AIExplanationContent;
+  model: string;
+  promptVersion: string;
+  generatedAt: string;
+  generationId: string;
+}
+
+export interface AISavedCollection {
+  id: string;
+  title: string;
+  generationId: string;
+  createdAt: string;
+  questions: ChoiceQuestion[];
+}
+
+export interface AIContentReport {
+  id: string;
+  contentType: "word" | "grammar" | "comparison" | "quiz";
+  contentId: string;
+  generationId: string;
+  reason: string;
+  createdAt: string;
+  status: "open" | "resolved";
+}
+
 export interface LearningSnapshot {
   wordProgress: WordProgress[];
   grammarProgress: GrammarProgress[];
@@ -252,16 +401,12 @@ export interface LearningSnapshot {
   testResults: TestResult[];
   dailyRecords: DailyRecord[];
   dailyPlans: DailyPlan[];
-}
-
-export interface AiGenerationRequest {
-  kind: "word" | "grammar" | "test" | "mistake-explanation";
-  language?: GrammarLanguage | "mixed";
-  prompt: string;
-}
-
-export interface AiGenerationResult<T> {
-  data: T;
-  provider: "mock" | "deepseek";
-  generatedAt: string;
+  aiWords: WordPair[];
+  aiGrammar: GrammarPoint[];
+  aiComparisons: GrammarComparison[];
+  aiGenerations: AIGenerationRecord[];
+  aiUsage: AIUsageRecord[];
+  aiExplanations: AIExplanationRecord[];
+  aiCollections: AISavedCollection[];
+  aiContentReports: AIContentReport[];
 }

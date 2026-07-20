@@ -13,8 +13,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { WORD_PAIRS } from "@/data/words";
-import { GRAMMAR_POINTS } from "@/data/grammar";
 import { useLearning } from "@/context/LearningContext";
 import { createTestQuestions, isAnswerCorrect } from "@/lib/learning";
 import type {
@@ -25,6 +23,7 @@ import type {
   TestSourceFilter,
 } from "@/lib/models";
 import { Button, EmptyState, PageHeader, ProgressBar } from "@/components/ui";
+import { AIExplanationPanel } from "@/components/ai/AIExplanationPanel";
 
 const MODE_LABEL: Record<TestMode, string> = {
   mixed: "日英混合",
@@ -89,7 +88,7 @@ function resultBreakdown(result: TestResult) {
 }
 
 export function TestView() {
-  const { snapshot, settings, completeTest, setFocusMode } = useLearning();
+  const { snapshot, settings, allWords, allGrammar, completeTest, setFocusMode } = useLearning();
   const [mode, setMode] = useState<TestMode>("mixed");
   const [sourceFilter, setSourceFilter] =
     useState<TestSourceFilter>(initialSourceFilter);
@@ -109,6 +108,8 @@ export function TestView() {
   const [submitting, setSubmitting] = useState(false);
   const [startedAt, setStartedAt] = useState("");
   const [generationEmpty, setGenerationEmpty] = useState(false);
+  const [collectionTitle, setCollectionTitle] = useState("");
+  const collectionStarted = useRef(false);
   const submittingRef = useRef(false);
   const question = questions[index];
   const selectionCorrect =
@@ -129,18 +130,18 @@ export function TestView() {
     );
   }, [snapshot.testResults]);
   const difficultyOptions = useMemo(() => {
-    const wordLevels = WORD_PAIRS.flatMap((word) =>
+    const wordLevels = allWords.flatMap((word) =>
       mode === "english"
         ? [word.english.difficulty]
         : mode === "japanese"
           ? [word.japanese.difficulty]
           : [word.japanese.difficulty, word.english.difficulty],
     );
-    const grammarLevels = GRAMMAR_POINTS.filter(
+    const grammarLevels = allGrammar.filter(
       (point) => mode === "mixed" || point.language === mode,
     ).map((point) => point.level);
     return [...new Set([...wordLevels, ...grammarLevels])];
-  }, [mode]);
+  }, [allGrammar, allWords, mode]);
 
   useEffect(() => {
     if (questions.length === 0 || result) return;
@@ -153,13 +154,29 @@ export function TestView() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [immediateFeedback, questions.length, result, selectedIndex]);
 
+  useEffect(() => {
+    if (collectionStarted.current || questions.length > 0) return;
+    const collectionId = new URLSearchParams(window.location.search).get("collection");
+    if (!collectionId) return;
+    const collection = snapshot.aiCollections.find((item) => item.id === collectionId);
+    if (!collection || collection.questions.length === 0) return;
+    collectionStarted.current = true;
+    const timer = window.setTimeout(() => {
+      setQuestions(collection.questions);
+      setCollectionTitle(collection.title);
+      setStartedAt(new Date().toISOString());
+      setFocusMode(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [questions.length, setFocusMode, snapshot.aiCollections]);
+
   const start = () => {
     const now = new Date().toISOString();
     const generated = createTestQuestions(
       snapshot.wordProgress,
       snapshot.grammarProgress,
-      WORD_PAIRS,
-      GRAMMAR_POINTS,
+      allWords,
+      allGrammar,
       {
         mode,
         sourceFilter,
@@ -242,6 +259,7 @@ export function TestView() {
                 <p>你的答案：<b>{answer.question.options[answer.selectedIndex]}</b></p>
                 {!answer.isCorrect && <p>正确答案：<b>{answer.question.options[answer.question.correctIndex]}</b></p>}
                 <div className="review-explanation">{answer.question.explanation}</div>
+                {!answer.isCorrect && <AIExplanationPanel question={answer.question} selectedIndex={answer.selectedIndex} />}
               </div>
             </article>
           ))}
@@ -254,7 +272,7 @@ export function TestView() {
     const showFeedback = immediateFeedback && selectedIndex !== null;
     return (
       <section className="quiz-session test-session">
-        <div className="session-topline"><span>{MODE_LABEL[mode]}测试 · {SOURCE_LABEL[sourceFilter]}</span><strong>{index + 1} / {questions.length}</strong></div>
+        <div className="session-topline"><span>{collectionTitle || `${MODE_LABEL[mode]}测试 · ${SOURCE_LABEL[sourceFilter]}`}</span><strong>{index + 1} / {questions.length}</strong></div>
         <div className="session-progress"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
         <article className="question-card card">
           <div className="question-meta"><span className="question-type">{question.source === "word" ? "词汇选择" : question.source === "comparison" ? "语法对比" : "语法判断"}</span><span>{question.difficulty}</span></div>

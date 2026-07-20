@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { GRAMMAR_POINTS } from "@/data/grammar";
+import { GRAMMAR_COMPARISONS } from "@/data/grammar-comparisons";
 import { WORD_PAIRS } from "@/data/words";
 import { DEFAULT_SETTINGS, EMPTY_SNAPSHOT } from "@/lib/constants";
 import { generateDailyPlan } from "@/lib/daily-plan";
@@ -23,9 +24,16 @@ import {
   updateWordMastery,
 } from "@/lib/learning";
 import type {
+  AIContentReport,
+  AIExplanationRecord,
+  AIGenerationRecord,
+  AISavedCollection,
+  AIUsageRecord,
   AppSettings,
   DailyPlan,
   GrammarProgress,
+  GrammarComparison,
+  GrammarPoint,
   LearningSnapshot,
   MasteryRating,
   MistakeRecord,
@@ -37,6 +45,7 @@ import type {
   TestResult,
   TestSourceFilter,
   WordProgress,
+  WordPair,
 } from "@/lib/models";
 import {
   IndexedDbLearningRepository,
@@ -55,6 +64,18 @@ export type ResetScope =
   | "favorites"
   | "all";
 type FavoriteKind = "word" | "grammar" | "comparison";
+export type AIClearScope = "history" | "explanations" | "content" | "all";
+
+export interface AIArtifactBatch {
+  words?: WordPair[];
+  grammar?: GrammarPoint[];
+  comparisons?: GrammarComparison[];
+  generations?: AIGenerationRecord[];
+  usage?: AIUsageRecord[];
+  explanations?: AIExplanationRecord[];
+  collections?: AISavedCollection[];
+  reports?: AIContentReport[];
+}
 const DATA_LOCK_NAME = "lingua-step:data-write";
 const SYNC_CHANNEL_NAME = "lingua-step:data-sync";
 
@@ -67,6 +88,9 @@ interface CompleteTestOptions {
 interface LearningContextValue {
   snapshot: LearningSnapshot;
   settings: AppSettings;
+  allWords: WordPair[];
+  allGrammar: GrammarPoint[];
+  allComparisons: GrammarComparison[];
   ready: boolean;
   storageDegraded: boolean;
   focusMode: boolean;
@@ -96,6 +120,11 @@ interface LearningContextValue {
   isFavorite: (kind: FavoriteKind, id: string) => boolean;
   updateSettings: (patch: Partial<AppSettings>) => void;
   rebuildTodayPlan: () => Promise<DailyPlan>;
+  saveAIArtifacts: (batch: AIArtifactBatch) => Promise<void>;
+  removeAIContent: (keys: readonly string[]) => Promise<void>;
+  undoAIGeneration: (generationId: string) => Promise<void>;
+  removeAIGeneration: (generationId: string, removeContent?: boolean) => Promise<void>;
+  clearAIData: (scope: AIClearScope) => Promise<void>;
   resetData: (scope: ResetScope) => Promise<void>;
 }
 
@@ -241,6 +270,76 @@ function mergeSnapshotChange(
       next.dailyPlans,
       (item) => item.date,
     ),
+    aiWords: mergeKeyedChanges(latest.aiWords, previous.aiWords, next.aiWords, (item) => item.id),
+    aiGrammar: mergeKeyedChanges(latest.aiGrammar, previous.aiGrammar, next.aiGrammar, (item) => item.id),
+    aiComparisons: mergeKeyedChanges(latest.aiComparisons, previous.aiComparisons, next.aiComparisons, (item) => item.id),
+    aiGenerations: mergeKeyedChanges(latest.aiGenerations, previous.aiGenerations, next.aiGenerations, (item) => item.id),
+    aiUsage: mergeKeyedChanges(latest.aiUsage, previous.aiUsage, next.aiUsage, (item) => item.id),
+    aiExplanations: mergeKeyedChanges(latest.aiExplanations, previous.aiExplanations, next.aiExplanations, (item) => item.id),
+    aiCollections: mergeKeyedChanges(latest.aiCollections, previous.aiCollections, next.aiCollections, (item) => item.id),
+    aiContentReports: mergeKeyedChanges(latest.aiContentReports, previous.aiContentReports, next.aiContentReports, (item) => item.id),
+  };
+}
+
+function upsertById<T>(current: readonly T[], incoming: readonly T[], keyOf: (item: T) => string): T[] {
+  const next = new Map(current.map((item) => [keyOf(item), item]));
+  incoming.forEach((item) => next.set(keyOf(item), item));
+  return [...next.values()];
+}
+
+function removeAIContentFromSnapshot(
+  snapshot: LearningSnapshot,
+  keys: readonly string[],
+): LearningSnapshot {
+  const removed = new Set(keys);
+  const removedWordIds = new Set(
+    keys.filter((key) => key.startsWith("word:")).map((key) => key.slice(5)),
+  );
+  const removedGrammarIds = new Set(
+    keys.filter((key) => key.startsWith("grammar:")).map((key) => key.slice(8)),
+  );
+  const removedComparisonIds = new Set(
+    keys.filter((key) => key.startsWith("comparison:")).map((key) => key.slice(11)),
+  );
+  const removedSourceIds = new Set([
+    ...removedWordIds,
+    ...removedGrammarIds,
+    ...removedComparisonIds,
+  ]);
+  return {
+    ...snapshot,
+    aiWords: snapshot.aiWords.filter((item) => !removedWordIds.has(item.id)),
+    aiGrammar: snapshot.aiGrammar.filter((item) => !removedGrammarIds.has(item.id)),
+    aiComparisons: snapshot.aiComparisons.filter(
+      (item) => !removedComparisonIds.has(item.id),
+    ),
+    wordProgress: snapshot.wordProgress.filter(
+      (item) => !removedWordIds.has(item.wordId),
+    ),
+    grammarProgress: snapshot.grammarProgress.filter(
+      (item) => !removedGrammarIds.has(item.grammarId),
+    ),
+    favorites: snapshot.favorites.filter((item) => !removed.has(item)),
+    mistakes: snapshot.mistakes.filter(
+      (item) => !removedSourceIds.has(item.contentRef.sourceId),
+    ),
+    aiCollections: snapshot.aiCollections
+      .map((collection) => ({
+        ...collection,
+        questions: collection.questions.filter(
+          (question) => !removedSourceIds.has(question.sourceId),
+        ),
+      }))
+      .filter((collection) => collection.questions.length > 0),
+    aiContentReports: snapshot.aiContentReports.filter(
+      (report) => !removedSourceIds.has(report.contentId),
+    ),
+    aiGenerations: snapshot.aiGenerations.map((generation) => ({
+      ...generation,
+      contentIds: generation.contentIds.filter(
+        (contentId) => !removedSourceIds.has(contentId),
+      ),
+    })),
   };
 }
 
@@ -280,8 +379,8 @@ function createPlan(
     date: dateKey(now),
     now: now.toISOString(),
     settings,
-    words: WORD_PAIRS,
-    grammar: GRAMMAR_POINTS,
+    words: [...WORD_PAIRS, ...snapshot.aiWords],
+    grammar: [...GRAMMAR_POINTS, ...snapshot.aiGrammar],
     wordProgress: snapshot.wordProgress,
     grammarProgress: snapshot.grammarProgress,
     mistakes: snapshot.mistakes,
@@ -508,7 +607,9 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         normalizedAnswers.length,
         now,
       );
-      const point = GRAMMAR_POINTS.find((item) => item.id === grammarId);
+      const point = [...GRAMMAR_POINTS, ...current.aiGrammar].find(
+        (item) => item.id === grammarId,
+      );
       const languageDelta =
         point?.language === "english"
           ? { englishGrammarStudied: 1 }
@@ -708,6 +809,100 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const saveAIArtifacts = useCallback(
+    async (batch: AIArtifactBatch) => {
+      const current = snapshotRef.current;
+      await persistSnapshot({
+        ...current,
+        aiWords: upsertById(current.aiWords, batch.words ?? [], (item) => item.id),
+        aiGrammar: upsertById(current.aiGrammar, batch.grammar ?? [], (item) => item.id),
+        aiComparisons: upsertById(current.aiComparisons, batch.comparisons ?? [], (item) => item.id),
+        aiGenerations: upsertById(current.aiGenerations, batch.generations ?? [], (item) => item.id),
+        aiUsage: upsertById(current.aiUsage, batch.usage ?? [], (item) => item.id),
+        aiExplanations: upsertById(current.aiExplanations, batch.explanations ?? [], (item) => item.id),
+        aiCollections: upsertById(current.aiCollections, batch.collections ?? [], (item) => item.id),
+        aiContentReports: upsertById(current.aiContentReports, batch.reports ?? [], (item) => item.id),
+      });
+    },
+    [persistSnapshot],
+  );
+
+  const removeAIContent = useCallback(
+    async (keys: readonly string[]) => {
+      await persistSnapshot(removeAIContentFromSnapshot(snapshotRef.current, keys));
+    },
+    [persistSnapshot],
+  );
+
+  const undoAIGeneration = useCallback(
+    async (generationId: string) => {
+      const current = snapshotRef.current;
+      const keys = [
+        ...current.aiWords.filter((item) => item.aiMetadata?.generationId === generationId).map((item) => `word:${item.id}`),
+        ...current.aiGrammar.filter((item) => item.aiMetadata?.generationId === generationId).map((item) => `grammar:${item.id}`),
+        ...current.aiComparisons.filter((item) => item.aiMetadata?.generationId === generationId).map((item) => `comparison:${item.id}`),
+      ];
+      const withoutContent = removeAIContentFromSnapshot(current, keys);
+      await persistSnapshot({
+        ...withoutContent,
+        aiGenerations: withoutContent.aiGenerations.map((item) =>
+          item.id === generationId
+            ? { ...item, saveMode: "temporary", contentIds: [] }
+            : item,
+        ),
+      });
+    },
+    [persistSnapshot],
+  );
+
+  const removeAIGeneration = useCallback(
+    async (generationId: string, removeContent = false) => {
+      const current = snapshotRef.current;
+      const generation = current.aiGenerations.find((item) => item.id === generationId);
+      const keys = removeContent
+        ? [
+            ...current.aiWords.filter((item) => item.aiMetadata?.generationId === generationId).map((item) => `word:${item.id}`),
+            ...current.aiGrammar.filter((item) => item.aiMetadata?.generationId === generationId).map((item) => `grammar:${item.id}`),
+            ...current.aiComparisons.filter((item) => item.aiMetadata?.generationId === generationId).map((item) => `comparison:${item.id}`),
+          ]
+        : [];
+      const next = removeAIContentFromSnapshot(current, keys);
+      await persistSnapshot({
+        ...next,
+        aiGenerations: next.aiGenerations.filter((item) => item.id !== generationId),
+        aiUsage: generation?.usageId
+          ? next.aiUsage.filter((item) => item.id !== generation.usageId)
+          : next.aiUsage,
+      });
+    },
+    [persistSnapshot],
+  );
+
+  const clearAIData = useCallback(
+    async (scope: AIClearScope) => {
+      const current = snapshotRef.current;
+      const contentKeys = [
+        ...current.aiWords.map((item) => `word:${item.id}`),
+        ...current.aiGrammar.map((item) => `grammar:${item.id}`),
+        ...current.aiComparisons.map((item) => `comparison:${item.id}`),
+      ];
+      const base = scope === "content" || scope === "all"
+        ? removeAIContentFromSnapshot(current, contentKeys)
+        : current;
+      await persistSnapshot({
+        ...base,
+        aiGenerations:
+          scope === "history" || scope === "all" ? [] : base.aiGenerations,
+        aiUsage: scope === "history" || scope === "all" ? [] : base.aiUsage,
+        aiExplanations:
+          scope === "explanations" || scope === "all" ? [] : base.aiExplanations,
+        aiCollections: scope === "content" || scope === "all" ? [] : base.aiCollections,
+        aiContentReports: scope === "content" || scope === "all" ? [] : base.aiContentReports,
+      });
+    },
+    [persistSnapshot],
+  );
+
   const resetData = useCallback(
     async (scope: ResetScope) => {
       let next = cloneEmptySnapshot();
@@ -765,6 +960,9 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     () => ({
       snapshot,
       settings,
+      allWords: [...WORD_PAIRS, ...snapshot.aiWords],
+      allGrammar: [...GRAMMAR_POINTS, ...snapshot.aiGrammar],
+      allComparisons: [...GRAMMAR_COMPARISONS, ...snapshot.aiComparisons],
       ready,
       storageDegraded,
       focusMode,
@@ -781,6 +979,11 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       isFavorite,
       updateSettings,
       rebuildTodayPlan,
+      saveAIArtifacts,
+      removeAIContent,
+      undoAIGeneration,
+      removeAIGeneration,
+      clearAIData,
       resetData,
     }),
     [
@@ -801,6 +1004,11 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       isFavorite,
       updateSettings,
       rebuildTodayPlan,
+      saveAIArtifacts,
+      removeAIContent,
+      undoAIGeneration,
+      removeAIGeneration,
+      clearAIData,
       resetData,
     ],
   );

@@ -1,16 +1,32 @@
 import type {
+  AIContentReport,
+  AIExplanationRecord,
+  AIGenerationRecord,
+  AISavedCollection,
+  AIUsageRecord,
   DailyPlan,
   DailyRecord,
+  GrammarComparison,
+  GrammarPoint,
   GrammarProgress,
   LearningSnapshot,
   MistakeRecord,
   TestResult,
   WordProgress,
+  WordPair,
 } from "../models";
 import type { LearningRepository } from "./types";
 import {
   migrateDailyPlan,
   migrateDailyRecord,
+  migrateAICollection,
+  migrateAIComparison,
+  migrateAIContentReport,
+  migrateAIExplanation,
+  migrateAIGeneration,
+  migrateAIGrammar,
+  migrateAIUsage,
+  migrateAIWord,
   migrateGrammarProgressRecord,
   migrateMistakeRecord,
   migrateTestResult,
@@ -18,7 +34,7 @@ import {
 } from "./migrations";
 
 export const LEARNING_DATABASE_NAME = "lingua-step-learning";
-export const LEARNING_DATABASE_VERSION = 2;
+export const LEARNING_DATABASE_VERSION = 3;
 
 const STORES = {
   wordProgress: "wordProgress",
@@ -28,6 +44,14 @@ const STORES = {
   testResults: "testResults",
   dailyRecords: "dailyRecords",
   dailyPlans: "dailyPlans",
+  aiWords: "aiWords",
+  aiGrammar: "aiGrammar",
+  aiComparisons: "aiComparisons",
+  aiGenerations: "aiGenerations",
+  aiUsage: "aiUsage",
+  aiExplanations: "aiExplanations",
+  aiCollections: "aiCollections",
+  aiContentReports: "aiContentReports",
 } as const;
 
 type StoreName = (typeof STORES)[keyof typeof STORES];
@@ -166,6 +190,30 @@ function openDatabase(): Promise<IDBDatabase> {
       if (!database.objectStoreNames.contains(STORES.dailyPlans)) {
         database.createObjectStore(STORES.dailyPlans, { keyPath: "date" });
       }
+      if (!database.objectStoreNames.contains(STORES.aiWords)) {
+        database.createObjectStore(STORES.aiWords, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(STORES.aiGrammar)) {
+        database.createObjectStore(STORES.aiGrammar, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(STORES.aiComparisons)) {
+        database.createObjectStore(STORES.aiComparisons, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(STORES.aiGenerations)) {
+        database.createObjectStore(STORES.aiGenerations, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(STORES.aiUsage)) {
+        database.createObjectStore(STORES.aiUsage, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(STORES.aiExplanations)) {
+        database.createObjectStore(STORES.aiExplanations, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(STORES.aiCollections)) {
+        database.createObjectStore(STORES.aiCollections, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(STORES.aiContentReports)) {
+        database.createObjectStore(STORES.aiContentReports, { keyPath: "id" });
+      }
 
       const wordStore = transaction.objectStore(STORES.wordProgress);
       const grammarStore = transaction.objectStore(STORES.grammarProgress);
@@ -173,6 +221,14 @@ function openDatabase(): Promise<IDBDatabase> {
       const testStore = transaction.objectStore(STORES.testResults);
       const dailyStore = transaction.objectStore(STORES.dailyRecords);
       const planStore = transaction.objectStore(STORES.dailyPlans);
+      const aiWordStore = transaction.objectStore(STORES.aiWords);
+      const aiGrammarStore = transaction.objectStore(STORES.aiGrammar);
+      const aiComparisonStore = transaction.objectStore(STORES.aiComparisons);
+      const aiGenerationStore = transaction.objectStore(STORES.aiGenerations);
+      const aiUsageStore = transaction.objectStore(STORES.aiUsage);
+      const aiExplanationStore = transaction.objectStore(STORES.aiExplanations);
+      const aiCollectionStore = transaction.objectStore(STORES.aiCollections);
+      const aiReportStore = transaction.objectStore(STORES.aiContentReports);
 
       ensureIndex(wordStore, "nextReviewAt", "nextReviewAt");
       ensureIndex(wordStore, "lastStudiedAt", "lastStudiedAt");
@@ -186,6 +242,17 @@ function openDatabase(): Promise<IDBDatabase> {
       ensureIndex(testStore, "completedAt", "completedAt");
       ensureIndex(dailyStore, "date", "date");
       ensureIndex(planStore, "generatedAt", "generatedAt");
+      ensureIndex(aiWordStore, "generationId", "aiMetadata.generationId");
+      ensureIndex(aiGrammarStore, "generationId", "aiMetadata.generationId");
+      ensureIndex(aiComparisonStore, "generationId", "aiMetadata.generationId");
+      ensureIndex(aiGenerationStore, "createdAt", "createdAt");
+      ensureIndex(aiGenerationStore, "kind", "kind");
+      ensureIndex(aiGenerationStore, "status", "status");
+      ensureIndex(aiUsageStore, "completedAt", "completedAt");
+      ensureIndex(aiUsageStore, "requestId", "requestId");
+      ensureIndex(aiExplanationStore, "cacheKey", "cacheKey");
+      ensureIndex(aiCollectionStore, "createdAt", "createdAt");
+      ensureIndex(aiReportStore, "contentId", "contentId");
 
       if (event.oldVersion < 2) {
         migrateStore(wordStore, migrateWordProgressRecord);
@@ -301,9 +368,47 @@ export class IndexedDbLearningRepository implements LearningRepository {
     const dailyPlans = getAll<DailyPlan>(
       transaction.objectStore(STORES.dailyPlans),
     );
+    const aiWords = getAll<WordPair>(transaction.objectStore(STORES.aiWords));
+    const aiGrammar = getAll<GrammarPoint>(
+      transaction.objectStore(STORES.aiGrammar),
+    );
+    const aiComparisons = getAll<GrammarComparison>(
+      transaction.objectStore(STORES.aiComparisons),
+    );
+    const aiGenerations = getAll<AIGenerationRecord>(
+      transaction.objectStore(STORES.aiGenerations),
+    );
+    const aiUsage = getAll<AIUsageRecord>(
+      transaction.objectStore(STORES.aiUsage),
+    );
+    const aiExplanations = getAll<AIExplanationRecord>(
+      transaction.objectStore(STORES.aiExplanations),
+    );
+    const aiCollections = getAll<AISavedCollection>(
+      transaction.objectStore(STORES.aiCollections),
+    );
+    const aiContentReports = getAll<AIContentReport>(
+      transaction.objectStore(STORES.aiContentReports),
+    );
 
     try {
-      const values = await Promise.all([
+      const [
+        storedWordProgress,
+        storedGrammarProgress,
+        storedMistakes,
+        storedFavorites,
+        storedTestResults,
+        storedDailyRecords,
+        storedDailyPlans,
+        storedAIWords,
+        storedAIGrammar,
+        storedAIComparisons,
+        storedAIGenerations,
+        storedAIUsage,
+        storedAIExplanations,
+        storedAICollections,
+        storedAIContentReports,
+      ] = await Promise.all([
         wordProgress,
         grammarProgress,
         mistakes,
@@ -311,16 +416,24 @@ export class IndexedDbLearningRepository implements LearningRepository {
         testResults,
         dailyRecords,
         dailyPlans,
+        aiWords,
+        aiGrammar,
+        aiComparisons,
+        aiGenerations,
+        aiUsage,
+        aiExplanations,
+        aiCollections,
+        aiContentReports,
       ] as const);
       await completed;
 
       return {
-        wordProgress: values[0].map((item) => migrateWordProgressRecord(item)),
-        grammarProgress: values[1].map((item) =>
+        wordProgress: storedWordProgress.map((item) => migrateWordProgressRecord(item)),
+        grammarProgress: storedGrammarProgress.map((item) =>
           migrateGrammarProgressRecord(item),
         ),
-        mistakes: values[2].map((item) => migrateMistakeRecord(item)),
-        favorites: values[3]
+        mistakes: storedMistakes.map((item) => migrateMistakeRecord(item)),
+        favorites: storedFavorites
           .map((favorite, index) => ({
             contentId: favorite.contentId,
             position: favorite.position ?? index,
@@ -331,9 +444,17 @@ export class IndexedDbLearningRepository implements LearningRepository {
               left.contentId.localeCompare(right.contentId),
           )
           .map((favorite) => favorite.contentId),
-        testResults: values[4].map((item) => migrateTestResult(item)),
-        dailyRecords: values[5].map((item) => migrateDailyRecord(item)),
-        dailyPlans: values[6].map((item) => migrateDailyPlan(item)),
+        testResults: storedTestResults.map((item) => migrateTestResult(item)),
+        dailyRecords: storedDailyRecords.map((item) => migrateDailyRecord(item)),
+        dailyPlans: storedDailyPlans.map((item) => migrateDailyPlan(item)),
+        aiWords: storedAIWords.map((item) => migrateAIWord(item)),
+        aiGrammar: storedAIGrammar.map((item) => migrateAIGrammar(item)),
+        aiComparisons: storedAIComparisons.map((item) => migrateAIComparison(item)),
+        aiGenerations: storedAIGenerations.map((item) => migrateAIGeneration(item)),
+        aiUsage: storedAIUsage.map((item) => migrateAIUsage(item)),
+        aiExplanations: storedAIExplanations.map((item) => migrateAIExplanation(item)),
+        aiCollections: storedAICollections.map((item) => migrateAICollection(item)),
+        aiContentReports: storedAIContentReports.map((item) => migrateAIContentReport(item)),
       };
     } catch (error) {
       await completed.catch(() => undefined);
@@ -350,6 +471,14 @@ export class IndexedDbLearningRepository implements LearningRepository {
       const testStore = transaction.objectStore(STORES.testResults);
       const dailyStore = transaction.objectStore(STORES.dailyRecords);
       const planStore = transaction.objectStore(STORES.dailyPlans);
+      const aiWordStore = transaction.objectStore(STORES.aiWords);
+      const aiGrammarStore = transaction.objectStore(STORES.aiGrammar);
+      const aiComparisonStore = transaction.objectStore(STORES.aiComparisons);
+      const aiGenerationStore = transaction.objectStore(STORES.aiGenerations);
+      const aiUsageStore = transaction.objectStore(STORES.aiUsage);
+      const aiExplanationStore = transaction.objectStore(STORES.aiExplanations);
+      const aiCollectionStore = transaction.objectStore(STORES.aiCollections);
+      const aiReportStore = transaction.objectStore(STORES.aiContentReports);
 
       for (const store of [
         wordStore,
@@ -359,6 +488,14 @@ export class IndexedDbLearningRepository implements LearningRepository {
         testStore,
         dailyStore,
         planStore,
+        aiWordStore,
+        aiGrammarStore,
+        aiComparisonStore,
+        aiGenerationStore,
+        aiUsageStore,
+        aiExplanationStore,
+        aiCollectionStore,
+        aiReportStore,
       ]) {
         store.clear();
       }
@@ -372,6 +509,14 @@ export class IndexedDbLearningRepository implements LearningRepository {
       snapshot.testResults.forEach((item) => testStore.put(item));
       snapshot.dailyRecords.forEach((item) => dailyStore.put(item));
       snapshot.dailyPlans.forEach((item) => planStore.put(item));
+      snapshot.aiWords.forEach((item) => aiWordStore.put(item));
+      snapshot.aiGrammar.forEach((item) => aiGrammarStore.put(item));
+      snapshot.aiComparisons.forEach((item) => aiComparisonStore.put(item));
+      snapshot.aiGenerations.forEach((item) => aiGenerationStore.put(item));
+      snapshot.aiUsage.forEach((item) => aiUsageStore.put(item));
+      snapshot.aiExplanations.forEach((item) => aiExplanationStore.put(item));
+      snapshot.aiCollections.forEach((item) => aiCollectionStore.put(item));
+      snapshot.aiContentReports.forEach((item) => aiReportStore.put(item));
     });
   }
 

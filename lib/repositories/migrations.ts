@@ -1,5 +1,10 @@
 import { REVIEW_ALGORITHM_VERSION } from "../constants";
 import type {
+  AIContentReport,
+  AIExplanationRecord,
+  AIGenerationRecord,
+  AISavedCollection,
+  AIUsageRecord,
   DailyPlan,
   DailyRecord,
   GrammarProgress,
@@ -7,10 +12,13 @@ import type {
   LearningStatus,
   MasteryRating,
   MistakeRecord,
+  GrammarComparison,
+  GrammarPoint,
   ReviewState,
   StudyMode,
   TestResult,
   WordProgress,
+  WordPair,
 } from "../models";
 
 type UnknownRecord = Record<string, unknown>;
@@ -318,6 +326,53 @@ export function migrateDailyPlan(value: unknown): DailyPlan {
   };
 }
 
+export function migrateAIWord(value: unknown): WordPair {
+  const record = isRecord(value) ? value : {};
+  return {
+    ...(record as unknown as WordPair),
+    id: stringValue(record.id, "unknown-ai-word"),
+    source: "ai-generated",
+  };
+}
+
+export function migrateAIGrammar(value: unknown): GrammarPoint {
+  const record = isRecord(value) ? value : {};
+  return {
+    ...(record as unknown as GrammarPoint),
+    id: stringValue(record.id, "unknown-ai-grammar"),
+    source: "ai-generated",
+  };
+}
+
+export function migrateAIComparison(value: unknown): GrammarComparison {
+  const record = isRecord(value) ? value : {};
+  return {
+    ...(record as unknown as GrammarComparison),
+    id: stringValue(record.id, "unknown-ai-comparison"),
+    source: "ai-generated",
+  };
+}
+
+export function migrateAIGeneration(value: unknown): AIGenerationRecord {
+  return value as AIGenerationRecord;
+}
+
+export function migrateAIUsage(value: unknown): AIUsageRecord {
+  return value as AIUsageRecord;
+}
+
+export function migrateAIExplanation(value: unknown): AIExplanationRecord {
+  return value as AIExplanationRecord;
+}
+
+export function migrateAICollection(value: unknown): AISavedCollection {
+  return value as AISavedCollection;
+}
+
+export function migrateAIContentReport(value: unknown): AIContentReport {
+  return value as AIContentReport;
+}
+
 export function migrateLearningSnapshot(value: unknown): LearningSnapshot {
   const record = isRecord(value) ? value : {};
   return {
@@ -341,6 +396,30 @@ export function migrateLearningSnapshot(value: unknown): LearningSnapshot {
       : [],
     dailyPlans: Array.isArray(record.dailyPlans)
       ? record.dailyPlans.map((item) => migrateDailyPlan(item))
+      : [],
+    aiWords: Array.isArray(record.aiWords)
+      ? record.aiWords.filter((item) => isRecord(item) && typeof item.id === "string").map((item) => migrateAIWord(item))
+      : [],
+    aiGrammar: Array.isArray(record.aiGrammar)
+      ? record.aiGrammar.filter((item) => isRecord(item) && typeof item.id === "string").map((item) => migrateAIGrammar(item))
+      : [],
+    aiComparisons: Array.isArray(record.aiComparisons)
+      ? record.aiComparisons.filter((item) => isRecord(item) && typeof item.id === "string").map((item) => migrateAIComparison(item))
+      : [],
+    aiGenerations: Array.isArray(record.aiGenerations)
+      ? record.aiGenerations.filter((item) => isRecord(item) && typeof item.id === "string").map((item) => migrateAIGeneration(item))
+      : [],
+    aiUsage: Array.isArray(record.aiUsage)
+      ? record.aiUsage.filter((item) => isRecord(item) && typeof item.id === "string").map((item) => migrateAIUsage(item))
+      : [],
+    aiExplanations: Array.isArray(record.aiExplanations)
+      ? record.aiExplanations.filter((item) => isRecord(item) && typeof item.id === "string").map((item) => migrateAIExplanation(item))
+      : [],
+    aiCollections: Array.isArray(record.aiCollections)
+      ? record.aiCollections.filter((item) => isRecord(item) && typeof item.id === "string").map((item) => migrateAICollection(item))
+      : [],
+    aiContentReports: Array.isArray(record.aiContentReports)
+      ? record.aiContentReports.filter((item) => isRecord(item) && typeof item.id === "string").map((item) => migrateAIContentReport(item))
       : [],
   };
 }

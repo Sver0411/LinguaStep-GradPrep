@@ -14,6 +14,7 @@ import {
   Play,
   RefreshCw,
   RotateCcw,
+  Sparkles,
 } from "lucide-react";
 import { dateKey, calculateStreak } from "@/lib/learning";
 import { calculateDailyPlanProgress } from "@/lib/daily-plan";
@@ -21,7 +22,7 @@ import { useLearning } from "@/context/LearningContext";
 import { PageHeader, ProgressBar } from "@/components/ui";
 
 export function HomeView() {
-  const { snapshot, settings, rebuildTodayPlan } = useLearning();
+  const { snapshot, settings, allWords, allGrammar, allComparisons, rebuildTodayPlan } = useLearning();
   const today = dateKey(new Date());
   const todayRecord = snapshot.dailyRecords.find((item) => item.date === today);
   const todayPlan = snapshot.dailyPlans.find((item) => item.date === today);
@@ -86,7 +87,7 @@ export function HomeView() {
   return (
     <div className="page-stack home-page">
       <PageHeader
-        eyebrow="第二阶段 · 今日学习"
+        eyebrow="第三阶段 · 今日学习"
         title={planProgress.percent >= 100 ? "今天的计划已经完成" : "按到期优先级稳步推进"}
         description={planProgress.percent >= 100 ? "做得很好。你可以自由学习，或让记忆在下一次到期前休息。" : "计划每天只生成一次；刷新页面不会重复添加任务。"}
         actions={<button className="button button-secondary" onClick={() => void rebuildTodayPlan()}><RefreshCw size={17} />按当前设置重算</button>}
@@ -131,9 +132,10 @@ export function HomeView() {
       <section className="free-study-section">
         <div className="section-title-row"><div><span className="section-kicker">FREE STUDY</span><h2>自由学习</h2></div><p>跳过计划，自行选择模式、数量和范围</p></div>
         <div className="free-study-grid">
-          <Link href="/words" className="study-entry"><span className="study-entry-icon japanese"><BookOpenText size={22} /></span><div><strong>单词与检索</strong><small>300 组 · 三种学习模式</small></div><ArrowRight size={18} /></Link>
-          <Link href="/grammar" className="study-entry"><span className="study-entry-icon grammar"><NotebookPen size={22} /></span><div><strong>语法与对比</strong><small>50 个语法 · 15 组对比</small></div><ArrowRight size={18} /></Link>
+          <Link href="/words" className="study-entry"><span className="study-entry-icon japanese"><BookOpenText size={22} /></span><div><strong>单词与检索</strong><small>{allWords.length} 组 · 三种学习模式</small></div><ArrowRight size={18} /></Link>
+          <Link href="/grammar" className="study-entry"><span className="study-entry-icon grammar"><NotebookPen size={22} /></span><div><strong>语法与对比</strong><small>{allGrammar.length} 个语法 · {allComparisons.length} 组对比</small></div><ArrowRight size={18} /></Link>
           <Link href="/test" className="study-entry"><span className="study-entry-icon test"><CircleAlert size={22} /></span><div><strong>自定义测试</strong><small>语言、来源、难度和反馈方式</small></div><ArrowRight size={18} /></Link>
+          <Link href="/ai" className="study-entry"><span className="study-entry-icon grammar"><Sparkles size={22} /></span><div><strong>AI 助学</strong><small>生成词卡、语法和练习题</small></div><ArrowRight size={18} /></Link>
         </div>
       </section>
     </div>
