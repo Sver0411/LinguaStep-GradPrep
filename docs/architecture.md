@@ -2,80 +2,86 @@
 
 ## 目标与边界
 
-第一阶段优先保证真实学习闭环、浏览器本地持久化和低维护成本。应用无登录、无服务端业务数据、无在线 AI 调用；所有内置学习内容随构建产物发布，因此断网后仍可学习和测试。
+第二阶段面向单人、本地优先的长期学习：复习算法和数据升级必须可解释、可测试、可恢复；页面不能直接耦合 IndexedDB。当前无登录、无云端业务数据、无在线 AI 调用，也不实现 PWA、发音或自由输入题型。
 
 ## 分层
 
 ```text
-页面视图 components/views
-        ↓
-状态编排 context/LearningContext
-        ↓
-领域纯函数 lib/learning
-        ↓
-仓库接口 lib/repositories/types
-     ↙             ↘
-IndexedDB          Memory fallback
+页面 views / 练习组件 / 图表
+              ↓
+      LearningContext 编排
+       ↙       ↓        ↘
+学习领域逻辑  每日计划   搜索/统计
+              ↓
+      LearningRepository
+         ↙           ↘
+ IndexedDB v2      Memory fallback
 
 设置 → LocalStorageSettingsRepository
-AI   → AiService → MockAiService（第一阶段）
+AI   → AiService → MockAiService（禁用）
 ```
 
-- **视图层**只处理展示、键盘和点击交互。
-- **Context**组合一次学习产生的单词进度、每日记录、错题和测试结果，并原子保存快照。
-- **领域层**是无 UI 依赖的纯函数，负责掌握度、基础复习字段、判题、错题进出与连续天数。
-- **仓库层**定义统一接口。未来云端同步通过新增实现替换，不需要改页面组件。
+- 视图层只处理展示、键盘、表单和当前会话状态。
+- Context 把一次操作涉及的词汇/语法进度、每日记录、错题和测试结果合并为一致快照，并通过 Web Locks 和 BroadcastChannel 降低多标签页覆盖风险。
+- 领域层由纯函数组成，负责复习调度、出题、判题、错题生命周期、计划和统计。
+- 仓库层定义统一接口；IndexedDB 打开或写入失败时切换内存仓库，并向界面暴露降级状态。
+- 迁移层对 v1/v2 记录均保持幂等，可在数据库升级和快照读取时重复调用。
 
 ## 路由
 
 | 路径 | 页面 |
 | --- | --- |
-| `/` | 今日首页 |
-| `/words` | 单词学习与词库 |
-| `/grammar` | 语法讲解与练习 |
-| `/test` | 日英混合测试 |
-| `/mistakes` | 错题本 |
-| `/favorites` | 收藏 |
-| `/stats` | 学习统计 |
-| `/settings` | 设置 |
+| `/` | 今日计划、概览和下一步建议 |
+| `/words` | 三模式词卡、到期队列、搜索与词库 |
+| `/grammar` | 日语、英语语法与日英对比 |
+| `/test` | 可配置测试与分项结果 |
+| `/mistakes` | 错题生命周期、历史和专项练习 |
+| `/favorites` | 单词、语法和对比收藏 |
+| `/stats` | 7/30 天趋势与掌握分布 |
+| `/settings` | 学习计划、外观和数据重置 |
 
-路由由 App Router 捕获，应用壳根据当前路径渲染对应视图。桌面端侧栏和手机端底栏使用真实链接，可刷新、收藏或直接访问。
+应用壳使用真实链接，允许刷新和直接访问。桌面为侧栏，860px 以下切换为顶部品牌栏与底部导航；学习和测试会话进入专注模式。
 
-## 本地存储
+## 核心数据流
 
-IndexedDB 数据库名为 `lingua-step-learning`，目前版本为 1。
+```text
+用户评分/答题
+  → 领域纯函数计算 ReviewState、MistakeRecord、DailyRecord
+  → Context 合并当前快照
+  → Web Lock 内读取最新 IndexedDB 快照并合并本标签页变更
+  → 单事务保存七类数据
+  → BroadcastChannel 通知其他标签页
+```
 
-| Object Store | 主键 | 内容 |
-| --- | --- | --- |
-| `wordProgress` | `wordId` | 掌握度、次数、最近时间、未来复习字段 |
-| `grammarProgress` | `grammarId` | 学习与练习统计、未来复习字段 |
-| `mistakes` | `id` | 原题、错误次数、连续答对、优先级与历史状态 |
-| `favorites` | `contentId` | `word:` / `grammar:` 前缀的收藏 ID |
-| `testResults` | `id` | 完整答案、得分和完成时间 |
-| `dailyRecords` | `date` | 每日单词、语法、答题和正确数 |
+单词的 `combined`、`japanese`、`english` 三条 ReviewState 相互独立；聚合字段只用于快速统计和索引。语法使用同一个 v2 ReviewState 结构。完整字段和索引见 [本地存储](storage.md)。
 
-`LearningRepository` 同时提供完整快照与细粒度写入接口。当前状态编排使用快照事务，保证一次操作关联的多个数据族不会部分更新。数据库打开或事务失败时，应用切换到 `MemoryLearningRepository` 并显示降级提示。
+## 复习与计划
 
-localStorage 仅保存 `AppSettings`，键为 `lingua-step:settings`。读取时会校验枚举和正整数，损坏数据自动回到默认值。
+- `spaced-repetition.ts` 只接收旧状态、评分和时间，输出新的 ReviewState。
+- `daily-plan.ts` 在本地日期首次访问时生成一次计划；刷新不重复生成，跨日自动补建。
+- 到期队列按“遗忘程度权重 + 逾期时长”排序；暂停项不会进入队列。
+- 自动补足开启时，优先承接过去计划中仍未学习的新词与语法，再按内容库顺序填足。
 
-## 学习与复习逻辑
-
-- “认识”进入已掌握状态并按基础间隔延后复习；“模糊”次日复习；“不认识”进入短时复习并增加 lapse。
-- `ReviewSchedule` 已包含 `dueAt`、`intervalDays`、`easeFactor`、`repetitions`、`lapses`，第二阶段可在不改数据形状的前提下迁移到正式算法。
-- 错题再次答错会增加错误次数和优先级；答对会增加连续次数；达到 3 次后 `active=false`，历史仍保留。
-- 测试问题主体只来自已有单词或语法进度。单词干扰项可来自内置词库，但不会把未学词作为考查主体。
-- 连续学习天数允许从今天或昨天起算，避免当天尚未开始学习时过早清零。
+具体规则见 [间隔重复算法](spaced-repetition.md) 和 [每日计划](daily-plan.md)。
 
 ## 可访问性与响应式
 
-- 全站使用语义按钮、链接、表单标签、焦点轮廓和状态文本。
-- 单词卡支持 Space、1/2/3、左右方向键；专注模式支持 Esc。
-- 桌面端使用侧栏；小屏使用固定底部主导航和“更多”面板。
-- 主题支持浅色、深色和系统偏好，并尊重 `prefers-reduced-motion`。
+- 使用语义标题、链接、按钮、表单标签、状态文本和原生 progress。
+- 趋势和分布图包含 `role="img"`、可读标签、图例和精确数值，不只依赖颜色。
+- 单词卡支持 Space、1/2/3、左右方向键和 Esc；测试支持 1–4。
+- 破坏性操作使用焦点陷阱、Esc 关闭、返回触发点和再次勾选确认。
+- 支持浅色、深色、系统主题、较大字体、关闭动画和减少动态效果。
+
+## 测试策略
+
+- 纯领域单测：复习、计划、搜索、统计、判题和错题。
+- 内容校验：数量、ID 唯一性、难度分布、题型和 5 道语法练习约束。
+- 迁移与仓库：纯迁移幂等性、fake-indexeddb 的真实 v1 → v2 升级和重置边界。
+- 组件测试：词卡评分、计划、筛选、测试结果、错题和设置对话框。
+- 工作流集成测试：计划 → 学习 → 测试 → 错题 → 仓库持久化。
 
 ## 扩展点
 
-- 新建 `CloudLearningRepository` 可接入账号、数据库和多设备同步。
-- `ReviewSchedule` 可由 FSRS/SM-2 服务计算，而 UI 保持不变。
-- `AiService` 可替换为后端代理或本地个人测试实现。
-- 内容数组可改为静态分包、CMS 或数据库加载；`WordPair` 与 `GrammarPoint` 模型保持统一。
+- 第三阶段可用后端代理实现 AiService，但生成内容必须经过 schema、重复和质量校验。
+- 未来可以新增 CloudLearningRepository；这需要单独设计账号、冲突解决、删除标记和加密策略，不属于第二阶段。
+- 若升级为 FSRS，应通过新的 `algorithmVersion` 与独立迁移兼容现有 ReviewState，不在组件中重写调度逻辑。

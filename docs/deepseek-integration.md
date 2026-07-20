@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-第一阶段只提供 `AiService` 抽象、统一请求/结果类型与 `MockAiService`。模拟实现始终抛出“AI 生成功能将在后续版本开放”，设置页入口禁用；项目不会请求 DeepSeek，也不会要求用户填写 API Key。
+第二阶段仍只提供 `AiService` 抽象、统一请求/结果类型与 `MockAiService`。模拟实现始终抛出“AI 生成功能将在后续版本开放”，设置页入口禁用；项目不会请求 DeepSeek，也不会要求用户填写 API Key。
 
 ## 统一接口
 

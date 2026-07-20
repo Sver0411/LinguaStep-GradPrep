@@ -1,4 +1,5 @@
 import type {
+  DailyPlan,
   DailyRecord,
   GrammarProgress,
   LearningSnapshot,
@@ -23,9 +24,12 @@ export interface LearningRepository {
   setFavorites(contentIds: readonly string[]): Promise<void>;
   saveTestResult(result: TestResult): Promise<void>;
   upsertDailyRecord(record: DailyRecord): Promise<void>;
+  upsertDailyPlan(plan: DailyPlan): Promise<void>;
 
   /** Clears progress and history while retaining mistakes and favorites. */
   resetLearningProgress(): Promise<void>;
   resetMistakes(): Promise<void>;
+  resetTests(): Promise<void>;
+  resetFavorites(): Promise<void>;
   resetAllData(): Promise<void>;
 }

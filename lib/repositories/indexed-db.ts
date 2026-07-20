@@ -1,4 +1,5 @@
 import type {
+  DailyPlan,
   DailyRecord,
   GrammarProgress,
   LearningSnapshot,
@@ -7,9 +8,17 @@ import type {
   WordProgress,
 } from "../models";
 import type { LearningRepository } from "./types";
+import {
+  migrateDailyPlan,
+  migrateDailyRecord,
+  migrateGrammarProgressRecord,
+  migrateMistakeRecord,
+  migrateTestResult,
+  migrateWordProgressRecord,
+} from "./migrations";
 
 export const LEARNING_DATABASE_NAME = "lingua-step-learning";
-export const LEARNING_DATABASE_VERSION = 1;
+export const LEARNING_DATABASE_VERSION = 2;
 
 const STORES = {
   wordProgress: "wordProgress",
@@ -18,6 +27,7 @@ const STORES = {
   favorites: "favorites",
   testResults: "testResults",
   dailyRecords: "dailyRecords",
+  dailyPlans: "dailyPlans",
 } as const;
 
 type StoreName = (typeof STORES)[keyof typeof STORES];
@@ -28,11 +38,35 @@ const LEARNING_PROGRESS_STORES: StoreName[] = [
   STORES.grammarProgress,
   STORES.testResults,
   STORES.dailyRecords,
+  STORES.dailyPlans,
 ];
 
 interface FavoriteRecord {
   contentId: string;
   position?: number;
+}
+
+function ensureIndex(
+  store: IDBObjectStore,
+  name: string,
+  keyPath: string,
+): void {
+  if (!store.indexNames.contains(name)) {
+    store.createIndex(name, keyPath, { unique: false });
+  }
+}
+
+function migrateStore(
+  store: IDBObjectStore,
+  migrate: (value: unknown) => object,
+): void {
+  const request = store.openCursor();
+  request.onsuccess = () => {
+    const cursor = request.result;
+    if (!cursor) return;
+    cursor.update(migrate(cursor.value));
+    cursor.continue();
+  };
 }
 
 /** A recoverable signal that lets the application select the memory fallback. */
@@ -98,8 +132,12 @@ function openDatabase(): Promise<IDBDatabase> {
       return;
     }
 
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
       const database = request.result;
+      const transaction = request.transaction;
+      if (!transaction) {
+        throw new Error("IndexedDB upgrade transaction is unavailable.");
+      }
 
       if (!database.objectStoreNames.contains(STORES.wordProgress)) {
         database.createObjectStore(STORES.wordProgress, {
@@ -124,6 +162,37 @@ function openDatabase(): Promise<IDBDatabase> {
       }
       if (!database.objectStoreNames.contains(STORES.dailyRecords)) {
         database.createObjectStore(STORES.dailyRecords, { keyPath: "date" });
+      }
+      if (!database.objectStoreNames.contains(STORES.dailyPlans)) {
+        database.createObjectStore(STORES.dailyPlans, { keyPath: "date" });
+      }
+
+      const wordStore = transaction.objectStore(STORES.wordProgress);
+      const grammarStore = transaction.objectStore(STORES.grammarProgress);
+      const mistakeStore = transaction.objectStore(STORES.mistakes);
+      const testStore = transaction.objectStore(STORES.testResults);
+      const dailyStore = transaction.objectStore(STORES.dailyRecords);
+      const planStore = transaction.objectStore(STORES.dailyPlans);
+
+      ensureIndex(wordStore, "nextReviewAt", "nextReviewAt");
+      ensureIndex(wordStore, "lastStudiedAt", "lastStudiedAt");
+      ensureIndex(wordStore, "learningStatus", "learningStatus");
+      ensureIndex(grammarStore, "nextReviewAt", "nextReviewAt");
+      ensureIndex(grammarStore, "lastStudiedAt", "lastStudiedAt");
+      ensureIndex(grammarStore, "status", "status");
+      ensureIndex(mistakeStore, "lastWrongAt", "lastWrongAt");
+      ensureIndex(mistakeStore, "errorCount", "errorCount");
+      ensureIndex(mistakeStore, "state", "state");
+      ensureIndex(testStore, "completedAt", "completedAt");
+      ensureIndex(dailyStore, "date", "date");
+      ensureIndex(planStore, "generatedAt", "generatedAt");
+
+      if (event.oldVersion < 2) {
+        migrateStore(wordStore, migrateWordProgressRecord);
+        migrateStore(grammarStore, migrateGrammarProgressRecord);
+        migrateStore(mistakeStore, migrateMistakeRecord);
+        migrateStore(testStore, migrateTestResult);
+        migrateStore(dailyStore, migrateDailyRecord);
       }
     };
 
@@ -229,6 +298,9 @@ export class IndexedDbLearningRepository implements LearningRepository {
     const dailyRecords = getAll<DailyRecord>(
       transaction.objectStore(STORES.dailyRecords),
     );
+    const dailyPlans = getAll<DailyPlan>(
+      transaction.objectStore(STORES.dailyPlans),
+    );
 
     try {
       const values = await Promise.all([
@@ -238,13 +310,16 @@ export class IndexedDbLearningRepository implements LearningRepository {
         favorites,
         testResults,
         dailyRecords,
+        dailyPlans,
       ] as const);
       await completed;
 
       return {
-        wordProgress: values[0],
-        grammarProgress: values[1],
-        mistakes: values[2],
+        wordProgress: values[0].map((item) => migrateWordProgressRecord(item)),
+        grammarProgress: values[1].map((item) =>
+          migrateGrammarProgressRecord(item),
+        ),
+        mistakes: values[2].map((item) => migrateMistakeRecord(item)),
         favorites: values[3]
           .map((favorite, index) => ({
             contentId: favorite.contentId,
@@ -256,8 +331,9 @@ export class IndexedDbLearningRepository implements LearningRepository {
               left.contentId.localeCompare(right.contentId),
           )
           .map((favorite) => favorite.contentId),
-        testResults: values[4],
-        dailyRecords: values[5],
+        testResults: values[4].map((item) => migrateTestResult(item)),
+        dailyRecords: values[5].map((item) => migrateDailyRecord(item)),
+        dailyPlans: values[6].map((item) => migrateDailyPlan(item)),
       };
     } catch (error) {
       await completed.catch(() => undefined);
@@ -273,6 +349,7 @@ export class IndexedDbLearningRepository implements LearningRepository {
       const favoriteStore = transaction.objectStore(STORES.favorites);
       const testStore = transaction.objectStore(STORES.testResults);
       const dailyStore = transaction.objectStore(STORES.dailyRecords);
+      const planStore = transaction.objectStore(STORES.dailyPlans);
 
       for (const store of [
         wordStore,
@@ -281,6 +358,7 @@ export class IndexedDbLearningRepository implements LearningRepository {
         favoriteStore,
         testStore,
         dailyStore,
+        planStore,
       ]) {
         store.clear();
       }
@@ -293,6 +371,7 @@ export class IndexedDbLearningRepository implements LearningRepository {
       );
       snapshot.testResults.forEach((item) => testStore.put(item));
       snapshot.dailyRecords.forEach((item) => dailyStore.put(item));
+      snapshot.dailyPlans.forEach((item) => planStore.put(item));
     });
   }
 
@@ -332,12 +411,24 @@ export class IndexedDbLearningRepository implements LearningRepository {
     await this.put(STORES.dailyRecords, record);
   }
 
+  async upsertDailyPlan(plan: DailyPlan): Promise<void> {
+    await this.put(STORES.dailyPlans, plan);
+  }
+
   async resetLearningProgress(): Promise<void> {
     await this.clear(LEARNING_PROGRESS_STORES);
   }
 
   async resetMistakes(): Promise<void> {
     await this.clear([STORES.mistakes]);
+  }
+
+  async resetTests(): Promise<void> {
+    await this.clear([STORES.testResults]);
+  }
+
+  async resetFavorites(): Promise<void> {
+    await this.clear([STORES.favorites]);
   }
 
   async resetAllData(): Promise<void> {

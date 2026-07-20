@@ -1,4 +1,5 @@
 import type { GrammarPoint } from "@/lib/models";
+import { PHASE_TWO_GRAMMAR_POINTS } from "./grammar-phase2";
 
 type ExerciseDraft = Omit<
   GrammarPoint["exercises"][number],
@@ -17,7 +18,7 @@ function makeExercises(
   }));
 }
 
-export const GRAMMAR_POINTS: GrammarPoint[] = [
+const PHASE_ONE_GRAMMAR_POINTS: GrammarPoint[] = [
   {
     id: "jp-noni",
     title: "〜のに：明明……却……",
@@ -1717,3 +1718,7 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     source: "curated",
   },
 ];
+
+export const GRAMMAR_POINTS: GrammarPoint[] = PHASE_ONE_GRAMMAR_POINTS.concat(
+  PHASE_TWO_GRAMMAR_POINTS,
+);

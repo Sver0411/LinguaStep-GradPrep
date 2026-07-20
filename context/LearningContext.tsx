@@ -10,7 +10,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { GRAMMAR_POINTS } from "@/data/grammar";
+import { WORD_PAIRS } from "@/data/words";
 import { DEFAULT_SETTINGS, EMPTY_SNAPSHOT } from "@/lib/constants";
+import { generateDailyPlan } from "@/lib/daily-plan";
 import {
   dateKey,
   isAnswerCorrect,
@@ -21,12 +24,18 @@ import {
 } from "@/lib/learning";
 import type {
   AppSettings,
+  DailyPlan,
   GrammarProgress,
   LearningSnapshot,
   MasteryRating,
   MistakeRecord,
+  MistakeState,
+  QuestionSource,
+  StudyMode,
   TestAnswer,
+  TestMode,
   TestResult,
+  TestSourceFilter,
   WordProgress,
 } from "@/lib/models";
 import {
@@ -37,11 +46,23 @@ import {
   type LearningRepository,
   type SettingsRepository,
 } from "@/lib/repositories";
+import { migrateLearningSnapshot } from "@/lib/repositories/migrations";
 
-type ResetScope = "progress" | "mistakes" | "all";
-type FavoriteKind = "word" | "grammar";
+export type ResetScope =
+  | "progress"
+  | "tests"
+  | "mistakes"
+  | "favorites"
+  | "all";
+type FavoriteKind = "word" | "grammar" | "comparison";
 const DATA_LOCK_NAME = "lingua-step:data-write";
 const SYNC_CHANNEL_NAME = "lingua-step:data-sync";
+
+interface CompleteTestOptions {
+  mode: TestMode;
+  sourceFilter: TestSourceFilter;
+  startedAt: string;
+}
 
 interface LearningContextValue {
   snapshot: LearningSnapshot;
@@ -50,37 +71,45 @@ interface LearningContextValue {
   storageDegraded: boolean;
   focusMode: boolean;
   setFocusMode: (value: boolean) => void;
-  studyWord: (wordId: string, rating: MasteryRating) => Promise<WordProgress>;
+  studyWord: (
+    wordId: string,
+    rating: MasteryRating,
+    mode?: StudyMode,
+  ) => Promise<WordProgress>;
   completeGrammar: (
     grammarId: string,
     answers: TestAnswer[],
   ) => Promise<GrammarProgress>;
-  completeTest: (answers: TestAnswer[]) => Promise<TestResult>;
-  answerMistake: (mistakeId: string, selectedIndex: number) => Promise<MistakeRecord | null>;
+  completeTest: (
+    answers: TestAnswer[],
+    options?: Partial<CompleteTestOptions>,
+  ) => Promise<TestResult>;
+  answerMistake: (
+    mistakeId: string,
+    selectedIndex: number,
+  ) => Promise<MistakeRecord | null>;
+  setMistakeState: (mistakeId: string, state: MistakeState) => Promise<void>;
+  removeMistake: (mistakeId: string) => Promise<void>;
+  toggleMistakeFavorite: (mistakeId: string) => Promise<void>;
   toggleFavorite: (kind: FavoriteKind, id: string) => Promise<void>;
+  removeFavorites: (keys: readonly string[]) => Promise<void>;
   isFavorite: (kind: FavoriteKind, id: string) => boolean;
   updateSettings: (patch: Partial<AppSettings>) => void;
+  rebuildTodayPlan: () => Promise<DailyPlan>;
   resetData: (scope: ResetScope) => Promise<void>;
 }
 
 const LearningContext = createContext<LearningContextValue | null>(null);
 
 function cloneEmptySnapshot(): LearningSnapshot {
-  return {
-    wordProgress: [],
-    grammarProgress: [],
-    mistakes: [],
-    favorites: [],
-    testResults: [],
-    dailyRecords: [],
-  };
+  return migrateLearningSnapshot(EMPTY_SNAPSHOT);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function isLearningSnapshot(value: unknown): value is LearningSnapshot {
+function isLearningSnapshot(value: unknown): boolean {
   return (
     isRecord(value) &&
     Array.isArray(value.wordProgress) &&
@@ -105,14 +134,12 @@ function mergeKeyedChanges<T>(
   const previousMap = new Map(previous.map((item) => [keyOf(item), item]));
   const nextMap = new Map(next.map((item) => [keyOf(item), item]));
   const changedKeys = new Set<string>();
-
   nextMap.forEach((item, key) => {
     if (!equalValue(item, previousMap.get(key))) changedKeys.add(key);
   });
   previousMap.forEach((_item, key) => {
     if (!nextMap.has(key)) changedKeys.add(key);
   });
-
   return [
     ...latest.filter((item) => !changedKeys.has(keyOf(item))),
     ...[...changedKeys]
@@ -133,11 +160,15 @@ function mergeDailyChanges(
     "wordsStudied",
     "newWordsStudied",
     "reviewWordsStudied",
+    "japaneseWordsStudied",
+    "englishWordsStudied",
+    "combinedWordsStudied",
     "grammarStudied",
+    "japaneseGrammarStudied",
+    "englishGrammarStudied",
     "questionsAnswered",
     "correctAnswers",
   ] as const;
-
   previousMap.forEach((_item, date) => {
     if (!nextMap.has(date)) latestMap.delete(date);
   });
@@ -152,20 +183,10 @@ function mergeDailyChanges(
     const merged = { ...latestItem };
     fields.forEach((field) => {
       const delta = (nextItem[field] ?? 0) - (previousItem?.[field] ?? 0);
-      if (
-        field === "newWordsStudied" ||
-        field === "reviewWordsStudied"
-      ) {
-        if (nextItem[field] !== undefined || latestItem[field] !== undefined) {
-          merged[field] = (latestItem[field] ?? 0) + delta;
-        }
-      } else {
-        merged[field] = (latestItem[field] ?? 0) + delta;
-      }
+      merged[field] = (latestItem[field] ?? 0) + delta;
     });
     latestMap.set(date, merged);
   });
-
   return [...latestMap.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 
@@ -178,11 +199,8 @@ function mergeSnapshotChange(
     (favorite) => !previous.favorites.includes(favorite),
   );
   const removals = new Set(
-    previous.favorites.filter(
-      (favorite) => !next.favorites.includes(favorite),
-    ),
+    previous.favorites.filter((favorite) => !next.favorites.includes(favorite)),
   );
-
   return {
     wordProgress: mergeKeyedChanges(
       latest.wordProgress,
@@ -217,6 +235,12 @@ function mergeSnapshotChange(
       previous.dailyRecords,
       next.dailyRecords,
     ),
+    dailyPlans: mergeKeyedChanges(
+      latest.dailyPlans,
+      previous.dailyPlans,
+      next.dailyPlans,
+      (item) => item.date,
+    ),
   };
 }
 
@@ -230,9 +254,16 @@ async function withDataLock<T>(task: () => Promise<T>): Promise<T> {
 function applyTheme(settings: AppSettings): () => void {
   const media = window.matchMedia("(prefers-color-scheme: dark)");
   const update = () => {
-    const resolved = settings.theme === "system" ? (media.matches ? "dark" : "light") : settings.theme;
+    const resolved =
+      settings.theme === "system"
+        ? media.matches
+          ? "dark"
+          : "light"
+        : settings.theme;
     document.documentElement.dataset.theme = resolved;
-    document.documentElement.dataset.animations = settings.animations ? "on" : "off";
+    document.documentElement.dataset.animations =
+      settings.animations && !settings.reduceMotion ? "on" : "off";
+    document.documentElement.dataset.fontSize = settings.fontSize;
     document.documentElement.style.colorScheme = resolved;
   };
   update();
@@ -240,10 +271,29 @@ function applyTheme(settings: AppSettings): () => void {
   return () => media.removeEventListener("change", update);
 }
 
+function createPlan(
+  snapshot: LearningSnapshot,
+  settings: AppSettings,
+  now = new Date(),
+): DailyPlan {
+  return generateDailyPlan({
+    date: dateKey(now),
+    now: now.toISOString(),
+    settings,
+    words: WORD_PAIRS,
+    grammar: GRAMMAR_POINTS,
+    wordProgress: snapshot.wordProgress,
+    grammarProgress: snapshot.grammarProgress,
+    mistakes: snapshot.mistakes,
+    previousPlans: snapshot.dailyPlans,
+  });
+}
+
 export function LearningProvider({ children }: { children: ReactNode }) {
   const [snapshot, setSnapshot] = useState<LearningSnapshot>(EMPTY_SNAPSHOT);
   const snapshotRef = useRef<LearningSnapshot>(EMPTY_SNAPSHOT);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const settingsRef = useRef<AppSettings>(DEFAULT_SETTINGS);
   const [ready, setReady] = useState(false);
   const [storageDegraded, setStorageDegraded] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
@@ -261,10 +311,11 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         event.data.type === "snapshot" &&
         isLearningSnapshot(event.data.snapshot)
       ) {
-        snapshotRef.current = event.data.snapshot;
-        setSnapshot(event.data.snapshot);
+        const migrated = migrateLearningSnapshot(event.data.snapshot);
+        snapshotRef.current = migrated;
+        setSnapshot(migrated);
         if (repositoryRef.current instanceof MemoryLearningRepository) {
-          void repositoryRef.current.saveSnapshot(event.data.snapshot);
+          void repositoryRef.current.saveSnapshot(migrated);
         }
       }
     };
@@ -280,13 +331,18 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       const settingsRepository = new LocalStorageSettingsRepository();
       settingsRepositoryRef.current = settingsRepository;
       const storedSettings = settingsRepository.get();
+      settingsRef.current = storedSettings;
       if (!cancelled) setSettings(storedSettings);
-
       let repository: LearningRepository;
       try {
         if (!isIndexedDbSupported()) throw new Error("IndexedDB unavailable");
         repository = new IndexedDbLearningRepository();
-        const stored = await repository.getSnapshot();
+        let stored = migrateLearningSnapshot(await repository.getSnapshot());
+        const today = dateKey(new Date());
+        if (!stored.dailyPlans.some((plan) => plan.date === today)) {
+          stored = { ...stored, dailyPlans: [...stored.dailyPlans, createPlan(stored, storedSettings)] };
+          await repository.saveSnapshot(stored);
+        }
         if (cancelled) return;
         repositoryRef.current = repository;
         snapshotRef.current = stored;
@@ -294,9 +350,12 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       } catch {
         repository = new MemoryLearningRepository();
         if (cancelled) return;
+        const empty = cloneEmptySnapshot();
+        const withPlan = { ...empty, dailyPlans: [createPlan(empty, storedSettings)] };
+        await repository.saveSnapshot(withPlan);
         repositoryRef.current = repository;
-        snapshotRef.current = cloneEmptySnapshot();
-        setSnapshot(cloneEmptySnapshot());
+        snapshotRef.current = withPlan;
+        setSnapshot(withPlan);
         setStorageDegraded(true);
       } finally {
         if (!cancelled) setReady(true);
@@ -320,20 +379,19 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
   const persistSnapshot = useCallback(async (next: LearningSnapshot) => {
     const previous = snapshotRef.current;
-    let saved = next;
+    let saved = migrateLearningSnapshot(next);
     try {
       const repository = repositoryRef.current;
       if (repository) {
         saved = await withDataLock(async () => {
-          const latest = await repository.getSnapshot();
-          const merged = mergeSnapshotChange(latest, previous, next);
+          const latest = migrateLearningSnapshot(await repository.getSnapshot());
+          const merged = mergeSnapshotChange(latest, previous, saved);
           await repository.saveSnapshot(merged);
           return merged;
         });
       }
     } catch {
-      const fallback = new MemoryLearningRepository(next);
-      repositoryRef.current = fallback;
+      repositoryRef.current = new MemoryLearningRepository(saved);
       setStorageDegraded(true);
     }
     snapshotRef.current = saved;
@@ -341,24 +399,61 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     syncChannelRef.current?.postMessage({ type: "snapshot", snapshot: saved });
   }, []);
 
-  const studyWord = useCallback(
-    async (wordId: string, rating: MasteryRating) => {
-      const now = new Date().toISOString();
+  const rebuildTodayPlan = useCallback(async () => {
+    const current = snapshotRef.current;
+    const plan = createPlan(current, settingsRef.current);
+    await persistSnapshot({
+      ...current,
+      dailyPlans: [
+        ...current.dailyPlans.filter((item) => item.date !== plan.date),
+        plan,
+      ],
+    });
+    return plan;
+  }, [persistSnapshot]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const ensurePlan = () => {
+      const current = snapshotRef.current;
       const today = dateKey(new Date());
+      if (!current.dailyPlans.some((plan) => plan.date === today)) {
+        void rebuildTodayPlan();
+      }
+    };
+    ensurePlan();
+    const timer = window.setInterval(ensurePlan, 60_000);
+    return () => window.clearInterval(timer);
+  }, [ready, rebuildTodayPlan]);
+
+  const studyWord = useCallback(
+    async (
+      wordId: string,
+      rating: MasteryRating,
+      mode: StudyMode = settingsRef.current.defaultStudyMode,
+    ) => {
+      const nowDate = new Date();
+      const now = nowDate.toISOString();
       const current = snapshotRef.current;
       const previous = current.wordProgress.find((item) => item.wordId === wordId);
-      const progress = updateWordMastery(previous, wordId, rating, now);
+      const wasNew = !previous?.modes[mode];
+      const progress = updateWordMastery(previous, wordId, rating, now, mode);
+      const modeField =
+        mode === "japanese"
+          ? { japaneseWordsStudied: 1 }
+          : mode === "english"
+            ? { englishWordsStudied: 1 }
+            : { combinedWordsStudied: 1 };
       const next: LearningSnapshot = {
         ...current,
         wordProgress: [
           ...current.wordProgress.filter((item) => item.wordId !== wordId),
           progress,
         ],
-        dailyRecords: updateDailyRecord(current.dailyRecords, today, {
+        dailyRecords: updateDailyRecord(current.dailyRecords, dateKey(nowDate), {
           wordsStudied: 1,
-          ...(previous
-            ? { reviewWordsStudied: 1 }
-            : { newWordsStudied: 1 }),
+          ...(wasNew ? { newWordsStudied: 1 } : { reviewWordsStudied: 1 }),
+          ...modeField,
         }),
       };
       await persistSnapshot(next);
@@ -379,6 +474,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
           answer.question,
           answer.selectedIndex,
           now,
+          settingsRef.current.masteryStreak,
         );
         if (updated) {
           mistakes = [
@@ -394,8 +490,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
   const completeGrammar = useCallback(
     async (grammarId: string, answers: TestAnswer[]) => {
-      const now = new Date().toISOString();
-      const today = dateKey(new Date());
+      const nowDate = new Date();
+      const now = nowDate.toISOString();
       const current = snapshotRef.current;
       const normalizedAnswers = answers.map((answer) => ({
         ...answer,
@@ -412,6 +508,11 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         normalizedAnswers.length,
         now,
       );
+      const point = GRAMMAR_POINTS.find((item) => item.id === grammarId);
+      const languageDelta =
+        point?.language === "english"
+          ? { englishGrammarStudied: 1 }
+          : { japaneseGrammarStudied: 1 };
       const next: LearningSnapshot = {
         ...current,
         grammarProgress: [
@@ -423,10 +524,11 @@ export function LearningProvider({ children }: { children: ReactNode }) {
           normalizedAnswers,
           now,
         ),
-        dailyRecords: updateDailyRecord(current.dailyRecords, today, {
+        dailyRecords: updateDailyRecord(current.dailyRecords, dateKey(nowDate), {
           grammarStudied: 1,
           questionsAnswered: normalizedAnswers.length,
           correctAnswers: correct,
+          ...languageDelta,
         }),
       };
       await persistSnapshot(next);
@@ -436,8 +538,10 @@ export function LearningProvider({ children }: { children: ReactNode }) {
   );
 
   const completeTest = useCallback(
-    async (answers: TestAnswer[]) => {
-      const now = new Date().toISOString();
+    async (answers: TestAnswer[], options: Partial<CompleteTestOptions> = {}) => {
+      const completedDate = new Date();
+      const completedAt = completedDate.toISOString();
+      const startedAt = options.startedAt ?? completedAt;
       const normalizedAnswers = answers.map((answer) => ({
         ...answer,
         isCorrect: isAnswerCorrect(answer.question, answer.selectedIndex),
@@ -446,11 +550,19 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         (answer) => answer.isCorrect,
       ).length;
       const result: TestResult = {
-        id: `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        mode: "mixed",
+        id: `test-${completedDate.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
+        mode: options.mode ?? "mixed",
+        sourceFilter: options.sourceFilter ?? "all-learned",
         answers: normalizedAnswers,
         correctCount,
-        completedAt: now,
+        startedAt,
+        completedAt,
+        durationSeconds: Math.max(
+          0,
+          Math.round(
+            (completedDate.getTime() - new Date(startedAt).getTime()) / 1000,
+          ),
+        ),
       };
       const current = snapshotRef.current;
       const next: LearningSnapshot = {
@@ -458,13 +570,17 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         mistakes: applyAnswersToMistakes(
           current.mistakes,
           normalizedAnswers,
-          now,
+          completedAt,
         ),
         testResults: [...current.testResults, result],
-        dailyRecords: updateDailyRecord(current.dailyRecords, dateKey(new Date()), {
-          questionsAnswered: normalizedAnswers.length,
-          correctAnswers: correctCount,
-        }),
+        dailyRecords: updateDailyRecord(
+          current.dailyRecords,
+          dateKey(completedDate),
+          {
+            questionsAnswered: normalizedAnswers.length,
+            correctAnswers: correctCount,
+          },
+        ),
       };
       await persistSnapshot(next);
       return result;
@@ -477,28 +593,75 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       const current = snapshotRef.current;
       const existing = current.mistakes.find((item) => item.id === mistakeId);
       if (!existing) return null;
-      const now = new Date().toISOString();
+      const nowDate = new Date();
+      const now = nowDate.toISOString();
       const updated = updateMistakeRecord(
         existing,
         existing.question,
         selectedIndex,
         now,
+        settingsRef.current.masteryStreak,
       );
       if (!updated) return null;
       const correct = isAnswerCorrect(existing.question, selectedIndex);
-      const next: LearningSnapshot = {
+      await persistSnapshot({
         ...current,
         mistakes: [
           ...current.mistakes.filter((item) => item.id !== mistakeId),
           updated,
         ],
-        dailyRecords: updateDailyRecord(current.dailyRecords, dateKey(new Date()), {
+        dailyRecords: updateDailyRecord(current.dailyRecords, dateKey(nowDate), {
           questionsAnswered: 1,
           correctAnswers: correct ? 1 : 0,
         }),
-      };
-      await persistSnapshot(next);
+      });
       return updated;
+    },
+    [persistSnapshot],
+  );
+
+  const setMistakeState = useCallback(
+    async (mistakeId: string, state: MistakeState) => {
+      const current = snapshotRef.current;
+      await persistSnapshot({
+        ...current,
+        mistakes: current.mistakes.map((mistake) =>
+          mistake.id === mistakeId
+            ? {
+                ...mistake,
+                state,
+                active: state === "active" || state === "consolidating",
+                correctStreak: state === "active" ? 0 : mistake.correctStreak,
+              }
+            : mistake,
+        ),
+      });
+    },
+    [persistSnapshot],
+  );
+
+  const removeMistake = useCallback(
+    async (mistakeId: string) => {
+      const current = snapshotRef.current;
+      await persistSnapshot({
+        ...current,
+        mistakes: current.mistakes.filter((item) => item.id !== mistakeId),
+      });
+    },
+    [persistSnapshot],
+  );
+
+  const toggleMistakeFavorite = useCallback(
+    async (mistakeId: string) => {
+      const current = snapshotRef.current;
+      await persistSnapshot({
+        ...current,
+        mistakes: current.mistakes.map((mistake) =>
+          mistake.id === mistakeId
+            ? { ...mistake, favorite: !mistake.favorite }
+            : mistake,
+        ),
+      });
     },
     [persistSnapshot],
   );
@@ -518,14 +681,28 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     [persistSnapshot],
   );
 
+  const removeFavorites = useCallback(
+    async (keys: readonly string[]) => {
+      const remove = new Set(keys);
+      const current = snapshotRef.current;
+      await persistSnapshot({
+        ...current,
+        favorites: current.favorites.filter((item) => !remove.has(item)),
+      });
+    },
+    [persistSnapshot],
+  );
+
   const isFavorite = useCallback(
-    (kind: FavoriteKind, id: string) => snapshot.favorites.includes(`${kind}:${id}`),
+    (kind: FavoriteKind, id: string) =>
+      snapshot.favorites.includes(`${kind}:${id}`),
     [snapshot.favorites],
   );
 
   const updateSettings = useCallback((patch: Partial<AppSettings>) => {
     setSettings((current) => {
       const next = { ...current, ...patch };
+      settingsRef.current = next;
       settingsRepositoryRef.current?.save(next);
       return next;
     });
@@ -538,14 +715,12 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         const repository = repositoryRef.current;
         if (repository) {
           next = await withDataLock(async () => {
-            if (scope === "progress") {
-              await repository.resetLearningProgress();
-            } else if (scope === "mistakes") {
-              await repository.resetMistakes();
-            } else {
-              await repository.resetAllData();
-            }
-            return repository.getSnapshot();
+            if (scope === "progress") await repository.resetLearningProgress();
+            else if (scope === "tests") await repository.resetTests();
+            else if (scope === "mistakes") await repository.resetMistakes();
+            else if (scope === "favorites") await repository.resetFavorites();
+            else await repository.resetAllData();
+            return migrateLearningSnapshot(await repository.getSnapshot());
           });
         }
       } catch {
@@ -558,20 +733,30 @@ export function LearningProvider({ children }: { children: ReactNode }) {
                 grammarProgress: [],
                 testResults: [],
                 dailyRecords: [],
+                dailyPlans: [],
               }
-            : scope === "mistakes"
-              ? { ...current, mistakes: [] }
-              : cloneEmptySnapshot();
+            : scope === "tests"
+              ? { ...current, testResults: [] }
+              : scope === "mistakes"
+                ? { ...current, mistakes: [] }
+                : scope === "favorites"
+                  ? { ...current, favorites: [] }
+                  : cloneEmptySnapshot();
         repositoryRef.current = new MemoryLearningRepository(next);
         setStorageDegraded(true);
+      }
+      if (scope === "all") {
+        settingsRepositoryRef.current?.reset();
+        settingsRef.current = DEFAULT_SETTINGS;
+        setSettings(DEFAULT_SETTINGS);
+      }
+      if (!next.dailyPlans.some((plan) => plan.date === dateKey(new Date()))) {
+        next = { ...next, dailyPlans: [...next.dailyPlans, createPlan(next, settingsRef.current)] };
+        await repositoryRef.current?.saveSnapshot(next);
       }
       snapshotRef.current = next;
       setSnapshot(next);
       syncChannelRef.current?.postMessage({ type: "snapshot", snapshot: next });
-      if (scope === "all") {
-        settingsRepositoryRef.current?.reset();
-        setSettings(DEFAULT_SETTINGS);
-      }
     },
     [],
   );
@@ -588,9 +773,14 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       completeGrammar,
       completeTest,
       answerMistake,
+      setMistakeState,
+      removeMistake,
+      toggleMistakeFavorite,
       toggleFavorite,
+      removeFavorites,
       isFavorite,
       updateSettings,
+      rebuildTodayPlan,
       resetData,
     }),
     [
@@ -603,18 +793,32 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       completeGrammar,
       completeTest,
       answerMistake,
+      setMistakeState,
+      removeMistake,
+      toggleMistakeFavorite,
       toggleFavorite,
+      removeFavorites,
       isFavorite,
       updateSettings,
+      rebuildTodayPlan,
       resetData,
     ],
   );
 
-  return <LearningContext.Provider value={value}>{children}</LearningContext.Provider>;
+  return (
+    <LearningContext.Provider value={value}>{children}</LearningContext.Provider>
+  );
 }
 
 export function useLearning(): LearningContextValue {
   const context = useContext(LearningContext);
-  if (!context) throw new Error("useLearning must be used within LearningProvider");
+  if (!context) {
+    throw new Error("useLearning must be used within LearningProvider");
+  }
   return context;
+}
+
+export function mistakeCategory(source: QuestionSource): string {
+  if (source === "comparison") return "日英对比";
+  return source === "grammar" ? "语法" : "单词";
 }

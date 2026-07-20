@@ -1,4 +1,16 @@
 import { MISTAKE_MASTERY_STREAK } from "./constants";
+import {
+  localDateFromKey,
+  localDateKey,
+  safeTimestamp,
+  shiftLocalDateKey,
+} from "./date";
+import { summarizeWordProgress } from "./repositories/migrations";
+import {
+  applyReviewRating,
+  isReviewDue,
+  reviewUrgency,
+} from "./spaced-repetition";
 import type {
   ChoiceQuestion,
   DailyRecord,
@@ -6,25 +18,21 @@ import type {
   GrammarProgress,
   MasteryRating,
   MistakeRecord,
-  ReviewSchedule,
+  ReviewState,
+  StudyMode,
+  TestMode,
+  TestSourceFilter,
   WordPair,
   WordProgress,
 } from "./models";
 
-const DAY_MS = 86_400_000;
+export const dateKey = localDateKey;
 
-function addDays(iso: string, days: number): string {
-  return new Date(new Date(iso).getTime() + days * DAY_MS).toISOString();
-}
-
-function initialSchedule(now: string): ReviewSchedule {
-  return {
-    dueAt: now,
-    intervalDays: 0,
-    easeFactor: 2.3,
-    repetitions: 0,
-    lapses: 0,
-  };
+export function getWordModeState(
+  progress: WordProgress | undefined,
+  mode: StudyMode,
+): ReviewState | undefined {
+  return progress?.modes[mode];
 }
 
 export function updateWordMastery(
@@ -32,50 +40,14 @@ export function updateWordMastery(
   wordId: string,
   rating: MasteryRating,
   now: string,
+  mode: StudyMode = "combined",
 ): WordProgress {
-  const schedule = previous?.schedule ?? initialSchedule(now);
-  let nextSchedule: ReviewSchedule;
-
-  if (rating === "known") {
-    const intervalDays =
-      schedule.repetitions === 0
-        ? 3
-        : Math.max(3, Math.round(schedule.intervalDays * schedule.easeFactor));
-    nextSchedule = {
-      ...schedule,
-      dueAt: addDays(now, intervalDays),
-      intervalDays,
-      easeFactor: Math.min(2.8, schedule.easeFactor + 0.05),
-      repetitions: schedule.repetitions + 1,
-    };
-  } else if (rating === "fuzzy") {
-    nextSchedule = {
-      ...schedule,
-      dueAt: addDays(now, 1),
-      intervalDays: 1,
-      easeFactor: Math.max(1.3, schedule.easeFactor - 0.15),
-      repetitions: Math.max(0, schedule.repetitions - 1),
-    };
-  } else {
-    nextSchedule = {
-      ...schedule,
-      dueAt: new Date(new Date(now).getTime() + 10 * 60_000).toISOString(),
-      intervalDays: 0,
-      easeFactor: Math.max(1.3, schedule.easeFactor - 0.25),
-      repetitions: 0,
-      lapses: schedule.lapses + 1,
-    };
-  }
-
-  return {
+  const nextState = applyReviewRating(previous?.modes[mode], rating, now);
+  return summarizeWordProgress(
     wordId,
-    status: rating === "known" ? "learned" : "learning",
-    mastery: rating,
-    studyCount: (previous?.studyCount ?? 0) + 1,
-    firstStudiedAt: previous?.firstStudiedAt ?? now,
-    lastStudiedAt: now,
-    schedule: nextSchedule,
-  };
+    { ...(previous?.modes ?? {}), [mode]: nextState },
+    now,
+  );
 }
 
 export function updateGrammarProgress(
@@ -85,25 +57,20 @@ export function updateGrammarProgress(
   attempted: number,
   now: string,
 ): GrammarProgress {
-  const priorSchedule = previous?.schedule ?? initialSchedule(now);
   const ratio = attempted > 0 ? correct / attempted : 0;
-  const intervalDays = ratio >= 0.8 ? Math.max(3, priorSchedule.intervalDays * 2 || 3) : 1;
-
+  const rating: MasteryRating =
+    ratio >= 0.8 ? "known" : ratio >= 0.5 ? "fuzzy" : "unknown";
+  const review = applyReviewRating(previous?.review, rating, now);
   return {
     grammarId,
-    status: ratio >= 0.8 ? "learned" : "learning",
+    status: review.status,
     studyCount: (previous?.studyCount ?? 0) + 1,
     correctCount: (previous?.correctCount ?? 0) + correct,
     attemptCount: (previous?.attemptCount ?? 0) + attempted,
     firstStudiedAt: previous?.firstStudiedAt ?? now,
     lastStudiedAt: now,
-    schedule: {
-      ...priorSchedule,
-      dueAt: addDays(now, intervalDays),
-      intervalDays,
-      repetitions: priorSchedule.repetitions + (ratio >= 0.8 ? 1 : 0),
-      lapses: priorSchedule.lapses + (ratio < 0.6 ? 1 : 0),
-    },
+    nextReviewAt: review.nextReviewAt,
+    review,
   };
 }
 
@@ -119,41 +86,51 @@ export function updateMistakeRecord(
   question: ChoiceQuestion,
   selectedIndex: number,
   now: string,
+  masteryStreak = MISTAKE_MASTERY_STREAK,
 ): MistakeRecord | null {
   const correct = isAnswerCorrect(question, selectedIndex);
   if (correct && !previous) return null;
 
   if (correct && previous) {
     const correctStreak = previous.correctStreak + 1;
+    const mastered = correctStreak >= masteryStreak;
     return {
       ...previous,
       selectedIndex,
       correctStreak,
-      active: correctStreak < MISTAKE_MASTERY_STREAK,
+      active: !mastered,
+      state: mastered ? "mastered" : "consolidating",
       priority: Math.max(0, previous.priority - 1),
       lastAnsweredAt: now,
+      history: [
+        ...previous.history,
+        { answeredAt: now, selectedIndex, correct: true },
+      ],
     };
   }
 
   return {
     id: previous?.id ?? `mistake-${question.id}`,
+    contentRef: previous?.contentRef ?? {
+      source: question.source,
+      sourceId: question.sourceId,
+    },
     question,
     selectedIndex,
     errorCount: (previous?.errorCount ?? 0) + 1,
     correctStreak: 0,
     active: true,
-    priority: Math.min(5, (previous?.priority ?? 0) + 1),
+    state: "active",
+    priority: Math.min(10, (previous?.priority ?? 0) + 1),
+    favorite: previous?.favorite ?? false,
     firstWrongAt: previous?.firstWrongAt ?? now,
     lastWrongAt: now,
     lastAnsweredAt: now,
+    history: [
+      ...(previous?.history ?? []),
+      { answeredAt: now, selectedIndex, correct: false },
+    ],
   };
-}
-
-export function dateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }
 
 export function updateDailyRecord(
@@ -161,48 +138,94 @@ export function updateDailyRecord(
   date: string,
   delta: Partial<Omit<DailyRecord, "date">>,
 ): DailyRecord[] {
-  const current = records.find((item) => item.date === date) ?? {
-    date,
-    wordsStudied: 0,
-    grammarStudied: 0,
-    questionsAnswered: 0,
-    correctAnswers: 0,
-  };
-  const next: DailyRecord = {
-    date,
-    wordsStudied: current.wordsStudied + (delta.wordsStudied ?? 0),
-    ...((current.newWordsStudied !== undefined ||
-      delta.newWordsStudied !== undefined) && {
-      newWordsStudied:
-        (current.newWordsStudied ?? 0) + (delta.newWordsStudied ?? 0),
-    }),
-    ...((current.reviewWordsStudied !== undefined ||
-      delta.reviewWordsStudied !== undefined) && {
-      reviewWordsStudied:
-        (current.reviewWordsStudied ?? 0) + (delta.reviewWordsStudied ?? 0),
-    }),
-    grammarStudied: current.grammarStudied + (delta.grammarStudied ?? 0),
-    questionsAnswered: current.questionsAnswered + (delta.questionsAnswered ?? 0),
-    correctAnswers: current.correctAnswers + (delta.correctAnswers ?? 0),
-  };
+  const current = records.find((item) => item.date === date) ?? emptyDailyRecord(date);
+  const fields: Array<keyof Omit<DailyRecord, "date">> = [
+    "wordsStudied",
+    "newWordsStudied",
+    "reviewWordsStudied",
+    "japaneseWordsStudied",
+    "englishWordsStudied",
+    "combinedWordsStudied",
+    "grammarStudied",
+    "japaneseGrammarStudied",
+    "englishGrammarStudied",
+    "questionsAnswered",
+    "correctAnswers",
+  ];
+  const next = { ...current };
+  fields.forEach((field) => {
+    next[field] = current[field] + (delta[field] ?? 0);
+  });
   return [...records.filter((item) => item.date !== date), next].sort((a, b) =>
     a.date.localeCompare(b.date),
   );
 }
 
+export function emptyDailyRecord(date: string): DailyRecord {
+  return {
+    date,
+    wordsStudied: 0,
+    newWordsStudied: 0,
+    reviewWordsStudied: 0,
+    japaneseWordsStudied: 0,
+    englishWordsStudied: 0,
+    combinedWordsStudied: 0,
+    grammarStudied: 0,
+    japaneseGrammarStudied: 0,
+    englishGrammarStudied: 0,
+    questionsAnswered: 0,
+    correctAnswers: 0,
+  };
+}
+
 export function calculateStreak(dates: string[], today: string): number {
   const activity = new Set(dates);
-  const todayDate = new Date(`${today}T12:00:00`);
-  const yesterday = new Date(todayDate.getTime() - DAY_MS);
-  let cursor = activity.has(today) ? todayDate : yesterday;
-  if (!activity.has(dateKey(cursor))) return 0;
-
+  let cursor = activity.has(today) ? today : shiftLocalDateKey(today, -1);
+  if (!activity.has(cursor)) return 0;
   let streak = 0;
-  while (activity.has(dateKey(cursor))) {
+  while (activity.has(cursor)) {
     streak += 1;
-    cursor = new Date(cursor.getTime() - DAY_MS);
+    cursor = shiftLocalDateKey(cursor, -1);
   }
   return streak;
+}
+
+export function calculateLongestStreak(dates: string[]): number {
+  const unique = [...new Set(dates)].sort();
+  let longest = 0;
+  let current = 0;
+  let previous: string | undefined;
+  unique.forEach((date) => {
+    current =
+      previous && shiftLocalDateKey(previous, 1) === date ? current + 1 : 1;
+    longest = Math.max(longest, current);
+    previous = date;
+  });
+  return longest;
+}
+
+function optionCandidates(
+  word: WordPair,
+  vocabulary: WordPair[],
+  pick: (item: WordPair) => string,
+): string[] {
+  const samePart = vocabulary.filter(
+    (item) =>
+      item.id !== word.id &&
+      (item.japanese.partOfSpeech === word.japanese.partOfSpeech ||
+        item.english.partOfSpeech === word.english.partOfSpeech),
+  );
+  const sameDifficulty = vocabulary.filter(
+    (item) =>
+      item.id !== word.id &&
+      (item.japanese.difficulty === word.japanese.difficulty ||
+        item.english.difficulty === word.english.difficulty),
+  );
+  return [...samePart, ...sameDifficulty, ...vocabulary]
+    .filter((item, index, values) =>
+      values.findIndex((candidate) => candidate.id === item.id) === index,
+    )
+    .map(pick);
 }
 
 function buildOptions(
@@ -211,62 +234,239 @@ function buildOptions(
   seed: number,
 ): { options: [string, string, string, string]; correctIndex: number } {
   const unique = [...new Set(distractors.filter((item) => item !== correct))].slice(0, 3);
-  while (unique.length < 3) unique.push(`备选项 ${unique.length + 1}`);
-  const correctIndex = seed % 4;
+  if (unique.length < 3) return {
+    options: [correct, ...unique, ...Array.from({ length: 3 - unique.length }, () => "—")]
+      .slice(0, 4) as [string, string, string, string],
+    correctIndex: 0,
+  };
+  const correctIndex = Math.abs(seed) % 4;
   const values = [...unique];
   values.splice(correctIndex, 0, correct);
-  return {
-    options: values as [string, string, string, string],
-    correctIndex,
-  };
+  return { options: values as [string, string, string, string], correctIndex };
 }
 
-function createWordQuestion(
+function createWordQuestions(
   word: WordPair,
   vocabulary: WordPair[],
-  variant: number,
+  mode: TestMode,
   seed: number,
-): ChoiceQuestion {
-  const rotated = vocabulary
-    .slice(seed + 1)
-    .concat(vocabulary.slice(0, seed + 1));
-  const mode = variant % 5;
-  let prompt: string;
-  let correct: string;
-  let distractors: string[];
+): ChoiceQuestion[] {
+  const definitions =
+    mode === "japanese"
+      ? [
+          {
+            prompt: `“${word.meaningZh}”对应的日语是？`,
+            correct: word.japanese.term,
+            distractors: optionCandidates(word, vocabulary, (item) => item.japanese.term),
+          },
+          {
+            prompt: `日语“${word.japanese.term}”的中文含义是？`,
+            correct: word.meaningZh,
+            distractors: optionCandidates(word, vocabulary, (item) => item.meaningZh),
+          },
+        ]
+      : mode === "english"
+        ? [
+            {
+              prompt: `“${word.meaningZh}”对应的英语是？`,
+              correct: word.english.term,
+              distractors: optionCandidates(word, vocabulary, (item) => item.english.term),
+            },
+            {
+              prompt: `英语“${word.english.term}”的中文含义是？`,
+              correct: word.meaningZh,
+              distractors: optionCandidates(word, vocabulary, (item) => item.meaningZh),
+            },
+          ]
+        : [
+            {
+              prompt: `“${word.meaningZh}”对应的日语是？`,
+              correct: word.japanese.term,
+              distractors: optionCandidates(word, vocabulary, (item) => item.japanese.term),
+            },
+            {
+              prompt: `“${word.meaningZh}”对应的英语是？`,
+              correct: word.english.term,
+              distractors: optionCandidates(word, vocabulary, (item) => item.english.term),
+            },
+            {
+              prompt: `日语“${word.japanese.term}”对应的英语是？`,
+              correct: word.english.term,
+              distractors: optionCandidates(word, vocabulary, (item) => item.english.term),
+            },
+            {
+              prompt: `英语“${word.english.term}”对应的日语是？`,
+              correct: word.japanese.term,
+              distractors: optionCandidates(word, vocabulary, (item) => item.japanese.term),
+            },
+            {
+              prompt: `“${word.english.term} / ${word.japanese.term}”最准确的中文含义是？`,
+              correct: word.meaningZh,
+              distractors: optionCandidates(word, vocabulary, (item) => item.meaningZh),
+            },
+          ];
 
-  if (mode === 0) {
-    prompt = `“${word.meaningZh}”对应的日语是？`;
-    correct = word.japanese.term;
-    distractors = rotated.map((item) => item.japanese.term);
-  } else if (mode === 1) {
-    prompt = `“${word.meaningZh}”对应的英语是？`;
-    correct = word.english.term;
-    distractors = rotated.map((item) => item.english.term);
-  } else if (mode === 2) {
-    prompt = `日语“${word.japanese.term}”对应的英语是？`;
-    correct = word.english.term;
-    distractors = rotated.map((item) => item.english.term);
-  } else if (mode === 3) {
-    prompt = `英语“${word.english.term}”对应的日语是？`;
-    correct = word.japanese.term;
-    distractors = rotated.map((item) => item.japanese.term);
-  } else {
-    prompt = `“${word.english.term} / ${word.japanese.term}”最准确的中文含义是？`;
-    correct = word.meaningZh;
-    distractors = rotated.map((item) => item.meaningZh);
+  return definitions.map((definition, index) => {
+    const choice = buildOptions(
+      definition.correct,
+      definition.distractors,
+      seed + index,
+    );
+    return {
+      id: `word-${word.id}-${mode}-v${index}`,
+      source: "word",
+      sourceId: word.id,
+      prompt: definition.prompt,
+      options: choice.options,
+      correctIndex: choice.correctIndex,
+      explanation: `${word.japanese.term}（${word.japanese.reading ?? ""}）与 ${word.english.term} 对应“${word.meaningZh}”。${word.note}`,
+      language: mode,
+      difficulty:
+        mode === "english"
+          ? word.english.difficulty
+          : word.japanese.difficulty,
+      category: "vocabulary",
+    };
+  });
+}
+
+export interface TestGenerationOptions {
+  mode: TestMode;
+  sourceFilter: TestSourceFilter;
+  count: number;
+  now: string;
+  favorites?: readonly string[];
+  mistakes?: readonly MistakeRecord[];
+  difficulty?: string;
+  prioritizeMistakes?: boolean;
+}
+
+function modeWasStudied(progress: WordProgress, mode: TestMode): boolean {
+  if (mode === "mixed") return Object.keys(progress.modes).length > 0;
+  return Boolean(progress.modes[mode] ?? progress.modes.combined);
+}
+
+function passesTimeSource(
+  timestamp: string,
+  filter: TestSourceFilter,
+  now: string,
+): boolean {
+  if (filter === "all-learned") return true;
+  const today = localDateKey(new Date(now));
+  const studiedDate = localDateKey(new Date(timestamp));
+  if (filter === "today") return studiedDate === today;
+  if (filter === "recent-7") {
+    return studiedDate >= shiftLocalDateKey(today, -6) && studiedDate <= today;
   }
+  return true;
+}
 
-  const choice = buildOptions(correct, distractors, seed + variant);
-  return {
-    id: `word-${word.id}-v${mode}`,
-    source: "word",
-    sourceId: word.id,
-    prompt,
-    options: choice.options,
-    correctIndex: choice.correctIndex,
-    explanation: `${word.japanese.term}（${word.japanese.reading ?? ""}）和 ${word.english.term} 都可表达“${word.meaningZh}”。${word.note}`,
-  };
+export function createTestQuestions(
+  wordProgress: WordProgress[],
+  grammarProgress: GrammarProgress[],
+  vocabulary: WordPair[],
+  grammar: GrammarPoint[],
+  options: TestGenerationOptions,
+): ChoiceQuestion[] {
+  const nowTimestamp = safeTimestamp(options.now);
+  const favoriteIds = new Set(options.favorites ?? []);
+  const mistakeRefs = new Set(
+    (options.mistakes ?? []).map(
+      (mistake) => `${mistake.contentRef.source}:${mistake.contentRef.sourceId}`,
+    ),
+  );
+  const wordProgressMap = new Map(wordProgress.map((item) => [item.wordId, item]));
+  const grammarProgressMap = new Map(
+    grammarProgress.map((item) => [item.grammarId, item]),
+  );
+
+  const learnedWords = vocabulary.filter((word) => {
+    const progress = wordProgressMap.get(word.id);
+    if (!progress || !modeWasStudied(progress, options.mode)) return false;
+    if (options.difficulty) {
+      const difficulty =
+        options.mode === "english"
+          ? word.english.difficulty
+          : word.japanese.difficulty;
+      if (difficulty !== options.difficulty) return false;
+    }
+    if (options.sourceFilter === "favorites") {
+      return favoriteIds.has(`word:${word.id}`);
+    }
+    if (options.sourceFilter === "mistakes") {
+      return mistakeRefs.has(`word:${word.id}`);
+    }
+    if (options.sourceFilter === "due") {
+      const states =
+        options.mode === "mixed"
+          ? Object.values(progress.modes)
+          : [progress.modes[options.mode] ?? progress.modes.combined];
+      return states.some((state) => state && isReviewDue(state, nowTimestamp));
+    }
+    return passesTimeSource(progress.lastStudiedAt, options.sourceFilter, options.now);
+  });
+
+  const learnedGrammar = grammar.filter((point) => {
+    if (options.mode !== "mixed" && point.language !== options.mode) return false;
+    const progress = grammarProgressMap.get(point.id);
+    if (!progress) return false;
+    if (options.difficulty && point.level !== options.difficulty) return false;
+    if (options.sourceFilter === "favorites") {
+      return favoriteIds.has(`grammar:${point.id}`);
+    }
+    if (options.sourceFilter === "mistakes") {
+      return mistakeRefs.has(`grammar:${point.id}`);
+    }
+    if (options.sourceFilter === "due") {
+      return isReviewDue(progress.review, nowTimestamp);
+    }
+    return passesTimeSource(progress.lastStudiedAt, options.sourceFilter, options.now);
+  });
+
+  const orderedWords = options.prioritizeMistakes
+    ? [...learnedWords].sort(
+        (left, right) =>
+          Number(mistakeRefs.has(`word:${right.id}`)) -
+          Number(mistakeRefs.has(`word:${left.id}`)),
+      )
+    : learnedWords;
+  const orderedGrammar = options.prioritizeMistakes
+    ? [...learnedGrammar].sort(
+        (left, right) =>
+          Number(mistakeRefs.has(`grammar:${right.id}`)) -
+          Number(mistakeRefs.has(`grammar:${left.id}`)),
+      )
+    : learnedGrammar;
+  const wordCandidates = orderedWords.flatMap((word, index) =>
+    createWordQuestions(word, vocabulary, options.mode, index * 11),
+  );
+  const grammarCandidates = orderedGrammar.flatMap((point) =>
+    point.exercises.map((question) => ({
+      ...question,
+      language: point.language,
+      difficulty: point.level,
+      category: "grammar",
+    })),
+  );
+  const result: ChoiceQuestion[] = [];
+  let wordIndex = 0;
+  let grammarIndex = 0;
+  while (
+    result.length < Math.max(1, options.count) &&
+    (wordIndex < wordCandidates.length || grammarIndex < grammarCandidates.length)
+  ) {
+    const takeWord =
+      (result.length % 3 !== 2 && wordIndex < wordCandidates.length) ||
+      grammarIndex >= grammarCandidates.length;
+    if (takeWord) {
+      result.push(wordCandidates[wordIndex]);
+      wordIndex += 1;
+    } else {
+      result.push(grammarCandidates[grammarIndex]);
+      grammarIndex += 1;
+    }
+  }
+  return result;
 }
 
 export function createMixedTest(
@@ -276,80 +476,48 @@ export function createMixedTest(
   grammar: GrammarPoint[],
   count: number,
 ): ChoiceQuestion[] {
-  const learnedWordIds = new Set(wordProgress.map((item) => item.wordId));
-  const learnedGrammarIds = new Set(grammarProgress.map((item) => item.grammarId));
-  const learnedWords = vocabulary.filter((item) => learnedWordIds.has(item.id));
-  const learnedGrammar = grammar.filter((item) => learnedGrammarIds.has(item.id));
-  const wordCandidates: ChoiceQuestion[] = [];
-  const grammarCandidates: ChoiceQuestion[] = [];
-
-  learnedWords.forEach((word, index) => {
-    for (let variant = 0; variant < 5; variant += 1) {
-      wordCandidates.push(
-        createWordQuestion(word, vocabulary, variant, index * 7 + variant),
-      );
-    }
+  return createTestQuestions(wordProgress, grammarProgress, vocabulary, grammar, {
+    mode: "mixed",
+    sourceFilter: "all-learned",
+    count,
+    now: new Date().toISOString(),
   });
-  learnedGrammar.forEach((point) => {
-    grammarCandidates.push(...point.exercises);
-  });
-
-  const result: ChoiceQuestion[] = [];
-  let wordIndex = 0;
-  let grammarIndex = 0;
-  let preferWord = true;
-  const target = Math.max(1, count);
-
-  while (
-    result.length < target &&
-    (wordIndex < wordCandidates.length || grammarIndex < grammarCandidates.length)
-  ) {
-    if (
-      preferWord &&
-      wordIndex < wordCandidates.length ||
-      grammarIndex >= grammarCandidates.length
-    ) {
-      result.push(wordCandidates[wordIndex]);
-      wordIndex += 1;
-    } else {
-      result.push(grammarCandidates[grammarIndex]);
-      grammarIndex += 1;
-    }
-    preferWord = !preferWord;
-  }
-
-  return result;
-}
-
-export function dueWordCount(progress: WordProgress[], now: string): number {
-  const timestamp = new Date(now).getTime();
-  return progress.filter((item) => new Date(item.schedule.dueAt).getTime() <= timestamp)
-    .length;
 }
 
 export function needsWordReview(
   progress: WordProgress,
   nowTimestamp: number,
+  mode: StudyMode = "combined",
 ): boolean {
-  return (
-    progress.mastery !== "known" ||
-    new Date(progress.schedule.dueAt).getTime() <= nowTimestamp
-  );
+  const state = progress.modes[mode];
+  return Boolean(state && isReviewDue(state, nowTimestamp));
 }
 
-/** Unknown and fuzzy words come first, followed by the earliest due words. */
 export function compareWordReviewPriority(
   left: WordProgress,
   right: WordProgress,
+  mode: StudyMode = "combined",
+  nowTimestamp = Date.now(),
 ): number {
-  const masteryPriority: Record<MasteryRating, number> = {
-    unknown: 0,
-    fuzzy: 1,
-    known: 2,
-  };
+  const leftState = left.modes[mode];
+  const rightState = right.modes[mode];
+  if (!leftState) return 1;
+  if (!rightState) return -1;
   return (
-    masteryPriority[left.mastery] - masteryPriority[right.mastery] ||
-    left.schedule.dueAt.localeCompare(right.schedule.dueAt) ||
-    left.lastStudiedAt.localeCompare(right.lastStudiedAt)
+    reviewUrgency(rightState, nowTimestamp) - reviewUrgency(leftState, nowTimestamp) ||
+    leftState.nextReviewAt.localeCompare(rightState.nextReviewAt)
   );
+}
+
+export function dueWordCount(
+  progress: WordProgress[],
+  now: string,
+  mode: StudyMode = "combined",
+): number {
+  const timestamp = safeTimestamp(now);
+  return progress.filter((item) => needsWordReview(item, timestamp, mode)).length;
+}
+
+export function learningDateRangeStart(today: string, days: number): Date {
+  return localDateFromKey(shiftLocalDateKey(today, 1 - days));
 }

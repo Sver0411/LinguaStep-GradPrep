@@ -45,14 +45,50 @@ function normalizeSettings(
     value.revealMode === "together" || value.revealMode === "step-by-step"
       ? value.revealMode
       : fallback.revealMode;
+  const revealOrder =
+    value.revealOrder === "japanese-first" ||
+    value.revealOrder === "english-first" ||
+    value.revealOrder === "random"
+      ? value.revealOrder
+      : fallback.revealOrder;
+  const defaultStudyMode =
+    value.defaultStudyMode === "combined" ||
+    value.defaultStudyMode === "japanese" ||
+    value.defaultStudyMode === "english"
+      ? value.defaultStudyMode
+      : fallback.defaultStudyMode;
+  const weekendAdjustment =
+    value.weekendAdjustment === "same" ||
+    value.weekendAdjustment === "lighter" ||
+    value.weekendAdjustment === "heavier"
+      ? value.weekendAdjustment
+      : fallback.weekendAdjustment;
+  const fontSize =
+    value.fontSize === "standard" || value.fontSize === "large"
+      ? value.fontSize
+      : fallback.fontSize;
 
   return {
     theme,
     displayDensity,
     revealMode,
+    revealOrder,
+    defaultStudyMode,
     dailyNewWords: positiveInteger(
       value.dailyNewWords,
       fallback.dailyNewWords,
+    ),
+    dailyReviewLimit: positiveInteger(
+      value.dailyReviewLimit,
+      fallback.dailyReviewLimit,
+    ),
+    dailyGrammarCount: positiveInteger(
+      value.dailyGrammarCount,
+      fallback.dailyGrammarCount,
+    ),
+    dailyTestQuestions: positiveInteger(
+      value.dailyTestQuestions,
+      fallback.dailyTestQuestions,
     ),
     studyRoundSize: positiveInteger(
       value.studyRoundSize,
@@ -62,10 +98,29 @@ function normalizeSettings(
       value.grammarExerciseCount,
       fallback.grammarExerciseCount,
     ),
+    prioritizeMistakes:
+      typeof value.prioritizeMistakes === "boolean"
+        ? value.prioritizeMistakes
+        : fallback.prioritizeMistakes,
+    autoFillPlan:
+      typeof value.autoFillPlan === "boolean"
+        ? value.autoFillPlan
+        : fallback.autoFillPlan,
+    weekendAdjustment,
+    masteryStreak: positiveInteger(value.masteryStreak, fallback.masteryStreak),
+    immediateTestFeedback:
+      typeof value.immediateTestFeedback === "boolean"
+        ? value.immediateTestFeedback
+        : fallback.immediateTestFeedback,
     animations:
       typeof value.animations === "boolean"
         ? value.animations
         : fallback.animations,
+    reduceMotion:
+      typeof value.reduceMotion === "boolean"
+        ? value.reduceMotion
+        : fallback.reduceMotion,
+    fontSize,
   };
 }
 

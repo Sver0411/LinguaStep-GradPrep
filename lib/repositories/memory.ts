@@ -1,5 +1,6 @@
 import { EMPTY_SNAPSHOT } from "../constants";
 import type {
+  DailyPlan,
   DailyRecord,
   GrammarProgress,
   LearningSnapshot,
@@ -104,15 +105,32 @@ export class MemoryLearningRepository implements LearningRepository {
     );
   }
 
+  async upsertDailyPlan(plan: DailyPlan): Promise<void> {
+    this.snapshot.dailyPlans = replaceByKey(
+      this.snapshot.dailyPlans,
+      clone(plan),
+      (item) => item.date,
+    );
+  }
+
   async resetLearningProgress(): Promise<void> {
     this.snapshot.wordProgress = [];
     this.snapshot.grammarProgress = [];
     this.snapshot.testResults = [];
     this.snapshot.dailyRecords = [];
+    this.snapshot.dailyPlans = [];
   }
 
   async resetMistakes(): Promise<void> {
     this.snapshot.mistakes = [];
+  }
+
+  async resetTests(): Promise<void> {
+    this.snapshot.testResults = [];
+  }
+
+  async resetFavorites(): Promise<void> {
+    this.snapshot.favorites = [];
   }
 
   async resetAllData(): Promise<void> {

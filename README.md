@@ -2,52 +2,53 @@
 
 > 日语与英语，一起稳步进阶
 
-LinguaStep 是一个中文界面的个人日语与英语学习网页应用。第一阶段围绕“学习 → 测试 → 发现薄弱点 → 再练习”完成闭环，内置 100 组真实日英对应词、14 个日语语法点和 6 个英语语法点。无需登录，学习记录保存在当前浏览器中。
+LinguaStep 是一个中文界面的个人日语与英语学习网页应用。第二阶段已经形成“每日计划 → 三模式学习 → 到期复习 → 测试 → 错题巩固 → 统计反馈”的完整本地闭环。应用无需登录，不调用在线 AI；学习数据保存在当前浏览器。
 
-## 已实现功能
+## 第二阶段能力
 
-- 首页：今日完成量、剩余任务、待复习词、错题和连续学习天数
-- 单词：中 → 日英回想、同时/分步揭示、10/20/30 词轮次、完整学习总结
-- 语法：中文讲解、结构与接续、场景、细微差异、日英对比、每项 5 道练习
-- 测试：只从已学内容出题的日英混合四选一测试，逐题中文解析
-- 错题本：自动收录、优先级、重复练习、连续答对 3 次后移出活跃列表
-- 收藏：统一查看收藏的单词与语法
-- 统计：今日与累计学习、测试正确率、错题、连续学习天数
-- 设置：浅色/深色/跟随系统、学习偏好、二次确认的数据重置
-- 本地保存：IndexedDB 保存结构化学习数据，localStorage 保存轻量设置
-- 响应式：桌面侧栏、手机底部导航、专注学习模式和键盘快捷键
-- 离线内容：词库、语法、测试逻辑和本地保存均不依赖在线接口
+- 每日计划：按本地日期每天生成一次，组合新词、到期复习、逾期项、错题、语法和测试目标；支持周末强度、错题优先、昨日未完成任务接续和手动重算。
+- 间隔重复：可解释的 SM-2 衍生算法；“认识”从 4 天起逐步延长，“模糊”次日复习，“不认识”约 10 分钟后重试；逾期成功复习获得有限奖励。
+- 三条单词记忆轨迹：日英对照、只学日语、只学英语分别保存掌握度、稳定度、难度和下次复习时间。
+- 内容库：300 组日英对应词、35 个日语语法、15 个英语语法，每个语法点 5 道练习，另有 15 组日英语法语义对比。
+- 搜索筛选：覆盖中文、日语、假名、罗马音、英语、例句和搭配；支持等级、频率、掌握状态、收藏、错题与到期筛选。
+- 自定义测试：日语、英语、日英混合三种模式；可按今日、最近 7 天、错题、收藏、到期或全部已学内容出题，并设置难度、题数与反馈时机。
+- 错题生命周期：活跃、巩固、已掌握、归档四种状态，保留答题历史、优先级和独立收藏。
+- 收藏：统一管理单词、语法和日英对比，支持搜索、筛选、专项学习与批量取消收藏。
+- 学习统计：今日、本周、累计、连续天数、正确率、待复习与错题等 13 项概览；提供 7/30 天趋势和掌握分布图。
+- 设置与安全重置：计划参数、揭示方式、主题、字体、动画等均可配置；学习、测试、错题、收藏和全部数据可分别重置并要求二次确认。
+- 数据兼容：IndexedDB v1 自动原地升级到 v2，旧学习进度映射到日英对照轨迹，不清库、不丢收藏和历史记录。
 
-## 技术栈与选择理由
+## 技术栈
 
-- **React 19 + Next.js App Router API + Vinext**：成熟的组件与路由模型；当前构建保持 Cloudflare Worker 兼容，同时提供标准 Next.js 的 Vercel 构建入口。
-- **TypeScript（strict）**：数据模型、仓库接口和学习逻辑均有静态类型约束。
-- **原生 CSS 设计系统**：不增加运行时样式依赖，便于维护响应式、深色主题与可访问焦点状态。
-- **IndexedDB + Repository Pattern**：适合本地结构化数据；UI 不直接操作数据库，未来可替换云端实现。
-- **Lucide React**：统一、可访问的界面图标，避免使用表情符号代替核心图标。
-- **Vitest**：快速测试纯学习逻辑和仓库行为。
+- React 19、Next.js App Router API 与 Vinext
+- TypeScript strict
+- 原生 CSS 设计系统与 Lucide React
+- IndexedDB + Repository Pattern；localStorage 只保存设置
+- Vitest、fake-indexeddb、Testing Library 与 jsdom
 
-这套架构刻意不引入登录、复杂状态框架、完整 FSRS 或 AI SDK，避免第一阶段维护成本失控。
+应用刻意不引入账号、云同步、在线 AI、完整 FSRS、PWA、发音或自由输入题型，保持个人离线学习工具的边界清晰。
 
-## 目录结构
+## 目录
 
 ```text
-app/                    路由、全局样式、元数据与 Provider 入口
-components/             应用壳、通用组件和八个页面视图
-context/                学习状态编排；UI 与仓库之间的唯一入口
-data/                   100 组单词与 20 个语法知识点
-hooks/                  时间等客户端状态钩子
+app/                    路由、全局样式和 Provider 入口
+components/             应用壳、页面、词卡、练习与图表组件
+context/                状态编排、跨标签页合并与持久化
+data/                   300 组词、50 个语法、15 组语法对比
+hooks/                  时间与搜索防抖钩子
 lib/
-  ai/                   AI 服务抽象与第一阶段禁用实现
-  repositories/         IndexedDB、内存降级、localStorage 设置仓库
-  learning.ts           掌握度、错题、连续天数与出题纯逻辑
-  models.ts             集中类型模型和未来复习字段
-tests/                  核心逻辑与仓库单元测试
-docs/                   架构、路线图与 DeepSeek 接入方案
+  repositories/         IndexedDB v2、迁移、内存降级与设置仓库
+  spaced-repetition.ts  可解释的复习调度器
+  daily-plan.ts         每日计划生成与完成度
+  learning.ts           学习、测试、错题与连续天数领域逻辑
+  search.ts             单词和语法筛选
+  statistics.ts         趋势、分布和概览聚合
+tests/                  领域、迁移、IndexedDB、组件与工作流测试
+docs/                   架构、存储、算法、计划、迁移和路线图
 worker/                 Sites / Cloudflare Worker 构建入口
 ```
 
-## 安装与本地启动
+## 本地运行
 
 环境要求：Node.js `>= 22.13`。
 
@@ -56,53 +57,51 @@ npm install
 npm run dev
 ```
 
-开发服务器会输出本地访问地址，默认通常为 `http://localhost:3000`。
+默认访问地址通常为 `http://localhost:3000`。
 
-## 检查与构建
+## 质量检查与构建
 
 ```bash
-npm run typecheck       # TypeScript 严格类型检查
-npm run lint            # ESLint
-npm test                # Vitest 单元测试
-npm run build           # Sites / Cloudflare Worker 生产构建
-npm run build:vercel    # 标准 Next.js / Vercel 生产构建
+npm run typecheck
+npm run lint
+npm test
+npm run test:components
+npm run test:e2e
+npm run build
+npm run build:vercel
 ```
 
-## Vercel 部署
+`test:e2e` 是不依赖外部浏览器服务的关键工作流集成测试，覆盖计划生成、学习、测试、错题和持久化闭环；主要界面交互另由 Testing Library 组件测试覆盖。
 
-1. 将仓库推送到 GitHub、GitLab 或 Bitbucket，并在 Vercel 导入。
-2. Framework Preset 选择 **Next.js**。
-3. Build Command 设置为 `npm run build:vercel`。
-4. Install Command 使用 `npm install`，Output Directory 保持默认。
-5. 第一阶段无环境变量、数据库或 API Key，直接部署即可。
+## 部署
 
-Vercel 部署仍使用浏览器本地数据，不会在不同设备间同步。
+项目包含 `.openai/hosting.json`，可构建并部署到 OpenAI Sites。也保留标准 Next.js / Vercel 构建入口：
 
-## 本地数据说明
+1. 将仓库导入 Vercel。
+2. Framework Preset 选择 Next.js。
+3. Build Command 使用 `npm run build:vercel`。
+4. Install Command 使用 `npm install`，输出目录保持默认。
 
-IndexedDB 数据库 `lingua-step-learning` 使用六个对象仓库：单词进度、语法进度、错题、收藏、测试结果和每日记录。主题、显示密度、揭示模式与学习数量保存在 localStorage。若 IndexedDB 初始化失败，应用会显示提示并降级为当前页面内存记录。
+当前版本不需要环境变量或 API Key。不同设备之间不会同步本地学习数据。
 
-设置页提供三种独立重置：
+## 数据与迁移
 
-- 学习进度：清除单词、语法、测试与每日记录，保留错题和收藏；
-- 错题：只清除错题；
-- 全部数据：清除学习数据、收藏和设置。
+IndexedDB 数据库 `lingua-step-learning` 当前版本为 2，共七个对象仓库：单词进度、语法进度、错题、收藏、测试结果、每日记录和每日计划。打开旧版数据库时，浏览器在同一个升级事务中逐条迁移；事务失败会回滚，应用随后显示存储降级提示。
 
-所有重置都需要打开确认对话框并再次勾选确认，避免误触。
+详细说明：
 
-## 阶段规划
-
-- **第一阶段（已完成）**：本地学习闭环、真实内置内容、响应式主题、离线使用与核心单测。
-- **第二阶段**：正式间隔重复算法、每日计划、单语言模式、搜索筛选、趋势图表、内容扩充与云端仓库实现。
-- **第三阶段**：DeepSeek 生成单词卡、语法、测试和错题解释。
-
-DeepSeek 将支持两种未来接入方式：生产环境默认由后端代理读取服务端密钥；仅供个人本地测试时，可由设置页临时读取本地 API Key。当前 `MockAiService` 始终返回“尚未开放”，不会发出网络请求。详见 [DeepSeek 接入方案](docs/deepseek-integration.md)。
+- [架构说明](docs/architecture.md)
+- [本地存储](docs/storage.md)
+- [间隔重复算法](docs/spaced-repetition.md)
+- [每日计划](docs/daily-plan.md)
+- [v1 → v2 数据迁移](docs/data-migration.md)
+- [开发路线图](docs/roadmap.md)
+- [DeepSeek 第三阶段方案](docs/deepseek-integration.md)
 
 ## 已知限制
 
-- 复习间隔为第一阶段基础队列，并非完整 FSRS。
-- 无账号、云端同步、发音、拼写、自由输入翻译、导入导出和 AI 在线调用。
-- 测试题来自已经学习的内容；首次使用需先完成至少一张单词卡或一个语法练习。
-- 离线可使用已打包内容，但本阶段未注册完整 PWA Service Worker。
-
-更多说明见 [架构文档](docs/architecture.md) 与 [开发路线图](docs/roadmap.md)。
+- 没有账号、云同步、导入导出或跨浏览器迁移。
+- 测试只把已学内容作为题目主体；首次使用应先完成至少一张词卡或一个语法练习。
+- 复习器是可解释的 SM-2 衍生实现，不是完整 FSRS。
+- 断网后已加载页面和内置内容可继续使用，但当前没有注册完整 PWA Service Worker。
+- DeepSeek 入口保持禁用，不会保存密钥或发出模型请求。

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
-import type { MasteryRating, WordPair } from "@/lib/models";
+import type { MasteryRating, StudyMode, WordPair } from "@/lib/models";
 import { Button, ProgressBar } from "@/components/ui";
 
 type RatingCounts = Record<MasteryRating, number>;
@@ -21,11 +21,13 @@ const initialCounts: RatingCounts = { known: 0, fuzzy: 0, unknown: 0 };
 
 export function WordStudySession({
   items,
+  mode,
   onFinish,
   onRestart,
   onReviewWeak,
 }: {
   items: WordPair[];
+  mode: StudyMode;
   onFinish: () => void;
   onRestart: () => void;
   onReviewWeak: () => void;
@@ -44,14 +46,35 @@ export function WordStudySession({
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const current = items[index];
-  const answerVisible = revealStage >= 2;
+  const firstLanguage = useMemo(() => {
+    if (settings.revealOrder === "english-first") return "english";
+    if (settings.revealOrder === "random" && current) {
+      const value = [...current.id].reduce((sum, character) => sum + character.charCodeAt(0), 0);
+      return value % 2 === 0 ? "japanese" : "english";
+    }
+    return "japanese";
+  }, [current, settings.revealOrder]);
+  const singleLanguage = mode !== "combined";
+  const answerVisible = revealStage >= (singleLanguage ? 1 : 2);
+  const japaneseVisible =
+    mode === "japanese" ||
+    (mode === "combined" &&
+      (revealStage >= 2 || (revealStage === 1 && firstLanguage === "japanese")));
+  const englishVisible =
+    mode === "english" ||
+    (mode === "combined" &&
+      (revealStage >= 2 || (revealStage === 1 && firstLanguage === "english")));
   const alreadyRated = current ? ratings[current.id] : undefined;
 
   const reveal = useCallback(() => {
     setRevealStage((stage) =>
-      settings.revealMode === "together" ? 2 : Math.min(2, stage + 1),
+      singleLanguage
+        ? 1
+        : settings.revealMode === "together"
+          ? 2
+          : Math.min(2, stage + 1),
     );
-  }, [settings.revealMode]);
+  }, [settings.revealMode, singleLanguage]);
 
   const move = useCallback(
     (direction: -1 | 1) => {
@@ -70,7 +93,7 @@ export function WordStudySession({
       busyRef.current = true;
       setBusy(true);
       try {
-        await studyWord(current.id, rating);
+        await studyWord(current.id, rating, mode);
         const nextRatings = { ...ratings, [current.id]: rating };
         setRatings(nextRatings);
         if (Object.keys(nextRatings).length >= items.length) {
@@ -93,7 +116,7 @@ export function WordStudySession({
         setBusy(false);
       }
     },
-    [answerVisible, current, index, items, ratings, setFocusMode, studyWord],
+    [answerVisible, current, index, items, mode, ratings, setFocusMode, studyWord],
   );
 
   useEffect(() => {
@@ -136,7 +159,7 @@ export function WordStudySession({
         <span className="summary-icon"><Sparkles size={28} /></span>
         <span className="section-kicker">ROUND COMPLETE</span>
         <h1>这一轮完成了</h1>
-        <p>你已经完成 {items.length} 组日英单词，学习记录已保存。</p>
+        <p>你已经完成 {items.length} 组{mode === "combined" ? "日英对照" : mode === "japanese" ? "日语" : "英语"}单词，独立复习记录已保存。</p>
         <div className="summary-metrics">
           <div><span>本轮数量</span><strong>{items.length}</strong></div>
           <div className="known"><span>认识</span><strong>{counts.known}</strong></div>
@@ -169,7 +192,7 @@ export function WordStudySession({
   return (
     <section className="study-session" aria-live="polite">
       <div className="session-topline">
-        <span>日英对照学习</span>
+        <span>{mode === "combined" ? "日英对照" : mode === "japanese" ? "日语" : "英语"}学习</span>
         <strong>{index + 1} / {items.length}</strong>
       </div>
       <div className="session-progress"><span style={{ width: `${((index + 1) / items.length) * 100}%` }} /></div>
@@ -185,7 +208,7 @@ export function WordStudySession({
         <div className="prompt-side">
           <span className="card-side-label">中文提示</span>
           <h1>{current.meaningZh}</h1>
-          <p>想一想：日语和英语分别怎么表达？</p>
+          <p>想一想：{mode === "combined" ? "日语和英语分别" : mode === "japanese" ? "日语" : "英语"}怎么表达？</p>
         </div>
 
         {revealStage === 0 && (
@@ -196,7 +219,7 @@ export function WordStudySession({
           </button>
         )}
 
-        {revealStage >= 1 && (
+        {japaneseVisible && revealStage >= 1 && (
           <div className="answer-panel japanese-answer">
             <div className="answer-heading">
               <span className="language-label jp">日</span>
@@ -214,13 +237,13 @@ export function WordStudySession({
           </div>
         )}
 
-        {settings.revealMode === "step-by-step" && revealStage === 1 && (
+        {mode === "combined" && settings.revealMode === "step-by-step" && revealStage === 1 && (
           <button className="reveal-next-language" onClick={reveal} type="button">
-            再次点击或按 Space 揭示英语 <ArrowRight size={17} />
+            再次点击或按 Space 揭示{firstLanguage === "japanese" ? "英语" : "日语"} <ArrowRight size={17} />
           </button>
         )}
 
-        {revealStage >= 2 && (
+        {englishVisible && revealStage >= 1 && (
           <div className="answer-panel english-answer">
             <div className="answer-heading">
               <span className="language-label en">英</span>

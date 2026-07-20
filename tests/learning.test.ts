@@ -1,411 +1,300 @@
 import { describe, expect, it } from "vitest";
-
 import {
+  calculateLongestStreak,
   calculateStreak,
-  compareWordReviewPriority,
-  createMixedTest,
+  createTestQuestions,
+  getWordModeState,
   isAnswerCorrect,
-  needsWordReview,
   updateDailyRecord,
+  updateGrammarProgress,
   updateMistakeRecord,
   updateWordMastery,
 } from "../lib/learning";
-import type {
-  ChoiceQuestion,
-  GrammarPoint,
-  GrammarProgress,
-  MistakeRecord,
-  WordPair,
-  WordProgress,
-} from "../lib/models";
-
-const NOW = "2026-07-20T04:00:00.000Z";
-
-function makeQuestion(
-  id = "question-1",
-  source: ChoiceQuestion["source"] = "word",
-  sourceId = "word-1",
-): ChoiceQuestion {
-  return {
-    id,
-    source,
-    sourceId,
-    prompt: "请选择正确答案",
-    options: ["错误 A", "错误 B", "正确", "错误 C"],
-    correctIndex: 2,
-    explanation: "测试解析",
-  };
-}
-
-function makeWord(id: string, suffix: string): WordPair {
-  return {
-    id,
-    meaningZh: `含义${suffix}`,
-    japanese: {
-      term: `日本語${suffix}`,
-      reading: `にほんご${suffix}`,
-      romanization: `nihongo-${suffix}`,
-      partOfSpeech: "名词",
-      difficulty: "N5",
-      example: `日本語例文${suffix}`,
-      exampleZh: `日语例句${suffix}`,
-      collocations: [],
-    },
-    english: {
-      term: `English ${suffix}`,
-      phonetic: `/english-${suffix}/`,
-      partOfSpeech: "noun",
-      difficulty: "A1",
-      example: `English example ${suffix}`,
-      exampleZh: `英语例句${suffix}`,
-      collocations: [],
-    },
-    note: `备注${suffix}`,
-    highFrequency: true,
-    source: "curated",
-  };
-}
-
-function makeWordProgress(wordId: string): WordProgress {
-  return {
-    wordId,
-    status: "learned",
-    mastery: "known",
-    studyCount: 1,
-    firstStudiedAt: NOW,
-    lastStudiedAt: NOW,
-    schedule: {
-      dueAt: "2026-07-23T04:00:00.000Z",
-      intervalDays: 3,
-      easeFactor: 2.35,
-      repetitions: 1,
-      lapses: 0,
-    },
-  };
-}
-
-function makeGrammarProgress(grammarId: string): GrammarProgress {
-  return {
-    grammarId,
-    status: "learned",
-    studyCount: 1,
-    correctCount: 4,
-    attemptCount: 5,
-    firstStudiedAt: NOW,
-    lastStudiedAt: NOW,
-    schedule: {
-      dueAt: "2026-07-23T04:00:00.000Z",
-      intervalDays: 3,
-      easeFactor: 2.3,
-      repetitions: 1,
-      lapses: 0,
-    },
-  };
-}
-
-function makeGrammar(id: string, exercise: ChoiceQuestion): GrammarPoint {
-  return {
-    id,
-    title: `语法 ${id}`,
-    language: "japanese",
-    level: "N5",
-    explanation: "语法说明",
-    structure: "A + B",
-    connection: "接续说明",
-    scenarios: ["日常"],
-    nuance: "语气说明",
-    examples: [{ text: "例文", translationZh: "例句" }],
-    comparison: {
-      japanese: "日本語の例文",
-      english: "An English example",
-      translationZh: "对照例句",
-    },
-    commonErrors: [],
-    confusables: [],
-    exercises: [exercise],
-    source: "curated",
-  };
-}
+import { applyReviewRating } from "../lib/spaced-repetition";
+import type { MistakeRecord } from "../lib/models";
+import {
+  NOW,
+  makeGrammar,
+  makeGrammarProgress,
+  makeMistake,
+  makeQuestion,
+  makeReviewState,
+  makeWord,
+  makeWordProgress,
+} from "./fixtures";
 
 function requireMistake(value: MistakeRecord | null): MistakeRecord {
   expect(value).not.toBeNull();
-  if (value === null) {
-    throw new Error("Expected an active mistake record");
-  }
+  if (!value) throw new Error("Expected a mistake record");
   return value;
 }
 
-describe("updateWordMastery", () => {
-  it("creates a learned word and a three-day review for an initial known rating", () => {
-    const result = updateWordMastery(undefined, "word-1", "known", NOW);
-
-    expect(result).toEqual({
-      wordId: "word-1",
-      status: "learned",
+describe("phase-two spaced repetition", () => {
+  it("schedules a first known rating four days later", () => {
+    const state = applyReviewRating(undefined, "known", NOW);
+    expect(state).toMatchObject({
       mastery: "known",
-      studyCount: 1,
-      firstStudiedAt: NOW,
-      lastStudiedAt: NOW,
-      schedule: {
-        dueAt: "2026-07-23T04:00:00.000Z",
-        intervalDays: 3,
-        easeFactor: expect.closeTo(2.35, 10),
-        repetitions: 1,
-        lapses: 0,
-      },
+      status: "review",
+      intervalDays: 4,
+      reviewCount: 1,
+      correctStreak: 1,
+      isNew: false,
+      algorithmVersion: 2,
     });
+    expect(state.nextReviewAt).toBe("2026-07-24T04:00:00.000Z");
   });
 
-  it("shortens the review interval and ease after a fuzzy rating", () => {
-    const previous: WordProgress = {
-      ...makeWordProgress("word-1"),
-      studyCount: 4,
-      firstStudiedAt: "2026-07-01T04:00:00.000Z",
-      schedule: {
-        dueAt: "2026-07-21T04:00:00.000Z",
-        intervalDays: 4,
-        easeFactor: 2,
-        repetitions: 2,
-        lapses: 1,
-      },
-    };
+  it("extends intervals after consecutive known ratings and reaches mastered", () => {
+    const first = applyReviewRating(undefined, "known", NOW);
+    const second = applyReviewRating(first, "known", first.nextReviewAt);
+    const third = applyReviewRating(second, "known", second.nextReviewAt);
+    expect(second.intervalDays).toBeGreaterThan(first.intervalDays);
+    expect(third.intervalDays).toBeGreaterThan(second.intervalDays);
+    expect(third).toMatchObject({ correctStreak: 3, status: "mastered" });
+  });
 
-    expect(updateWordMastery(previous, "word-1", "fuzzy", NOW)).toEqual({
-      wordId: "word-1",
-      status: "learning",
+  it("schedules fuzzy for the next day and raises difficulty", () => {
+    const previous = makeReviewState("known", { stability: 8, difficulty: 4 });
+    const result = applyReviewRating(previous, "fuzzy", NOW);
+    expect(result).toMatchObject({
       mastery: "fuzzy",
-      studyCount: 5,
-      firstStudiedAt: "2026-07-01T04:00:00.000Z",
-      lastStudiedAt: NOW,
-      schedule: {
-        dueAt: "2026-07-21T04:00:00.000Z",
-        intervalDays: 1,
-        easeFactor: 1.85,
-        repetitions: 1,
-        lapses: 1,
-      },
-    });
-  });
-
-  it("schedules an unknown word in ten minutes and records a lapse", () => {
-    const previous: WordProgress = {
-      ...makeWordProgress("word-1"),
-      studyCount: 4,
-      firstStudiedAt: "2026-07-01T04:00:00.000Z",
-      schedule: {
-        dueAt: "2026-07-21T04:00:00.000Z",
-        intervalDays: 4,
-        easeFactor: 2,
-        repetitions: 2,
-        lapses: 1,
-      },
-    };
-
-    expect(updateWordMastery(previous, "word-1", "unknown", NOW)).toEqual({
-      wordId: "word-1",
       status: "learning",
-      mastery: "unknown",
-      studyCount: 5,
-      firstStudiedAt: "2026-07-01T04:00:00.000Z",
-      lastStudiedAt: NOW,
-      schedule: {
-        dueAt: "2026-07-20T04:10:00.000Z",
-        intervalDays: 0,
-        easeFactor: 1.75,
-        repetitions: 0,
-        lapses: 2,
-      },
+      intervalDays: 1,
+      correctStreak: 0,
+      lapses: previous.lapses,
+    });
+    expect(result.difficulty).toBeGreaterThan(previous.difficulty);
+  });
+
+  it("resets an unknown item to a ten-minute retry and records a lapse", () => {
+    const previous = makeReviewState("known", { stability: 10, lapses: 2 });
+    const result = applyReviewRating(previous, "unknown", NOW);
+    expect(result.nextReviewAt).toBe("2026-07-20T04:10:00.000Z");
+    expect(result).toMatchObject({
+      intervalDays: 0,
+      correctStreak: 0,
+      lapses: 3,
+      status: "learning",
     });
   });
+
+  it("gives a bounded stability bonus after an overdue successful review", () => {
+    const previous = makeReviewState("known", {
+      nextReviewAt: "2026-07-10T04:00:00.000Z",
+      intervalDays: 4,
+      stability: 4,
+    });
+    const result = applyReviewRating(previous, "known", NOW);
+    expect(result.stability).toBeGreaterThan(4);
+    expect(result.stability).toBeLessThan(20);
+  });
 });
 
-describe("word review queue", () => {
-  it("includes weak words immediately and known words only when due", () => {
-    const known = makeWordProgress("known");
-    const fuzzy = { ...makeWordProgress("fuzzy"), mastery: "fuzzy" as const };
-    const unknown = {
-      ...makeWordProgress("unknown"),
-      mastery: "unknown" as const,
-    };
-
-    expect(needsWordReview(known, new Date(NOW).getTime())).toBe(false);
-    expect(
-      needsWordReview(known, new Date("2026-07-24T04:00:00.000Z").getTime()),
-    ).toBe(true);
-    expect(needsWordReview(fuzzy, new Date(NOW).getTime())).toBe(true);
-    expect(needsWordReview(unknown, new Date(NOW).getTime())).toBe(true);
-  });
-
-  it("prioritizes unknown, then fuzzy, then known due words", () => {
-    const items: WordProgress[] = [
-      makeWordProgress("known"),
-      { ...makeWordProgress("fuzzy"), mastery: "fuzzy" },
-      { ...makeWordProgress("unknown"), mastery: "unknown" },
-    ];
-
-    expect(items.sort(compareWordReviewPriority).map((item) => item.wordId)).toEqual([
-      "unknown",
+describe("independent study modes", () => {
+  it("keeps combined, Japanese and English progress separately", () => {
+    const combined = updateWordMastery(undefined, "word-1", "known", NOW, "combined");
+    const japanese = updateWordMastery(
+      combined,
+      "word-1",
       "fuzzy",
-      "known",
-    ]);
+      "2026-07-20T05:00:00.000Z",
+      "japanese",
+    );
+    const english = updateWordMastery(
+      japanese,
+      "word-1",
+      "unknown",
+      "2026-07-20T06:00:00.000Z",
+      "english",
+    );
+    expect(getWordModeState(english, "combined")?.mastery).toBe("known");
+    expect(getWordModeState(english, "japanese")?.mastery).toBe("fuzzy");
+    expect(getWordModeState(english, "english")?.mastery).toBe("unknown");
+  });
+
+  it("maps grammar exercise accuracy onto the same review scheduler", () => {
+    const result = updateGrammarProgress(undefined, "grammar-1", 4, 5, NOW);
+    expect(result.status).toBe("review");
+    expect(result.review.mastery).toBe("known");
+    const weak = updateGrammarProgress(result, "grammar-1", 2, 5, NOW);
+    expect(weak.status).toBe("learning");
+    expect(weak.review.mastery).toBe("unknown");
   });
 });
 
-describe("choice questions and mistake review", () => {
+describe("choice questions and mistake lifecycle", () => {
   const question = makeQuestion();
 
-  it("judges a choice exclusively by its correct option index", () => {
+  it("judges a choice by its correct option index", () => {
     expect(isAnswerCorrect(question, 2)).toBe(true);
     expect(isAnswerCorrect(question, 0)).toBe(false);
-    expect(isAnswerCorrect(question, 3)).toBe(false);
   });
 
-  it("adds the first wrong answer to the active mistake list", () => {
+  it("creates an active record and appends answer history", () => {
     const result = requireMistake(
       updateMistakeRecord(undefined, question, 1, NOW),
     );
-
-    expect(result).toEqual({
-      id: "mistake-question-1",
-      question,
-      selectedIndex: 1,
+    expect(result).toMatchObject({
       errorCount: 1,
       correctStreak: 0,
+      state: "active",
       active: true,
-      priority: 1,
-      firstWrongAt: NOW,
-      lastWrongAt: NOW,
-      lastAnsweredAt: NOW,
     });
+    expect(result.contentRef).toEqual({ source: "word", sourceId: "word-1" });
+    expect(result.history).toHaveLength(1);
   });
 
-  it("raises priority on another wrong answer", () => {
+  it("moves through consolidating to mastered after three correct answers", () => {
+    const wrong = makeMistake(question);
     const first = requireMistake(
-      updateMistakeRecord(undefined, question, 1, NOW),
-    );
-    const repeated = requireMistake(
-      updateMistakeRecord(first, question, 0, "2026-07-20T06:00:00.000Z"),
-    );
-
-    expect(repeated.errorCount).toBe(2);
-    expect(repeated.correctStreak).toBe(0);
-    expect(repeated.priority).toBe(2);
-    expect(repeated.firstWrongAt).toBe(NOW);
-    expect(repeated.lastWrongAt).toBe("2026-07-20T06:00:00.000Z");
-  });
-
-  it("leaves the active mistake list after three consecutive correct answers", () => {
-    const wrong = requireMistake(
-      updateMistakeRecord(undefined, question, 1, NOW),
-    );
-    const firstCorrect = requireMistake(
       updateMistakeRecord(wrong, question, 2, "2026-07-20T05:00:00.000Z"),
     );
-    const secondCorrect = requireMistake(
-      updateMistakeRecord(firstCorrect, question, 2, "2026-07-20T06:00:00.000Z"),
+    const second = requireMistake(
+      updateMistakeRecord(first, question, 2, "2026-07-20T06:00:00.000Z"),
     );
-    const thirdCorrect = requireMistake(
-      updateMistakeRecord(secondCorrect, question, 2, "2026-07-20T07:00:00.000Z"),
+    const third = requireMistake(
+      updateMistakeRecord(second, question, 2, "2026-07-20T07:00:00.000Z"),
     );
+    expect(first.state).toBe("consolidating");
+    expect(second.state).toBe("consolidating");
+    expect(third).toMatchObject({ state: "mastered", active: false });
+    expect(third.history).toHaveLength(4);
+  });
 
-    expect(firstCorrect).toMatchObject({ correctStreak: 1, active: true });
-    expect(secondCorrect).toMatchObject({ correctStreak: 2, active: true });
-    expect(thirdCorrect).toMatchObject({
-      correctStreak: 3,
-      active: false,
-      priority: 0,
-    });
+  it("returns a mastered item to active after another wrong answer", () => {
+    const mastered = { ...makeMistake(question), state: "mastered" as const, active: false, correctStreak: 3 };
+    const result = requireMistake(
+      updateMistakeRecord(mastered, question, 0, "2026-07-21T04:00:00.000Z"),
+    );
+    expect(result).toMatchObject({ state: "active", active: true, correctStreak: 0 });
   });
 });
 
-describe("study activity", () => {
-  it("counts a consecutive streak starting today", () => {
-    expect(
-      calculateStreak(
-        ["2026-07-18", "2026-07-19", "2026-07-20"],
-        "2026-07-20",
-      ),
-    ).toBe(3);
-  });
-
-  it("starts from yesterday when there is no activity today", () => {
-    expect(
-      calculateStreak(
-        ["2026-07-16", "2026-07-17", "2026-07-18", "2026-07-19"],
-        "2026-07-20",
-      ),
-    ).toBe(4);
+describe("local-date activity", () => {
+  it("calculates current and longest streaks", () => {
+    const dates = ["2026-07-15", "2026-07-16", "2026-07-18", "2026-07-19", "2026-07-20"];
+    expect(calculateStreak(dates, "2026-07-20")).toBe(3);
+    expect(calculateLongestStreak(dates)).toBe(3);
     expect(calculateStreak(["2026-07-18"], "2026-07-20")).toBe(0);
   });
 
-  it("accumulates today's counters without changing other dates", () => {
-    const initial = [
-      {
-        date: "2026-07-19",
-        wordsStudied: 2,
-        grammarStudied: 1,
-        questionsAnswered: 4,
-        correctAnswers: 3,
-      },
-    ];
-    const withToday = updateDailyRecord(initial, "2026-07-20", {
-      wordsStudied: 3,
-      questionsAnswered: 2,
-      correctAnswers: 1,
+  it("accumulates all mode and review counters", () => {
+    const records = updateDailyRecord([], "2026-07-20", {
+      wordsStudied: 1,
+      newWordsStudied: 1,
+      japaneseWordsStudied: 1,
     });
-    const accumulated = updateDailyRecord(withToday, "2026-07-20", {
+    const result = updateDailyRecord(records, "2026-07-20", {
       wordsStudied: 2,
-      grammarStudied: 1,
+      reviewWordsStudied: 2,
+      englishWordsStudied: 2,
       questionsAnswered: 3,
       correctAnswers: 2,
     });
-
-    expect(accumulated).toEqual([
-      initial[0],
-      {
-        date: "2026-07-20",
-        wordsStudied: 5,
-        grammarStudied: 1,
-        questionsAnswered: 5,
-        correctAnswers: 3,
-      },
-    ]);
+    expect(result[0]).toMatchObject({
+      wordsStudied: 3,
+      newWordsStudied: 1,
+      reviewWordsStudied: 2,
+      japaneseWordsStudied: 1,
+      englishWordsStudied: 2,
+      questionsAnswered: 3,
+      correctAnswers: 2,
+    });
   });
 });
 
-describe("createMixedTest", () => {
-  it("only creates questions whose source item has been studied", () => {
-    const vocabulary = [makeWord("word-1", "一"), makeWord("word-2", "二")];
-    const learnedGrammarExercise = makeQuestion(
-      "grammar-question-1",
-      "grammar",
-      "grammar-1",
-    );
-    const unlearnedGrammarExercise = makeQuestion(
-      "grammar-question-2",
-      "grammar",
-      "grammar-2",
-    );
-    const grammar = [
-      makeGrammar("grammar-1", learnedGrammarExercise),
-      makeGrammar("grammar-2", unlearnedGrammarExercise),
-    ];
+describe("test generation", () => {
+  const vocabulary = [
+    makeWord("word-1", "一"),
+    makeWord("word-2", "二"),
+    makeWord("word-3", "三"),
+    makeWord("word-4", "四"),
+  ];
+  const grammar = [makeGrammar("grammar-1"), makeGrammar("grammar-2")];
 
-    const questions = createMixedTest(
-      [makeWordProgress("word-1")],
+  it("only uses studied source items and respects Japanese mode", () => {
+    const questions = createTestQuestions(
+      [makeWordProgress("word-1", "japanese")],
       [makeGrammarProgress("grammar-1")],
       vocabulary,
       grammar,
-      10,
+      {
+        mode: "japanese",
+        sourceFilter: "all-learned",
+        count: 10,
+        now: NOW,
+      },
     );
-
-    expect(questions).toHaveLength(6);
+    expect(questions.length).toBeGreaterThan(0);
     expect(
       questions.every((question) =>
         ["word-1", "grammar-1"].includes(question.sourceId),
       ),
     ).toBe(true);
-    expect(questions).toContainEqual(learnedGrammarExercise);
-    expect(questions).not.toContainEqual(unlearnedGrammarExercise);
+    expect(questions.every((question) => question.language !== "english")).toBe(true);
+  });
+
+  it("filters favorite and due sources", () => {
+    const due = makeWordProgress(
+      "word-1",
+      "combined",
+      makeReviewState("known", { nextReviewAt: "2026-07-19T04:00:00.000Z" }),
+    );
+    const favorite = createTestQuestions(
+      [due, makeWordProgress("word-2")],
+      [],
+      vocabulary,
+      [],
+      {
+        mode: "mixed",
+        sourceFilter: "favorites",
+        count: 10,
+        now: NOW,
+        favorites: ["word:word-2"],
+      },
+    );
+    expect(new Set(favorite.map((item) => item.sourceId))).toEqual(new Set(["word-2"]));
+
+    const dueQuestions = createTestQuestions(
+      [due, makeWordProgress("word-2")],
+      [],
+      vocabulary,
+      [],
+      { mode: "mixed", sourceFilter: "due", count: 10, now: NOW },
+    );
+    expect(new Set(dueQuestions.map((item) => item.sourceId))).toEqual(new Set(["word-1"]));
+  });
+
+  it("produces four unique options for normal vocabulary pools", () => {
+    const questions = createTestQuestions(
+      vocabulary.map((word) => makeWordProgress(word.id)),
+      [],
+      vocabulary,
+      [],
+      { mode: "mixed", sourceFilter: "all-learned", count: 15, now: NOW },
+    );
+    questions.forEach((question) => {
+      expect(question.options).toHaveLength(4);
+      expect(new Set(question.options).size).toBe(4);
+    });
+  });
+
+  it("places active mistake content first when prioritization is enabled", () => {
+    const mistakeQuestion = makeQuestion("mistake-word-3", "word", "word-3");
+    const questions = createTestQuestions(
+      vocabulary.map((word) => makeWordProgress(word.id)),
+      [],
+      vocabulary,
+      [],
+      {
+        mode: "mixed",
+        sourceFilter: "all-learned",
+        count: 1,
+        now: NOW,
+        mistakes: [makeMistake(mistakeQuestion)],
+        prioritizeMistakes: true,
+      },
+    );
+    expect(questions[0].sourceId).toBe("word-3");
   });
 });

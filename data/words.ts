@@ -1,6 +1,7 @@
 import type { WordPair } from "@/lib/models";
+import { PHASE_TWO_WORDS } from "./words-phase2";
 
-export const WORD_PAIRS: WordPair[] = [
+const PHASE_ONE_WORDS: WordPair[] = [
   {
     id: "word-001",
     meaningZh: "计划",
@@ -2601,4 +2602,12 @@ export const WORD_PAIRS: WordPair[] = [
     highFrequency: true,
     source: "curated",
   },
+];
+
+export const WORD_PAIRS: WordPair[] = [
+  ...PHASE_ONE_WORDS.map<WordPair>((word) => ({
+    ...word,
+    frequency: word.highFrequency ? "高频" : "常用",
+  })),
+  ...PHASE_TWO_WORDS,
 ];
