@@ -92,6 +92,7 @@ describe("phase-three AI components", () => {
   });
 
   it("edits masked secrets and tests the connection from settings", async () => {
+    mocked.ai = aiMock({ settings: { ...DEFAULT_AI_SETTINGS, connectionMode: "server" } });
     render(<AISettingsPanel />);
     const secret = screen.getByPlaceholderText("输入代理访问令牌") as HTMLInputElement;
     expect(secret.type).toBe("password");
