@@ -2,11 +2,12 @@ import type { AISettings, AppSettings, LearningSnapshot } from "./models";
 
 export const APP_NAME = "LinguaStep";
 export const APP_NAME_ZH = "日英阶梯";
-export const APP_VERSION = "0.4.0";
+export const APP_VERSION = "0.4.1";
 export const REVIEW_ALGORITHM_VERSION = 2;
 
 export const DEFAULT_SETTINGS: AppSettings = {
   theme: "system",
+  focusModeEnabled: true,
   displayDensity: "compact",
   revealMode: "together",
   revealOrder: "japanese-first",

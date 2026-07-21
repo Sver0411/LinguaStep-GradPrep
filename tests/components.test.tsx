@@ -237,6 +237,10 @@ describe("phase-two components", () => {
     expect(mocked.learning.updateSettings).toHaveBeenCalledWith({
       defaultStudyMode: "english",
     });
+    await userEvent.click(screen.getByRole("switch", { name: "学习专注模式" }));
+    expect(mocked.learning.updateSettings).toHaveBeenCalledWith({
+      focusModeEnabled: false,
+    });
     await userEvent.click(screen.getByRole("button", { name: /清空测试记录/ }));
     await userEvent.click(
       screen.getByRole("checkbox", { name: /我已了解影响/ }),

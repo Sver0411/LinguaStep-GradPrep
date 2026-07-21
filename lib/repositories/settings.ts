@@ -70,6 +70,10 @@ function normalizeSettings(
 
   return {
     theme,
+    focusModeEnabled:
+      typeof value.focusModeEnabled === "boolean"
+        ? value.focusModeEnabled
+        : fallback.focusModeEnabled,
     displayDensity,
     revealMode,
     revealOrder,

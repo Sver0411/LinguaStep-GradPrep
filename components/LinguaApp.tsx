@@ -27,12 +27,12 @@ const views = {
 
 export function LinguaApp() {
   const pathname = usePathname();
-  const { ready, storageDegraded, focusMode, setFocusMode } = useLearning();
+  const { ready, storageDegraded, focusMode, setFocusMode, settings } = useLearning();
   const section = pathname.split("/").filter(Boolean)[0] as keyof typeof views | undefined;
   const View = section && views[section] ? views[section] : HomeView;
 
   return (
-    <AppShell focusMode={focusMode} onExitFocus={() => setFocusMode(false)}>
+    <AppShell focusMode={focusMode && settings.focusModeEnabled} onExitFocus={() => setFocusMode(false)}>
       {!ready ? (
         <LoadingState />
       ) : (

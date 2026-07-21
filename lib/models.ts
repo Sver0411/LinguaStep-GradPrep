@@ -271,6 +271,7 @@ export interface DailyPlan {
 
 export interface AppSettings {
   theme: ThemeMode;
+  focusModeEnabled: boolean;
   displayDensity: DisplayDensity;
   revealMode: RevealMode;
   revealOrder: RevealOrder;
