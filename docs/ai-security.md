@@ -3,7 +3,7 @@
 ## 密钥
 
 - 服务器 Key 只读取 `process.env.DEEPSEEK_API_KEY`；不得添加客户端公开前缀。
-- BYOK 与代理令牌使用专用浏览器键，不进入 IndexedDB/AppSettings/URL/正文。
+- BYOK 与代理令牌使用专用浏览器键，不进入 IndexedDB/AppSettings/URL、学习数据或业务 JSON；发起 AI 操作时仅通过 HTTPS Server Action 的框架载荷临时传给服务端。
 - UI 默认遮挡，只显示少量前后字符；日志、错误、测试快照和响应不包含 Key。
 - `health` 只暴露是否配置。服务端映射上游状态，不回传上游错误正文。
 
@@ -11,7 +11,7 @@
 
 远程生产服务器模式必须同时具备服务器 Key 和 `AI_PROXY_ACCESS_TOKEN`。令牌使用 SHA-256 摘要后的常量时间比较。BYOK 不需要服务器 Key，但仍经过同源、限流、Schema 和内容校验。
 
-服务端检查 Origin 与请求 URL 同源、Content-Type 业务语义、64 KiB 请求体、单次数量、允许枚举和模型白名单。自定义 Header 会触发跨域预检，CSP `connect-src 'self'` 进一步限制浏览器端连接。
+Server Action 入口由 Vinext/React 的同源 CSRF 机制保护，并复用服务端的 64 KiB 请求体、令牌、内存限流、安全错误、单次数量、允许枚举和模型白名单检查。兼容路由额外检查 Origin 与请求 URL 同源。CSP `connect-src 'self'` 限制浏览器端连接，客户端不会直接联系 DeepSeek。
 
 ## Prompt 注入与输出
 
@@ -32,7 +32,7 @@
 ## 上线核查
 
 1. 搜索构建产物和页面源码，不得出现真实 Key。
-2. 请求 `/study-service/health`，只能看到布尔配置状态；旧 `/api/ai/health` 仅作兼容。
+2. 设置页 Server Action 与 `/study-service/health` 只能看到非敏感配置状态；旧 `/api/ai/health` 仅作兼容。
 3. 用错误 Key/令牌请求，响应不能回显输入。
 4. 跨域 Origin、超大正文、超量参数和未知字段必须被拒绝。
 5. 生产服务器模式没有代理令牌时必须失败关闭。

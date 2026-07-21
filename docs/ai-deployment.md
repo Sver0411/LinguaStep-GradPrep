@@ -11,7 +11,7 @@
 
 部署验证：
 
-1. `/study-service/health` 显示 configured/protected 布尔值，不能包含值；旧 `/api/ai/health` 仅作兼容。
+1. 设置页加载后显示 Fast/Quality 配置，且 Server Action 响应不能包含任何密钥；`/study-service/health` 可作诊断，旧 `/api/ai/health` 仅作兼容。
 2. 设置页测试 Fast/Quality 两个模型。
 3. 查看浏览器源码、静态包和 Network Response，不应出现服务器 Key。
 4. 错误代理令牌返回中文安全错误；跨域请求被拒绝。
@@ -21,7 +21,7 @@ Vercel Serverless 的内存限流只覆盖单实例/暖实例，无法当作全�
 
 ## OpenAI Sites
 
-项目含 `.openai/hosting.json`，可用 Vinext 构建并部署 Sites。配置服务器环境变量后可用服务器模式；没有服务器 Key 时健康接口显示未配置，BYOK 和所有本地功能仍可使用。部署密钥只设置在平台环境，不写仓库。
+项目含 `.openai/hosting.json`，可用 Vinext 构建并部署 Sites。浏览器 AI 调用默认使用 React Server Action/RSC，避免普通 API route fetch 在到达 Worker 前被托管边缘层拦截；兼容路由仍保留用于诊断。配置服务器环境变量后可用服务器模式；没有服务器 Key 时健康信息显示未配置，BYOK 和所有本地功能仍可使用。部署密钥只设置在平台环境，不写仓库。
 
 ## 本地
 

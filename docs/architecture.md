@@ -9,8 +9,8 @@
 ```text
 页面 / AI 组件
   ├─ LearningContext ─→ 学习纯函数 ─→ LearningRepository ─→ IndexedDB v3
-  └─ AIContext ─→ AIAPIClient ─→ /study-service/*
-                                      ↓
+  └─ AIContext ─→ AIAPIClient ─→ React Server Action / RSC
+                                      ↓（兼容路由：/study-service/*）
                               Request Guard
                                       ↓
                        AIContentService（业务编排）
@@ -25,7 +25,7 @@
 ```
 
 - `AIContext` 只管理前端操作状态、最小化上下文、临时结果和保存编排，与 `LearningContext` 分离。
-- `AIAPIClient` 只访问同源路由，负责离线判断、BYOK/代理令牌专用请求头和取消。
+- `AIAPIClient` 默认调用同源 React Server Action，负责离线判断、BYOK/代理令牌的单次传输和前端取消；显式注入 fetch 时仍可使用兼容路由进行测试或诊断。
 - `request-guard` 负责同源检查、64 KiB 请求体、代理令牌、Key 模式解析和内存限流。
 - `AIContentService` 选择模板和模型，解析/修复 JSON、运行质量复核、本地校验并生成业务 ID 和来源元数据。
 - `AIProvider` 屏蔽供应商调用；生产使用原生 fetch 的 DeepSeek Provider，测试使用 Mock Provider。
@@ -44,7 +44,7 @@
 | `/study-service/generate-quiz` | 基于最小内容摘要出题 |
 | `/study-service/explain-mistake` | 当前错题中文解释 |
 
-旧的 `/api/ai/*` 路由继续保留兼容；浏览器默认使用中性的 `/study-service/*` 路径，避免部分托管边缘层或浏览器扩展拦截通用 API 路径。
+`/study-service/*` 和旧的 `/api/ai/*` 路由继续保留兼容与诊断。浏览器默认通过 React Server Action/RSC 调用同一套服务端处理器，避免部分托管边缘层或浏览器扩展在请求到达 Worker 前拦截普通 route fetch。
 
 其他学习路由保持第二阶段不变。AI 保存的词汇、语法和对比通过 `allWords/allGrammar/allComparisons` 进入同一学习、收藏、搜索、测试与统计流程。
 
@@ -53,7 +53,7 @@
 ```text
 用户提交
  → AIContext 阻止重复操作并创建 AbortController
- → AIAPIClient 加入接入模式专用 Header
+ → AIAPIClient 通过 HTTPS Server Action 临时传递本次接入凭据
  → 服务端认证、限流和输入 Schema
  → DeepSeek JSON Output（普通任务显式关闭思考）
  → JSON 解析；失败时一次修复，再失败则一次受约束重生成
@@ -74,7 +74,7 @@
 
 ## 安全与部署
 
-运行时配置集中在 `lib/ai/config/ai-config.ts`。服务器 Key 从 `process.env` 读取；客户端代码不读取服务器环境变量。远程生产服务器模式必须同时验证 `AI_PROXY_ACCESS_TOKEN`，localhost 才豁免。CSP 限制浏览器连接为同源，因此浏览器不会直接联系 DeepSeek。
+运行时配置集中在 `lib/ai/config/ai-config.ts`。服务器 Key 从 `process.env` 读取；客户端代码不读取服务器环境变量。远程生产服务器模式必须同时验证 `AI_PROXY_ACCESS_TOKEN`，localhost 兼容路由才豁免。Server Action 已由框架执行同源 CSRF 校验，并在内部复用请求体限制、令牌校验、限流和安全错误映射。CSP 限制浏览器连接为同源，因此浏览器不会直接联系 DeepSeek。
 
 ## 测试策略
 

@@ -13,6 +13,8 @@ import type {
   WordGenerationInput,
 } from "@/lib/ai/types/ai.types";
 import type { AISettings } from "@/lib/models";
+import { invokeAIAction } from "@/app/actions/ai-actions";
+import type { AIActionResult } from "@/lib/ai/server/action-handler";
 
 type AIInput =
   | WordGenerationInput
@@ -24,9 +26,12 @@ type AIInput =
 const AI_SERVICE_BASE_PATH = "/study-service";
 
 export class AIAPIClient {
-  constructor(private readonly fetchImpl: typeof fetch = fetch) {}
+  constructor(private readonly fetchImpl?: typeof fetch) {}
 
   async health(signal?: AbortSignal): Promise<AIHealthResponse> {
+    if (!this.fetchImpl) {
+      return this.actionRequest<AIHealthResponse>("health", {}, undefined, signal);
+    }
     const response = await this.fetchImpl(`${AI_SERVICE_BASE_PATH}/health`, {
       method: "GET",
       cache: "no-store",
@@ -67,6 +72,12 @@ export class AIAPIClient {
       throw new AIError("OFFLINE", { status: 503 });
     }
     if (!settings.enabled) throw new AIError("NOT_CONFIGURED", { status: 503 });
+    if (!this.fetchImpl) {
+      return {
+        data: await this.actionRequest<T>(operation, input, settings, signal),
+        requestId: crypto.randomUUID(),
+      };
+    }
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     headers["x-linguastep-max-retries"] = String(
       settings.autoRetry ? settings.maxRetries : 0,
@@ -98,6 +109,43 @@ export class AIAPIClient {
     } catch (error) {
       throw new AIError("INVALID_JSON", { cause: error });
     }
+  }
+
+  private async actionRequest<T>(
+    operation: AIClientOperation | "health",
+    input: AIInput,
+    settings?: AISettings,
+    signal?: AbortSignal,
+  ): Promise<T> {
+    if (signal?.aborted) throw new AIError("REQUEST_CANCELLED", { status: 499 });
+    const apiKey = settings?.connectionMode === "byok" ? getAISecret("apiKey") : "";
+    const proxyToken = settings?.connectionMode === "server" ? getAISecret("proxyToken") : "";
+    if (settings?.connectionMode === "byok" && !apiKey) {
+      throw new AIError("NOT_CONFIGURED", { status: 503 });
+    }
+
+    let result: AIActionResult;
+    try {
+      result = await invokeAIAction({
+        operation,
+        input,
+        connectionMode: settings?.connectionMode,
+        apiKey,
+        proxyToken,
+        maxRetries: settings ? (settings.autoRetry ? settings.maxRetries : 0) : 0,
+      });
+    } catch (error) {
+      if (signal?.aborted) throw new AIError("REQUEST_CANCELLED", { status: 499 });
+      throw new AIError("NETWORK_ERROR", { retryable: true, cause: error });
+    }
+    if (signal?.aborted) throw new AIError("REQUEST_CANCELLED", { status: 499 });
+    if (!result.ok) {
+      throw new AIError(result.error.code, {
+        status: result.error.status,
+        retryable: result.error.retryable,
+      });
+    }
+    return result.data as T;
   }
 
   private async errorFromResponse(response: Response): Promise<AIError> {

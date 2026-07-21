@@ -4,7 +4,7 @@
 
 LinguaStep 是一个中文界面的个人日语与英语学习网页应用，面向日语 JLPT N3→N2/N1、英语高中基础→四级/六级/TOEIC 800 的长期学习目标。它把日英对应词卡、语法、复习计划、测试、错题、收藏、统计和可选的 DeepSeek AI 集成在同一个学习闭环中。
 
-项目当前版本为 **v0.3.3**。无需注册账号；内置内容和学习记录保存在当前浏览器，断网时仍可继续核心学习。AI 是按需增强能力，没有配置 AI 也不影响其他功能。
+项目当前版本为 **v0.3.4**。无需注册账号；内置内容和学习记录保存在当前浏览器，断网时仍可继续核心学习。AI 是按需增强能力，没有配置 AI 也不影响其他功能。
 
 公开站点：[打开 LinguaStep](https://linguastep-personal-study.fleas-pepsin-1b.chatgpt.site)
 
@@ -171,8 +171,8 @@ DeepSeek JSON Output
   │    ├─ 学习、测试、计划、统计纯函数
   │    └─ LearningRepository → IndexedDB v3 / 内存降级
   └─ AIContext
-       └─ AIAPIClient → 同源 /study-service/*
-                          └─ 请求保护与限流
+       └─ AIAPIClient → React Server Action（默认）
+                          └─ 请求保护与限流（/study-service/* 保留兼容）
                                └─ AIContentService
                                     ├─ Prompt 模板
                                     ├─ Zod 与业务校验
@@ -310,7 +310,7 @@ DEEPSEEK_API_KEY=你的密钥 npm run test:deepseek
 3. 在 Production/Preview 环境中配置 `.env.example` 对应变量。
 4. `DEEPSEEK_API_KEY` 和 `AI_PROXY_ACCESS_TOKEN` 必须设为敏感变量，不能添加 `NEXT_PUBLIC_` 等客户端公开前缀。
 5. 公网服务器 Key 模式必须同时配置代理访问令牌。
-6. 部署后检查页面源码、`/study-service/health` 和错误响应，确认它们只显示是否配置，不包含密钥值。`/api/ai/*` 仅作为旧版兼容路径保留。
+6. 部署后在设置页执行连接测试，并检查页面源码、Server Action 响应、`/study-service/health` 和错误响应，确认它们只显示是否配置，不包含密钥值。`/study-service/*` 与 `/api/ai/*` 作为兼容及诊断路径保留。
 7. 修改 `DEEPSEEK_MODEL_FAST/QUALITY` 可以切换允许模型；设置 `AI_ENABLED=false` 可关闭 AI 而不影响本地学习。
 
 服务端限流是单实例内存限流。在 Serverless 多实例环境中，它不是分布式全局配额；仍需结合代理访问令牌和 DeepSeek 账户配额。
@@ -322,7 +322,7 @@ DEEPSEEK_API_KEY=你的密钥 npm run test:deepseek
 ## 安全与隐私
 
 - 服务器 Key 只从服务端环境变量读取，不进入客户端 Bundle。
-- BYOK 和代理令牌不写入 IndexedDB、URL、请求正文、日志、生成历史或测试快照。
+- BYOK 和代理令牌不写入 IndexedDB、URL、日志、生成历史或测试快照；仅在用户发起 AI 操作时通过 HTTPS Server Action 临时传给服务端。
 - 服务器校验同源、方法、请求大小、生成数量、字符串/数组长度和允许模型。
 - AI 输出只作为普通文本数据处理，不执行代码、不作为 HTML 注入。
 - 出题最多发送 100 条必要的学习摘要；错题解释只发送当前题和相关摘要。
@@ -337,6 +337,7 @@ DEEPSEEK_API_KEY=你的密钥 npm run test:deepseek
 | v0.1 | 已完成 | 首页、100 组词、20 个语法、基础学习/测试/错题/收藏/统计、IndexedDB v1、主题和响应式 |
 | v0.2 | 已完成 | 300 组词、50 个语法、15 组对比、三模式复习、每日计划、搜索筛选、完整统计、IndexedDB v2 |
 | v0.3 | 已完成 | DeepSeek 双 Key 模式、AI 内容生成/解释/校验/历史/用量、离线降级、IndexedDB v3 |
+| v0.3.4 | 已完成 | Sites AI 通信切换为 Server Action/RSC，绕过托管层对普通 API fetch 的拦截并保留兼容路由 |
 | 后续 | 未承诺 | 账号与云同步、导入导出、发音、语音识别、自由文本批改、PWA 和完整 FSRS |
 
 ## 当前边界

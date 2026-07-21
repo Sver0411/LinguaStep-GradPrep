@@ -5,6 +5,7 @@ import { createAIHandler, healthResponse } from "../lib/ai/server/api-handler";
 import { constantTimeEqual, resetRateLimitsForTests, resolveAPIKey, validateSameOrigin } from "../lib/ai/server/request-guard";
 import { providerResponse, validAIWord } from "./ai-fixtures";
 import { AIError } from "../lib/ai/errors/ai-error";
+import { executeAIAction } from "../lib/ai/server/action-handler";
 
 const protectedConfig = parseAIConfig({
   DEEPSEEK_API_KEY: "server-key-should-never-leak",
@@ -33,6 +34,35 @@ describe("AI proxy security", () => {
   it("allows BYOK without returning or persisting the user key", async () => {
     const request = new Request("https://linguastep.example/api/ai/models", { method: "POST", headers: { "x-linguastep-api-key": "sk-personal" } });
     await expect(resolveAPIKey(request, parseAIConfig({}))).resolves.toEqual({ apiKey: "sk-personal", mode: "byok" });
+  });
+
+  it("executes BYOK through the Server Action bridge without exposing the key", async () => {
+    let receivedKey = "";
+    const result = await executeAIAction({
+      operation: "models",
+      connectionMode: "byok",
+      apiKey: "sk-server-action-sentinel",
+    }, {
+      config: parseAIConfig({}),
+      providerFactory: (_config, apiKey) => {
+        receivedKey = apiKey;
+        return new MockAIProvider(() => providerResponse({ items: [validAIWord] }));
+      },
+    });
+    expect(result).toMatchObject({ ok: true });
+    expect(receivedKey).toBe("sk-server-action-sentinel");
+    expect(JSON.stringify(result)).not.toContain("sk-server-action-sentinel");
+  });
+
+  it("keeps server-key mode protected through the Server Action bridge", async () => {
+    const result = await executeAIAction({
+      operation: "models",
+      connectionMode: "server",
+    }, { config: protectedConfig });
+    expect(result).toEqual({
+      ok: false,
+      error: { code: "PROXY_ACCESS_DENIED", status: 401, retryable: false },
+    });
   });
 
   it("blocks cross-origin requests and compares tokens by digest", async () => {
