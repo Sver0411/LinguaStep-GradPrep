@@ -23,15 +23,23 @@ const navigation = [
   { path: "/words", label: "单词", icon: BookOpenText },
   { path: "/grammar", label: "语法", icon: NotebookPen },
   { path: "/test", label: "测试", icon: CircleHelp },
-  { path: "/ai", label: "AI 学习", icon: Sparkles },
   { path: "/mistakes", label: "错题本", icon: BookMarked },
   { path: "/favorites", label: "收藏", icon: Heart },
+  { path: "/ai", label: "AI 内容", icon: Sparkles },
   { path: "/stats", label: "学习统计", icon: BarChart3 },
   { path: "/settings", label: "设置", icon: Settings },
 ] as const;
 
-const primaryMobileNavigation = navigation.slice(0, 4);
+const primaryMobileNavigation = [
+  { ...navigation[0], label: "今日" },
+  ...navigation.slice(1, 4),
+] as const;
 const secondaryMobileNavigation = navigation.slice(4);
+const desktopGroups = [
+  { label: "学习", items: navigation.slice(0, 4) },
+  { label: "复习", items: navigation.slice(4, 6) },
+  { label: "工具", items: navigation.slice(6) },
+] as const;
 
 function isActive(pathname: string, path: string): boolean {
   return path === "/" ? pathname === "/" : pathname.startsWith(path);
@@ -93,21 +101,26 @@ export function AppShell({
         </Link>
 
         <nav className="sidebar-nav">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(pathname, item.path);
-            return (
-              <Link
-                className={`nav-item${active ? " active" : ""}`}
-                href={item.path}
-                key={item.path}
-                aria-current={active ? "page" : undefined}
-              >
-                <Icon size={20} strokeWidth={active ? 2.4 : 2} aria-hidden="true" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+          {desktopGroups.map((group) => (
+            <div className="nav-group" key={group.label}>
+              <span className="nav-group-label">{group.label}</span>
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(pathname, item.path);
+                return (
+                  <Link
+                    className={`nav-item${active ? " active" : ""}`}
+                    href={item.path}
+                    key={item.path}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <Icon size={20} strokeWidth={active ? 2.4 : 2} aria-hidden="true" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className="sidebar-footer">

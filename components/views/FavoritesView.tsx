@@ -122,12 +122,14 @@ export function FavoritesView() {
   return (
     <div className="page-stack favorites-page">
       <PageHeader
-        eyebrow="第二阶段 · 我的收藏"
+        eyebrow="收藏"
         title="从收藏直接开始学习或生成测试"
         description={`当前收藏 ${snapshot.favorites.length} 项，可按语言、难度和关键词筛选。`}
         actions={<div className="page-actions"><Link className="button button-secondary" href="/words?favorites=1&study=1"><Play size={17} />学习收藏单词</Link><Link className="button button-primary" href="/test?source=favorites"><Languages size={17} />生成收藏测试</Link></div>}
       />
 
+      <details className="advanced-panel compact-details">
+        <summary><span><strong>搜索与批量管理</strong><small>按关键词、语言和难度筛选收藏</small></span></summary>
       <FilterPanel ariaLabel="收藏搜索与筛选">
         <div className="search-field"><Search size={18} /><label className="sr-only" htmlFor="favorite-search">搜索收藏</label><input id="favorite-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索收藏的单词、语法或对比" /></div>
         <div className="filter-grid compact-filters">
@@ -136,6 +138,7 @@ export function FavoritesView() {
         </div>
         <div className="filter-toggles"><strong>{total} 个结果</strong>{selected.length > 0 && <Button variant="danger" onClick={() => { setConfirmBulk(true); window.setTimeout(() => confirmRef.current?.focus(), 0); }}><Trash2 size={16} />取消收藏 {selected.length} 项</Button>}</div>
       </FilterPanel>
+      </details>
 
       {total === 0 ? (
         <EmptyState title="没有符合条件的收藏" description="在单词、语法或对比页面点击心形按钮，重要内容就会集中到这里。" action={<Link className="button button-primary" href="/words">浏览单词</Link>} />

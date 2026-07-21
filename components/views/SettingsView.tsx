@@ -114,7 +114,7 @@ function greatestCommonDivisor(left: number, right: number): number {
 }
 
 export function SettingsView() {
-  const { settings, updateSettings, resetData, rebuildTodayPlan } = useLearning();
+  const { settings, updateSettings, resetData } = useLearning();
   const { resetAISettings, clearAllSecrets } = useAI();
   const [resetScope, setResetScope] = useState<ResetScope | null>(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -204,7 +204,7 @@ export function SettingsView() {
 
   return (
     <div className="page-stack settings-page">
-      <PageHeader eyebrow="第三阶段 · 设置" title="把计划、AI 和显示调成你的节奏" description="学习设置与 AI 非敏感设置保存在当前浏览器；密钥使用独立存储，不进入学习数据库。" actions={<Button variant="secondary" onClick={() => void rebuildTodayPlan()}><RotateCcw size={17} />重算今日计划</Button>} />
+      <PageHeader eyebrow="设置" title="管理默认学习方式" description="这里的选项作为后续学习默认值；今日计划的临时操作集中在首页。" />
 
       <section className="settings-section card">
         <div className="settings-section-heading"><span className="settings-icon"><SlidersHorizontal size={20} /></span><div><h2>学习与每日计划</h2><p>控制模式、任务数量和复习优先级</p></div></div>
@@ -236,7 +236,8 @@ export function SettingsView() {
 
       <div id="deepseek-ai"><AISettingsPanel /></div>
 
-      <section className="settings-section card">
+      <details className="settings-section card settings-danger-zone compact-details">
+        <summary><span><strong>数据与危险操作</strong><small>重置进度、测试、错题、收藏或全部本地数据</small></span></summary>
         <div className="settings-section-heading"><span className="settings-icon"><Database size={20} /></span><div><h2>本地数据</h2><p>每项危险操作都需要再次勾选确认</p></div></div>
         <div className="reset-actions">
           <button onClick={() => openReset("progress")}><RotateCcw size={18} /><span><strong>重置学习进度</strong><small>保留错题与收藏</small></span></button>
@@ -245,9 +246,9 @@ export function SettingsView() {
           <button onClick={() => openReset("favorites")}><X size={18} /><span><strong>清空收藏</strong><small>保留学习进度</small></span></button>
           <button className="danger" onClick={() => openReset("all")}><Database size={18} /><span><strong>重置全部数据</strong><small>包括计划、设置与收藏</small></span></button>
         </div>
-      </section>
+      </details>
 
-      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><div><strong>LinguaStep 日英阶梯</strong><p>数据库 v3 · 复习算法 v2 · DeepSeek AI 安全代理</p></div><span>版本 {APP_VERSION} · 第三阶段</span></section>
+      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><div><strong>LinguaStep 日英阶梯</strong><p>数据库 v3 · 复习算法 v2 · DeepSeek AI 安全代理</p></div><span>版本 {APP_VERSION}</span></section>
 
       {resetScope && (
         <div className="modal-backdrop" role="presentation" onClick={closeReset}>

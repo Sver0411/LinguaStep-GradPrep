@@ -169,12 +169,13 @@ describe("phase-two components", () => {
     render(<HomeView />);
     expect(screen.getByText("今日自动计划")).toBeTruthy();
     expect(screen.getByText("到期复习")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /开始今日新单词/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /继续：今日新词/ })).toBeTruthy();
   });
 
   it("debounces word search and shows a clear empty state", async () => {
     mocked.learning = learningMock({ snapshot: { ...makeSnapshot(), wordProgress: [] } });
     render(<WordsView />);
+    await userEvent.click(screen.getByRole("button", { name: "浏览词库" }));
     const input = screen.getByLabelText("搜索单词");
     await userEvent.type(input, "绝对不存在的词条");
     await waitFor(

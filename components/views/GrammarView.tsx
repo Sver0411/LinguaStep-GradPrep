@@ -19,6 +19,7 @@ import { useLearning } from "@/context/LearningContext";
 import { useAI } from "@/context/AIContext";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { dateKey } from "@/lib/learning";
 import { searchGrammar, type GrammarSearchFilters } from "@/lib/search";
 import type {
   GrammarComparison,
@@ -53,7 +54,15 @@ export function GrammarView() {
     generateGrammar,
   } = useAI();
   const now = useCurrentTime();
-  const [viewMode, setViewMode] = useState<GrammarViewMode>("japanese");
+  const today = dateKey(new Date());
+  const todayPlan = snapshot.dailyPlans.find((item) => item.date === today);
+  const todayRecord = snapshot.dailyRecords.find((item) => item.date === today);
+  const completedGrammarCount = todayRecord?.grammarStudied ?? 0;
+  const todayGrammarId = todayPlan && completedGrammarCount < todayPlan.grammarIds.length
+    ? todayPlan.grammarIds[completedGrammarCount]
+    : undefined;
+  const todayPoint = allGrammar.find((item) => item.id === todayGrammarId);
+  const [viewMode, setViewMode] = useState<GrammarViewMode>(todayPoint?.language ?? "japanese");
   const [selectedId, setSelectedId] = useState("");
   const [practicing, setPracticing] = useState(false);
   const [comparisonPractice, setComparisonPractice] =
@@ -131,7 +140,7 @@ export function GrammarView() {
       return true;
     });
   }, [allComparisons, debouncedQuery, favoriteOnly, level, mistakeOnly, snapshot.favorites, snapshot.mistakes]);
-  const selected = filtered.find((point) => point.id === selectedId) ?? filtered[0];
+  const selected = filtered.find((point) => point.id === selectedId) ?? filtered.find((point) => point.id === todayGrammarId) ?? filtered[0];
   const progressMap = useMemo(
     () => new Map(snapshot.grammarProgress.map((item) => [item.grammarId, item])),
     [snapshot.grammarProgress],
@@ -188,9 +197,9 @@ export function GrammarView() {
   return (
     <div className="page-stack grammar-page">
       <PageHeader
-        eyebrow="第二阶段 · 语法系统"
-        title="分别学习，也按相似语义进行比较"
-        description={`日语 ${allGrammar.filter((item) => item.language === "japanese").length} 项、英语 ${allGrammar.filter((item) => item.language === "english").length} 项，并提供 ${allComparisons.length} 组非逐字对应的日英语法对比。`}
+        eyebrow="语法"
+        title={todayPoint ? "先完成今日语法" : "学习与比较语法"}
+        description={todayPoint ? `今日计划的下一项是“${todayPoint.title}”，完成练习后自动进入下一步。` : `日语 ${allGrammar.filter((item) => item.language === "japanese").length} 项、英语 ${allGrammar.filter((item) => item.language === "english").length} 项。`}
         actions={
           <div className="page-actions">
             <div className="segmented-control" aria-label="语法学习模式">
@@ -207,6 +216,15 @@ export function GrammarView() {
 
       {aiError && busyOperation === null && <section className="inline-alert error" role="alert"><span>AI 新增没有完成：{aiError.message}</span></section>}
 
+      {todayPoint && (
+        <section className="card next-learning-card">
+          <div><span className="section-kicker">TODAY</span><h2>{todayPoint.title}</h2><p>{todayPoint.language === "japanese" ? "日语" : "英语"} · {todayPoint.level} · 今日计划</p></div>
+          <Button onClick={() => { setViewMode(todayPoint.language); setSelectedId(todayPoint.id); setPracticing(true); }}><Play size={18} fill="currentColor" />学习并练习当前项</Button>
+        </section>
+      )}
+
+      <details className="advanced-panel compact-details">
+        <summary><span><strong>查找其他语法</strong><small>搜索、难度、掌握状态和收藏筛选</small></span></summary>
       <FilterPanel ariaLabel="语法搜索与筛选">
         <div className="search-field">
           <Search size={18} />
@@ -227,6 +245,7 @@ export function GrammarView() {
           <strong>{viewMode === "comparison" ? filteredComparisons.length : filtered.length} 个结果</strong>
         </div>
       </FilterPanel>
+      </details>
 
       {viewMode === "comparison" ? (
         filteredComparisons.length === 0 ? (

@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
+import { dateKey } from "@/lib/learning";
+import { getNextLearningAction } from "@/lib/learning-flow";
 import type { MasteryRating, StudyMode, WordPair } from "@/lib/models";
 import { Button, ProgressBar } from "@/components/ui";
 
@@ -33,6 +35,7 @@ export function WordStudySession({
   onReviewWeak: () => void;
 }) {
   const {
+    snapshot,
     settings,
     studyWord,
     isFavorite,
@@ -152,6 +155,7 @@ export function WordStudySession({
   const masteryPercent = Math.round(
     (counts.known / Math.max(1, items.length)) * 100,
   );
+  const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
 
   if (finished) {
     return (
@@ -168,12 +172,13 @@ export function WordStudySession({
         </div>
         <ProgressBar value={masteryPercent} label="基础掌握比例" />
         <div className="summary-actions">
+          <Link className="button button-primary" href={nextAction.href}><ArrowRight size={18} />{nextAction.label}</Link>
           {(counts.fuzzy > 0 || counts.unknown > 0) && (
             <Button variant="secondary" onClick={onReviewWeak}>
               <RotateCcw size={18} />复习错词
             </Button>
           )}
-          <Button onClick={() => {
+          <Button variant="secondary" onClick={() => {
             setIndex(0);
             setRevealStage(0);
             setRatings({});
@@ -181,7 +186,6 @@ export function WordStudySession({
             onRestart();
           }}><RotateCcw size={18} />再学一轮</Button>
           <Button variant="secondary" onClick={onFinish}>返回单词页</Button>
-          <Link className="button button-ghost" href="/">返回首页</Link>
         </div>
       </section>
     );

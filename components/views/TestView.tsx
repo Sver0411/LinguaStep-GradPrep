@@ -12,9 +12,10 @@ import {
   Timer,
   XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
-import { createTestQuestions, isAnswerCorrect } from "@/lib/learning";
+import { createTestQuestions, dateKey, isAnswerCorrect } from "@/lib/learning";
+import { getNextLearningAction } from "@/lib/learning-flow";
 import type {
   ChoiceQuestion,
   TestAnswer,
@@ -110,6 +111,7 @@ export function TestView() {
   const [generationEmpty, setGenerationEmpty] = useState(false);
   const [collectionTitle, setCollectionTitle] = useState("");
   const collectionStarted = useRef(false);
+  const presetStarted = useRef(false);
   const submittingRef = useRef(false);
   const question = questions[index];
   const selectionCorrect =
@@ -143,6 +145,44 @@ export function TestView() {
     return [...new Set([...wordLevels, ...grammarLevels])];
   }, [allGrammar, allWords, mode]);
 
+  const start = useCallback((overrides: Partial<{
+    mode: TestMode;
+    sourceFilter: TestSourceFilter;
+    questionCount: number;
+  }> = {}) => {
+    const selectedMode = overrides.mode ?? mode;
+    const selectedSource = overrides.sourceFilter ?? sourceFilter;
+    const selectedCount = overrides.questionCount ?? questionCount;
+    const now = new Date().toISOString();
+    const generated = createTestQuestions(
+      snapshot.wordProgress,
+      snapshot.grammarProgress,
+      allWords,
+      allGrammar,
+      {
+        mode: selectedMode,
+        sourceFilter: selectedSource,
+        count: selectedCount,
+        now,
+        favorites: snapshot.favorites,
+        mistakes: snapshot.mistakes.filter((item) => item.active),
+        difficulty: difficulty === "all" ? undefined : difficulty,
+        prioritizeMistakes,
+      },
+    );
+    setMode(selectedMode);
+    setSourceFilter(selectedSource);
+    setQuestionCount(selectedCount);
+    setQuestions(generated);
+    setIndex(0);
+    setSelectedIndex(null);
+    setAnswers([]);
+    setResult(null);
+    setStartedAt(now);
+    setGenerationEmpty(generated.length === 0);
+    if (generated.length > 0) setFocusMode(true);
+  }, [allGrammar, allWords, difficulty, mode, prioritizeMistakes, questionCount, setFocusMode, snapshot.favorites, snapshot.grammarProgress, snapshot.mistakes, snapshot.wordProgress, sourceFilter]);
+
   useEffect(() => {
     if (questions.length === 0 || result) return;
     const handleKey = (event: KeyboardEvent) => {
@@ -170,33 +210,14 @@ export function TestView() {
     return () => window.clearTimeout(timer);
   }, [questions.length, setFocusMode, snapshot.aiCollections]);
 
-  const start = () => {
-    const now = new Date().toISOString();
-    const generated = createTestQuestions(
-      snapshot.wordProgress,
-      snapshot.grammarProgress,
-      allWords,
-      allGrammar,
-      {
-        mode,
-        sourceFilter,
-        count: questionCount,
-        now,
-        favorites: snapshot.favorites,
-        mistakes: snapshot.mistakes.filter((item) => item.active),
-        difficulty: difficulty === "all" ? undefined : difficulty,
-        prioritizeMistakes,
-      },
-    );
-    setQuestions(generated);
-    setIndex(0);
-    setSelectedIndex(null);
-    setAnswers([]);
-    setResult(null);
-    setStartedAt(now);
-    setGenerationEmpty(generated.length === 0);
-    if (generated.length > 0) setFocusMode(true);
-  };
+  useEffect(() => {
+    if (presetStarted.current || questions.length > 0 || result) return;
+    const search = new URLSearchParams(window.location.search);
+    if (search.get("start") !== "1") return;
+    presetStarted.current = true;
+    const timer = window.setTimeout(() => start(), 0);
+    return () => window.clearTimeout(timer);
+  }, [questions.length, result, start]);
 
   const next = async () => {
     if (!question || selectedIndex === null || submittingRef.current) return;
@@ -234,12 +255,13 @@ export function TestView() {
       (result.correctCount / Math.max(1, result.answers.length)) * 100,
     );
     const breakdown = resultBreakdown(result);
+    const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
     return (
       <div className="page-stack test-results-page">
         <section className="result-hero card">
           <span className={`result-ring ${percent >= 80 ? "good" : percent >= 60 ? "medium" : "needs-work"}`}><strong>{percent}</strong><small>分</small></span>
           <div><span className="section-kicker">TEST COMPLETE</span><h1>{percent >= 80 ? "掌握得很稳" : percent >= 60 ? "基础不错，再巩固一下" : "已经找到下一步重点"}</h1><p>{MODE_LABEL[result.mode]} · {SOURCE_LABEL[result.sourceFilter]} · 正确 {result.correctCount} 题，错误 {result.answers.length - result.correctCount} 题。</p><p className="keyboard-note"><Timer size={15} />用时 {Math.floor(result.durationSeconds / 60)} 分 {result.durationSeconds % 60} 秒</p></div>
-          <div className="result-actions"><Button onClick={start}><RotateCcw size={18} />再测一次</Button><Link className="button button-secondary" href="/mistakes">查看错题本</Link></div>
+          <div className="result-actions"><Link className="button button-primary" href={nextAction.href}><ArrowRight size={18} />{nextAction.label}</Link><Button variant="secondary" onClick={() => start()}><RotateCcw size={18} />再测一次</Button></div>
         </section>
 
         <section className="breakdown-grid" aria-label="测试分项正确率">
@@ -299,12 +321,20 @@ export function TestView() {
 
   return (
     <div className="page-stack test-page">
-      <PageHeader eyebrow="第二阶段 · 测试系统" title="按语言、来源和难度生成测试" description="仍采用可靠的四选一题型；可立即反馈，也可完成后统一查看解析。" />
+      <PageHeader eyebrow="测试" title="一键开始今日测试" description="先用推荐设置完成今日任务；专项测试和高级设置按需展开。" />
       <section className="test-overview-grid">
         <article className="card test-config-card">
           <span className="test-icon"><Languages size={28} /></span>
-          <span className="section-kicker">CUSTOM TEST</span>
-          <h2>测试设置</h2>
+          <span className="section-kicker">QUICK START</span>
+          <h2>选择一个测试</h2>
+          <div className="quick-test-actions">
+            <Button className="button-large" onClick={() => start({ sourceFilter: "today", questionCount: settings.dailyTestQuestions })}><Play size={18} fill="currentColor" />开始今日测试 · {settings.dailyTestQuestions} 题</Button>
+            <Button variant="secondary" onClick={() => start({ sourceFilter: "mistakes" })}>错题专项</Button>
+            <Button variant="secondary" onClick={() => start({ sourceFilter: "due" })}>到期复习</Button>
+            <Button variant="secondary" onClick={() => start({ sourceFilter: "favorites" })}>收藏专项</Button>
+          </div>
+          <details className="advanced-panel compact-details">
+          <summary><span><strong>高级测试设置</strong><small>本次语言、来源、难度、题数与反馈方式</small></span></summary>
           <div className="setting-stack compact-setting-stack">
             <label><span>语言模式</span><div className="segmented-control">{(["japanese","english","mixed"] as TestMode[]).map((item) => <button type="button" className={mode === item ? "active" : ""} onClick={() => { setMode(item); setDifficulty("all"); }} key={item}>{MODE_LABEL[item]}</button>)}</div></label>
             <label><span>内容来源</span><select value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as TestSourceFilter)}>{Object.entries(SOURCE_LABEL).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
@@ -313,8 +343,10 @@ export function TestView() {
             <label className="switch-setting"><span><strong>立即显示答案</strong><small>关闭后在测试完成时统一解析</small></span><button className={`switch${immediateFeedback ? " active" : ""}`} role="switch" aria-checked={immediateFeedback} onClick={() => setImmediateFeedback((value) => !value)}><span /></button></label>
             <label className="switch-setting"><span><strong>优先出错题</strong><small>在当前来源范围内把活跃错题对应内容排在前面</small></span><button className={`switch${prioritizeMistakes ? " active" : ""}`} role="switch" aria-checked={prioritizeMistakes} onClick={() => setPrioritizeMistakes((value) => !value)}><span /></button></label>
           </div>
+          <div className="advanced-start-action"><Button onClick={() => start()}><Play size={17} />按本次设置开始测试</Button></div>
+          </details>
           <div className="test-features"><span><ShieldCheck size={17} />只测试符合来源条件的已学内容</span><span><ClipboardCheck size={17} />保存用时与分项正确率</span></div>
-          {availableCount > 0 ? <Button className="button-large" onClick={start}><Play size={18} fill="currentColor" />开始测试</Button> : <EmptyState title="还没有可测试内容" description="先完成至少一张单词卡或一个语法练习。" action={<Link className="button button-primary" href="/words?study=1">先学单词</Link>} />}
+          {availableCount === 0 && <EmptyState title="还没有可测试内容" description="先完成至少一张单词卡或一个语法练习。" action={<Link className="button button-primary" href="/words?study=1">先学单词</Link>} />}
           {generationEmpty && <div className="inline-alert" role="status">当前筛选条件下没有可生成的题目。请更换内容来源、难度或语言模式。</div>}
         </article>
         <aside className="test-stats-column">

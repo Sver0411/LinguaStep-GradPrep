@@ -1,9 +1,11 @@
 "use client";
 
-import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useLearning } from "@/context/LearningContext";
-import { isAnswerCorrect } from "@/lib/learning";
+import { dateKey, isAnswerCorrect } from "@/lib/learning";
+import { getNextLearningAction } from "@/lib/learning-flow";
 import type { GrammarComparison } from "@/lib/models";
 import { Button } from "@/components/ui";
 import { AIExplanationPanel } from "@/components/ai/AIExplanationPanel";
@@ -15,11 +17,12 @@ export function ComparisonPractice({
   comparison: GrammarComparison;
   onClose: () => void;
 }) {
-  const { completeTest } = useLearning();
+  const { snapshot, completeTest } = useLearning();
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const question = comparison.exercise;
   const correct = selected !== null && isAnswerCorrect(question, selected);
+  const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
 
   const submit = async () => {
     if (selected === null) return;
@@ -70,7 +73,7 @@ export function ComparisonPractice({
         <div className="question-footer">
           <span>答错会进入“日英对比错题”</span>
           {submitted ? (
-            <Button onClick={onClose}>完成</Button>
+            <div className="page-actions"><Link className="button button-primary" href={nextAction.href}>{nextAction.label}<ArrowRight size={17} /></Link><Button variant="secondary" onClick={onClose}>返回讲解</Button></div>
           ) : (
             <Button onClick={() => void submit()} disabled={selected === null}>提交答案</Button>
           )}

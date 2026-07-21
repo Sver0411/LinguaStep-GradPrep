@@ -153,9 +153,9 @@ export function AIView() {
   return (
     <div className="page-stack ai-page">
       <PageHeader
-        eyebrow="第三阶段 · DeepSeek AI"
-        title="生成内容，也守住学习数据的质量边界"
-        description="AI 返回内容必须经过结构、重复与语言校验；合格词汇与语法会持续追加到本地学习库，不会替换已有内容。"
+        eyebrow="AI 内容工具"
+        title="生成并管理学习内容"
+        description="日常学习可直接在单词或语法页使用 AI；这里用于批量生成、校验、保存和查看历史。新内容持续追加，不会替换已有内容。"
         actions={<Link className="button button-secondary" href="/settings#deepseek-ai">AI 设置</Link>}
       />
 

@@ -2,7 +2,7 @@
 
 ## 目标与边界
 
-第三阶段继续采用“本地学习优先、AI 按需增强”。AI 故障、断网或未配置密钥时，原有学习功能不依赖网络；页面不直接调用 DeepSeek，也不直接写 IndexedDB。
+当前版本继续采用“本地学习优先、AI 按需增强”。AI 故障、断网或未配置密钥时，原有学习功能不依赖网络；页面不直接调用 DeepSeek，也不直接写 IndexedDB。
 
 ## 分层
 
@@ -46,7 +46,7 @@
 
 `/study-service/*` 和旧的 `/api/ai/*` 路由继续保留兼容与诊断。浏览器默认通过 React Server Action/RSC 调用同一套服务端处理器，避免部分托管边缘层或浏览器扩展在请求到达 Worker 前拦截普通 route fetch。
 
-其他学习路由保持第二阶段不变。AI 保存的词汇、语法和对比通过 `allWords/allGrammar/allComparisons` 进入同一学习、收藏、搜索、测试与统计流程。
+所有历史学习路由保持兼容。AI 保存的词汇、语法和对比通过 `allWords/allGrammar/allComparisons` 进入同一学习、收藏、搜索、测试与统计流程；`learning-flow` 统一决定首页与各完成页的下一步。
 
 ## 请求序列
 

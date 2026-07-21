@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
-import { isAnswerCorrect } from "@/lib/learning";
+import { dateKey, isAnswerCorrect } from "@/lib/learning";
+import { getNextLearningAction } from "@/lib/learning-flow";
 import type { GrammarPoint, TestAnswer } from "@/lib/models";
 import { Button, ProgressBar } from "@/components/ui";
 import { AIExplanationPanel } from "@/components/ai/AIExplanationPanel";
@@ -15,7 +17,7 @@ export function GrammarPractice({
   point: GrammarPoint;
   onClose: () => void;
 }) {
-  const { settings, completeGrammar, setFocusMode } = useLearning();
+  const { snapshot, settings, completeGrammar, setFocusMode } = useLearning();
   const questions = useMemo(
     () => point.exercises.slice(0, settings.grammarExerciseCount),
     [point.exercises, settings.grammarExerciseCount],
@@ -77,6 +79,7 @@ export function GrammarPractice({
   if (finished) {
     const score = answers.filter((answer) => answer.isCorrect).length;
     const percent = Math.round((score / Math.max(1, answers.length)) * 100);
+    const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
     return (
       <section className="session-summary card">
         <span className="summary-icon"><CheckCircle2 size={28} /></span>
@@ -86,7 +89,8 @@ export function GrammarPractice({
         <div className="big-score"><strong>{score}</strong><span>/ {answers.length} 正确</span></div>
         <ProgressBar value={percent} label="本次正确率" />
         <div className="summary-actions">
-          <Button onClick={() => {
+          <Link className="button button-primary" href={nextAction.href}><ArrowRight size={18} />{nextAction.label}</Link>
+          <Button variant="secondary" onClick={() => {
             setIndex(0);
             setSelectedIndex(null);
             setAnswers([]);

@@ -12,7 +12,7 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
 import { isAnswerCorrect } from "@/lib/learning";
 import type { MistakeRecord, MistakeState, QuestionSource } from "@/lib/models";
@@ -82,6 +82,11 @@ export function MistakesView() {
   const [reviewResult, setReviewResult] = useState<MistakeRecord | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
+  const autoStarted = useRef(false);
+  const activeQueue = useMemo(
+    () => [...snapshot.mistakes].filter((item) => item.active).sort((left, right) => right.priority - left.priority || right.lastWrongAt.localeCompare(left.lastWrongAt)),
+    [snapshot.mistakes],
+  );
   const visible = useMemo(() => {
     const values = snapshot.mistakes.filter((item) => {
       if (stateFilter !== "all" && item.state !== stateFilter) return false;
@@ -120,11 +125,31 @@ export function MistakesView() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [reviewResult, reviewing]);
 
-  const startReview = (mistake: MistakeRecord) => {
+  const startReview = useCallback((mistake: MistakeRecord) => {
     setReviewing(mistake);
     setSelectedIndex(null);
     setReviewResult(null);
     setFocusMode(true);
+  }, [setFocusMode]);
+
+  useEffect(() => {
+    if (autoStarted.current || activeQueue.length === 0 || reviewing) return;
+    if (new URLSearchParams(window.location.search).get("review") !== "1") return;
+    autoStarted.current = true;
+    const timer = window.setTimeout(() => startReview(activeQueue[0]), 0);
+    return () => window.clearTimeout(timer);
+  }, [activeQueue, reviewing, startReview]);
+
+  const continueReview = () => {
+    if (!reviewing) return;
+    const latestCurrent = snapshot.mistakes.find((item) => item.id === reviewing.id);
+    const nextMistake = activeQueue.find((item) => item.id !== reviewing.id) ?? (latestCurrent?.active ? latestCurrent : undefined);
+    if (nextMistake) startReview(nextMistake);
+    else {
+      setReviewing(null);
+      setReviewResult(null);
+      setFocusMode(false);
+    }
   };
 
   const submitReview = async () => {
@@ -174,7 +199,7 @@ export function MistakesView() {
           {reviewResult && !correct && selectedIndex !== null && <AIExplanationPanel question={question} selectedIndex={selectedIndex} />}
           <div className="question-footer">
             <button className="text-button" onClick={() => { setReviewing(null); setFocusMode(false); }}>退出练习</button>
-            {!reviewResult ? <Button onClick={() => void submitReview()} disabled={selectedIndex === null || submitting}>提交答案</Button> : <Button onClick={() => { const latest = snapshot.mistakes.find((item) => item.id === reviewing.id); if (latest?.active) startReview(latest); else { setReviewing(null); setReviewResult(null); } }}>继续复习<ArrowRight size={18} /></Button>}
+            {!reviewResult ? <Button onClick={() => void submitReview()} disabled={selectedIndex === null || submitting}>提交答案</Button> : <Button onClick={continueReview}>{activeQueue.some((item) => item.id !== reviewing.id) ? "下一道错题" : "完成本轮巩固"}<ArrowRight size={18} /></Button>}
           </div>
         </article>
       </section>
@@ -184,12 +209,14 @@ export function MistakesView() {
   return (
     <div className="page-stack mistakes-page">
       <PageHeader
-        eyebrow="第二阶段 · 错题系统"
-        title="按状态、语言与错误历史集中巩固"
-        description="错题会经历活跃、巩固、掌握和归档；你也可以手动调整状态。"
-        actions={<Link className="button button-primary" href="/test?source=mistakes">生成错题专项测试</Link>}
+        eyebrow="错题巩固"
+        title={activeQueue.length > 0 ? `${activeQueue.length} 道活跃错题待处理` : "活跃错题已清空"}
+        description="直接开始一轮巩固；筛选、归档和删除等管理操作按需展开。"
+        actions={<div className="page-actions">{activeQueue.length > 0 && <Button onClick={() => startReview(activeQueue[0])}><RotateCcw size={17} />开始复习活跃错题</Button>}<Link className="button button-secondary" href="/test?source=mistakes&start=1">错题专项测试</Link></div>}
       />
 
+      <details className="advanced-panel compact-details">
+      <summary><span><strong>筛选与管理错题</strong><small>状态、来源、语言、难度和排序</small></span></summary>
       <FilterPanel ariaLabel="错题筛选" className="mistake-filter-panel">
         <div className="segmented-control wrap-control">
           {(["active","consolidating","mastered","archived","all"] as const).map((state) => (
@@ -204,6 +231,7 @@ export function MistakesView() {
           <label className="checkbox-filter"><input type="checkbox" checked={favoriteOnly} onChange={(event) => setFavoriteOnly(event.target.checked)} />仅收藏错题</label>
         </div>
       </FilterPanel>
+      </details>
 
       {visible.length === 0 ? (
         <EmptyState title="这个分类暂时没有错题" description="继续学习或切换筛选条件，新的薄弱点会自动整理到这里。" action={<Link className="button button-primary" href="/test">去做测试</Link>} />
@@ -227,10 +255,12 @@ export function MistakesView() {
               <div className="mistake-actions-column">
                 <Button variant="secondary" onClick={() => startReview(mistake)}><RotateCcw size={17} />再次练习</Button>
                 <button className={`icon-button${mistake.favorite ? " active" : ""}`} onClick={() => void toggleMistakeFavorite(mistake.id)} aria-label={mistake.favorite ? "取消收藏错题" : "收藏错题"}><Heart size={17} fill={mistake.favorite ? "currentColor" : "none"} /></button>
+                <details className="item-more-actions"><summary>更多操作</summary><div>
                 {mistake.state !== "mastered" && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "mastered")}><CheckCircle2 size={15} />标记掌握</button>}
                 {!mistake.active && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "active")}><RotateCcw size={15} />重新加入</button>}
                 {mistake.state !== "archived" && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "archived")}><Archive size={15} />归档</button>}
                 <button className="text-button danger-text" onClick={() => void removeMistake(mistake.id)}><Trash2 size={15} />移出错题本</button>
+                </div></details>
               </div>
             </article>
           ))}

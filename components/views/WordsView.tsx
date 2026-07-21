@@ -55,6 +55,7 @@ export function WordsView() {
   } = useAI();
   const now = useCurrentTime();
   const [mode, setMode] = useState<StudyMode>(settings.defaultStudyMode);
+  const [pageMode, setPageMode] = useState<"study" | "library">("study");
   const [sessionItems, setSessionItems] = useState<WordPair[] | null>(null);
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Omit<WordSearchFilters, "query" | "mode">>({
@@ -253,37 +254,19 @@ export function WordsView() {
   return (
     <div className="page-stack words-page">
       <PageHeader
-        eyebrow="第二阶段 · 三模式词汇"
-        title="同一组内容，分别建立三条记忆路径"
-        description="日英对照、只学日语和只学英语拥有独立复习状态，并统一进入到期队列。"
+        eyebrow="单词"
+        title={pageMode === "study" ? "开始一轮单词学习" : "浏览与检索词库"}
+        description={pageMode === "study" ? "优先处理到期内容，也可以直接学习今日新词。" : `词库共 ${allWords.length} 组，其中 AI 新增 ${snapshot.aiWords.length} 组。`}
         actions={
-          <div className="segmented-control" aria-label="单词显示密度">
-            <button
-              className={settings.displayDensity === "compact" ? "active" : ""}
-              onClick={() => updateSettings({ displayDensity: "compact" })}
-            >简洁版</button>
-            <button
-              className={settings.displayDensity === "full" ? "active" : ""}
-              onClick={() => updateSettings({ displayDensity: "full" })}
-            >完整版</button>
+          <div className="segmented-control" aria-label="单词页面模式">
+            <button className={pageMode === "study" ? "active" : ""} onClick={() => setPageMode("study")}>开始学习</button>
+            <button className={pageMode === "library" ? "active" : ""} onClick={() => setPageMode("library")}>浏览词库</button>
           </div>
         }
       />
 
-      <section className="mode-picker card" aria-label="学习模式">
-        <div><span className="section-kicker">STUDY MODE</span><h2>选择本轮学习模式</h2></div>
-        <div className="segmented-control mode-control">
-          {(Object.keys(MODE_LABELS) as StudyMode[]).map((item) => (
-            <button
-              key={item}
-              className={mode === item ? "active" : ""}
-              onClick={() => setMode(item)}
-            >{MODE_LABELS[item]}</button>
-          ))}
-        </div>
-      </section>
-
-      <section className="word-deck-layout">
+      {pageMode === "study" && <>
+      <section className="word-deck-layout single-column">
         <article className="card deck-card">
           <div className="deck-card-top">
             <span className="deck-icon"><BookOpenText size={28} /></span>
@@ -298,20 +281,6 @@ export function WordsView() {
             label={`${MODE_LABELS[mode]}掌握进度`}
           />
           <div className="deck-controls">
-            <label>
-              <span><SlidersHorizontal size={17} />本轮数量</span>
-              <select
-                value={settings.studyRoundSize}
-                onChange={(event) =>
-                  updateSettings({ studyRoundSize: Number(event.target.value) })
-                }
-              >
-                {[10, 20, 30].map((count) => <option value={count} key={count}>{count} 个</option>)}
-                {![10, 20, 30].includes(settings.studyRoundSize) && (
-                  <option value={settings.studyRoundSize}>自定义 · {settings.studyRoundSize} 个</option>
-                )}
-              </select>
-            </label>
             <div className="deck-actions">
               {needsReview.length > 0 && (
                 <Button variant="secondary" onClick={() => startSession("review")}>
@@ -319,28 +288,37 @@ export function WordsView() {
                 </Button>
               )}
               <Button onClick={() => startSession("all")} disabled={filteredWords.length === 0}>
-                <Play size={18} fill="currentColor" />开始一轮
+                <Play size={18} fill="currentColor" />开始学习
               </Button>
               <Button variant="secondary" onClick={() => void generateAndStudy()} disabled={!aiSettings.enabled || !aiOnline || busyOperation !== null}>
                 {busyOperation === "words" ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />}{busyOperation === "words" ? "正在生成并去重" : "AI 新增 10 组并学习"}
               </Button>
             </div>
           </div>
+          <details className="inline-settings compact-details">
+            <summary><SlidersHorizontal size={17} />本次学习设置</summary>
+            <div className="inline-settings-grid">
+              <label><span>本次模式</span><select value={mode} onChange={(event) => setMode(event.target.value as StudyMode)}>{(Object.keys(MODE_LABELS) as StudyMode[]).map((item) => <option value={item} key={item}>{MODE_LABELS[item]}</option>)}</select></label>
+              <label><span>本次数量</span><select value={settings.studyRoundSize} onChange={(event) => updateSettings({ studyRoundSize: Number(event.target.value) })}>{[10, 20, 30].map((count) => <option value={count} key={count}>{count} 个</option>)}{![10, 20, 30].includes(settings.studyRoundSize) && <option value={settings.studyRoundSize}>{settings.studyRoundSize} 个</option>}</select></label>
+            </div>
+            <p>这里的调整会保存为后续默认值；更多显示与揭示方式请前往设置。</p>
+          </details>
         </article>
 
-        <aside className="card method-card">
-          <span className="section-kicker">SCHEDULER V2</span>
-          <h2>每次反馈都会改变复习时间</h2>
+        <details className="card method-card compact-details">
+          <summary><span><strong>复习时间如何计算</strong><small>认识、模糊和不认识会形成不同间隔</small></span></summary>
           <ol className="step-list">
             <li><span>1</span><div><strong>认识</strong><small>稳定度提高，间隔逐步延长</small></div></li>
             <li><span>2</span><div><strong>模糊</strong><small>降低稳定度，次日再复习</small></div></li>
             <li><span>3</span><div><strong>不认识</strong><small>记录遗忘，约十分钟后重试</small></div></li>
           </ol>
-        </aside>
+        </details>
       </section>
 
       {aiError && busyOperation === null && <section className="inline-alert error" role="alert"><span>AI 新增没有完成：{aiError.message}</span></section>}
+      </>}
 
+      {pageMode === "library" && <>
       <FilterPanel ariaLabel="单词搜索与筛选">
         <div className="search-field">
           <Search size={18} />
@@ -374,6 +352,7 @@ export function WordsView() {
         isFavorite={(id) => isFavorite("word", id)}
         onToggleFavorite={(id) => void toggleFavorite("word", id)}
       />
+      </>}
     </div>
   );
 }
