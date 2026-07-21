@@ -6,6 +6,12 @@ const cleanText = (minimum: number, maximum: number) =>
     "不能包含 Markdown 代码块或模型说明前缀",
   );
 
+const optionalCleanText = (minimum: number, maximum: number) =>
+  z.preprocess(
+    (value) => typeof value === "string" && value.trim() === "" ? undefined : value,
+    cleanText(minimum, maximum).optional(),
+  );
+
 const exampleSchema = z.object({
   text: cleanText(4, 300),
   translationZh: cleanText(2, 200),
@@ -15,7 +21,7 @@ const questionSchema = z.object({
   source: z.enum(["word", "grammar", "comparison"]),
   sourceId: cleanText(1, 120),
   prompt: cleanText(4, 500),
-  context: cleanText(1, 500).optional(),
+  context: optionalCleanText(1, 500),
   options: z.tuple([
     cleanText(1, 220),
     cleanText(1, 220),

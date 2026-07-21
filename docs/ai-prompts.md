@@ -4,13 +4,13 @@ Prompt 全部集中在 `lib/ai/prompts/templates.ts`，每个模板包含 `name`
 
 | 模板 | 当前版本 | 用途 |
 | --- | --- | --- |
-| `word-generation` | v1 | 日英对应词卡 |
-| `grammar-generation` | v1 | 日语/英语语法 |
-| `grammar-comparison-generation` | v1 | 日英语义对比 |
-| `quiz-generation` | v1 | 基于来源摘要的四选一题 |
+| `word-generation` | v2 | 日英对应词卡（含精确 JSON 合约） |
+| `grammar-generation` | v2 | 日语/英语语法（含枚举和练习题合约） |
+| `grammar-comparison-generation` | v2 | 日英语义对比（含固定来源字段） |
+| `quiz-generation` | v2 | 基于来源摘要的四选一题 |
 | `mistake-explanation` | v1 | 当前错题中文解释 |
-| `quality-review` | v1 | pass/needsRepair/reject |
-| `content-repair` | v1 | 按 Schema 和问题列表修复 |
+| `quality-review` | v2 | pass/needsRepair/reject |
+| `content-repair` | v2 | 按完整 JSON 合约和问题列表修复 |
 
 共同规则要求单个合法 JSON 对象、中文说明、指定难度、无 Markdown/前后说明、无内部推理，并把用户提供的内容视为只读数据。
 

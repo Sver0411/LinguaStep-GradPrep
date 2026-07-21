@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AIAPIClient } from "../lib/ai/client/ai-api-client";
 import { AISettingsRepository, clearAllAISecrets, getAISecret, maskedSecret, setAISecret } from "../lib/ai/client/ai-settings";
 import { DEFAULT_AI_SETTINGS } from "../lib/constants";
+import { IDBFactory } from "fake-indexeddb";
+import { IndexedDbLearningRepository } from "../lib/repositories/indexed-db";
 
 describe("AI client secret isolation", () => {
   beforeEach(() => {
@@ -36,6 +38,14 @@ describe("AI client secret isolation", () => {
     expect(saved).not.toHaveProperty("proxyToken");
     expect(raw).not.toContain("sk-");
     expect(repository.get().maxRetries).toBe(5);
+  });
+
+  it("never writes a configured API key into the IndexedDB learning snapshot", async () => {
+    Object.defineProperty(globalThis, "indexedDB", { value: new IDBFactory(), configurable: true });
+    setAISecret("apiKey", "sk-indexeddb-sentinel", "session");
+    const snapshot = await new IndexedDbLearningRepository().getSnapshot();
+    expect(JSON.stringify(snapshot)).not.toContain("sk-indexeddb-sentinel");
+    expect(JSON.stringify(snapshot)).not.toContain("deepseek-api-key");
   });
 
   it("puts BYOK only in a request header, never in body or URL", async () => {

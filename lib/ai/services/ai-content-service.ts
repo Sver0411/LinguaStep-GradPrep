@@ -15,12 +15,16 @@ import {
 } from "@/lib/ai/schemas/content-schemas";
 import {
   comparisonGenerationPrompt,
+  COMPARISON_JSON_CONTRACT,
   contentRepairPrompt,
   grammarGenerationPrompt,
+  GRAMMAR_JSON_CONTRACT,
   mistakeExplanationPrompt,
   qualityReviewPrompt,
   quizGenerationPrompt,
+  QUIZ_JSON_CONTRACT,
   wordGenerationPrompt,
+  WORD_JSON_CONTRACT,
   type PromptTemplate,
 } from "@/lib/ai/prompts/templates";
 import type {
@@ -109,6 +113,7 @@ function issuesFrom(error: unknown): string[] {
   if (error instanceof AIError && Array.isArray(error.technicalCause)) {
     return error.technicalCause.filter((item): item is string => typeof item === "string");
   }
+  if (error instanceof AIError) return [`${error.code}: ${error.message}`];
   return [error instanceof Error ? error.message : "JSON 或 Schema 校验失败"];
 }
 
@@ -153,6 +158,7 @@ export class AIContentService {
     signal?: AbortSignal;
     qualityReview?: boolean;
     reviewKind: string;
+    thinking?: boolean;
   }): Promise<ParsedResult<TOutput>> {
     let usage = emptyUsage(options.model);
     const call = async (
@@ -161,12 +167,13 @@ export class AIContentService {
       model: string,
       suffix: string,
       thinking = false,
+      extraInstruction = "",
     ) => {
       const response = await this.provider.generateJSON({
         requestId: `${options.requestId}${suffix}`,
         model,
         systemPrompt: prompt.system,
-        userPrompt: prompt.buildUser(input),
+        userPrompt: `${prompt.buildUser(input)}${extraInstruction}`,
         maxTokens: prompt.maxTokens,
         thinking,
         signal: options.signal,
@@ -180,6 +187,7 @@ export class AIContentService {
       options.input,
       options.model,
       "",
+      options.thinking,
     );
     let parsed: TOutput;
     let repaired = false;
@@ -205,6 +213,8 @@ export class AIContentService {
           options.input,
           this.config.qualityModel,
           "-regenerate",
+          options.thinking,
+          `\n上次输出未通过校验。必须修正这些问题：${JSON.stringify(issuesFrom(initialError).slice(0, 12))}。请重新生成全新 JSON，严格遵守字段名、英文枚举值和目标合约。`,
         );
         parsed = parseJSON(regenerated, options.schema);
         repaired = true;
@@ -314,12 +324,13 @@ export class AIContentService {
       input,
       prompt: wordGenerationPrompt,
       schema: aiWordResponseSchema,
-      schemaDescription: "对象包含 items 数组；每项为严格的日英对应词卡结构",
+      schemaDescription: WORD_JSON_CONTRACT,
       model,
       requestId,
       signal,
       qualityReview: input.qualityReview,
       reviewKind: "word",
+      thinking: input.quality === "quality",
     });
     const validation = validateWords(result.value.items, input.existingWords);
     if (validation.accepted.length === 0) {
@@ -387,12 +398,13 @@ export class AIContentService {
         input,
         prompt: comparisonGenerationPrompt,
         schema: aiComparisonResponseSchema,
-        schemaDescription: "对象包含 items 数组；每项为严格的日英语法语义对比结构",
+        schemaDescription: COMPARISON_JSON_CONTRACT,
         model,
         requestId,
         signal,
         qualityReview: input.qualityReview || qualityRequired,
         reviewKind: "comparison",
+        thinking: true,
       });
       const validation = validateComparisons(result.value.items, input.existingTitles);
       if (validation.accepted.length === 0) {
@@ -439,12 +451,13 @@ export class AIContentService {
       input,
       prompt: grammarGenerationPrompt,
       schema: aiGrammarResponseSchema,
-      schemaDescription: "对象包含 items 数组；每项为严格的日语或英语语法知识点结构",
+      schemaDescription: GRAMMAR_JSON_CONTRACT,
       model,
       requestId,
       signal,
       qualityReview: input.qualityReview || qualityRequired,
       reviewKind: "grammar",
+      thinking: qualityRequired,
     });
     const validation = validateGrammar(
       result.value.items,
@@ -489,11 +502,12 @@ export class AIContentService {
       input,
       prompt: quizGenerationPrompt,
       schema: aiQuizResponseSchema,
-      schemaDescription: "对象包含 items 数组；每项为严格的四选一题结构",
+      schemaDescription: QUIZ_JSON_CONTRACT,
       model,
       requestId,
       signal,
       reviewKind: "quiz",
+      thinking: input.quality === "quality",
     });
     const sources = new Map(input.sources.map((item) => [item.sourceId, { source: item.source, language: item.language }]));
     const validation = validateQuiz(result.value.items, sources, input.mode);
@@ -526,6 +540,7 @@ export class AIContentService {
       requestId,
       signal,
       reviewKind: "explanation",
+      thinking: true,
     });
     const generatedAt = new Date().toISOString();
     const cacheKey = contentHash({

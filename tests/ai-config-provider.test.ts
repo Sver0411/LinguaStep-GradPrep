@@ -65,6 +65,14 @@ describe("DeepSeekProvider", () => {
     });
   });
 
+  it("enables thinking only when the business service requests a complex task", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(completion());
+    const provider = new DeepSeekProvider(config, "sk-test-secret", { fetchImpl });
+    await provider.generateJSON({ ...request, requestId: "thinking", thinking: true });
+    const init = fetchImpl.mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(init.body as string).thinking).toEqual({ type: "enabled" });
+  });
+
   it("retries transient 429 failures with backoff and reports retry count", async () => {
     const fetchImpl = vi.fn()
       .mockResolvedValueOnce(new Response("", { status: 429 }))
@@ -113,6 +121,28 @@ describe("DeepSeekProvider", () => {
     await expect(provider.generateJSON({ ...request, requestId: "max-retries" })).rejects.toMatchObject({ code: "SERVER_OVERLOADED" });
     expect(fetchImpl).toHaveBeenCalledTimes(3);
     expect(sleep).toHaveBeenCalledTimes(2);
+  });
+
+  it("maps HTTP 500 to a retryable overloaded error", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response("", { status: 500 }));
+    const provider = new DeepSeekProvider({ ...config, maxRetries: 0 }, "sk-test", { fetchImpl });
+    await expect(provider.generateJSON({ ...request, requestId: "http-500" })).rejects.toMatchObject({ code: "SERVER_OVERLOADED", retryable: true });
+  });
+
+  it("retries and then rejects an empty completion", async () => {
+    const fetchImpl = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ model: "deepseek-v4-flash", choices: [{ finish_reason: "stop", message: { content: "" } }] }), { status: 200 }));
+    const sleep = vi.fn().mockResolvedValue(undefined);
+    const provider = new DeepSeekProvider({ ...config, maxRetries: 1 }, "sk-test", { fetchImpl, sleep });
+    await expect(provider.generateJSON({ ...request, requestId: "empty" })).rejects.toMatchObject({ code: "EMPTY_RESPONSE" });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries malformed upstream JSON before failing safely", async () => {
+    const fetchImpl = vi.fn().mockImplementation(async () => new Response("not-json", { status: 200 }));
+    const sleep = vi.fn().mockResolvedValue(undefined);
+    const provider = new DeepSeekProvider({ ...config, maxRetries: 1 }, "sk-test", { fetchImpl, sleep });
+    await expect(provider.generateJSON({ ...request, requestId: "bad-json" })).rejects.toMatchObject({ code: "INVALID_JSON" });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
   it("honors cancellation before contacting the provider", async () => {

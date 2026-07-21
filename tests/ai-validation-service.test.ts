@@ -4,6 +4,15 @@ import { MockAIProvider } from "../lib/ai/provider/mock-provider";
 import { AIContentService } from "../lib/ai/services/ai-content-service";
 import { validateQuiz, validateWords } from "../lib/ai/validation/content-validator";
 import { providerResponse, validAIQuestion, validAIWord } from "./ai-fixtures";
+import {
+  aiQuizResponseSchema,
+} from "../lib/ai/schemas/content-schemas";
+import {
+  grammarGenerationPrompt,
+  comparisonGenerationPrompt,
+  quizGenerationPrompt,
+  wordGenerationPrompt,
+} from "../lib/ai/prompts/templates";
 
 const config = parseAIConfig({});
 const wordInput = {
@@ -18,6 +27,19 @@ const wordInput = {
 };
 
 describe("AI content validation", () => {
+  it("normalizes an empty optional question context instead of rejecting valid AI output", () => {
+    const parsed = aiQuizResponseSchema.parse({ items: [{ ...validAIQuestion, context: "" }] });
+    expect(parsed.items[0].context).toBeUndefined();
+  });
+
+  it("publishes exact v2 JSON contracts for all saveable content prompts", () => {
+    expect(wordGenerationPrompt.version).toBe("v2");
+    expect(wordGenerationPrompt.system).toContain('"meaningZh"');
+    expect(grammarGenerationPrompt.system).toContain('"sourceId":"draft-grammar"');
+    expect(comparisonGenerationPrompt.system).toContain('"language":"mixed"');
+    expect(quizGenerationPrompt.system).toContain("必须原样复制给定来源 ID");
+  });
+
   it("accepts a well-formed bilingual word and rejects existing duplicates", () => {
     expect(validateWords([validAIWord], []).accepted).toHaveLength(1);
     const duplicate = validateWords([validAIWord], [{ japanese: "改善する", reading: "かいぜんする", english: "improve", meaningZh: "改善" }]);
@@ -43,7 +65,7 @@ describe("AIContentService", () => {
     const provider = new MockAIProvider(() => providerResponse({ items: [validAIWord] }));
     const payload = await new AIContentService(provider, config).generateWords(wordInput, "service-request");
     expect(payload.words).toHaveLength(1);
-    expect(payload.words?.[0]).toMatchObject({ source: "ai-generated", meaningZh: "改善", aiMetadata: { provider: "deepseek", promptVersion: "v1" } });
+    expect(payload.words?.[0]).toMatchObject({ source: "ai-generated", meaningZh: "改善", aiMetadata: { provider: "deepseek", promptVersion: "v2" } });
     expect(payload.generation).toMatchObject({ status: "succeeded", requestedCount: 1, acceptedCount: 1, parameters: { japaneseLevel: "N2", quality: "fast" } });
     expect(payload.usage.totalTokens).toBe(300);
   });
@@ -59,6 +81,23 @@ describe("AIContentService", () => {
     const payload = await new AIContentService(provider, config).generateWords(wordInput, "repair-request");
     expect(calls).toBe(2);
     expect(payload.generation.validationStatus).toBe("repaired");
+  });
+
+  it("adds concrete validation failures when repair falls back to regeneration", async () => {
+    const requests: string[] = [];
+    let calls = 0;
+    const provider = new MockAIProvider((request) => {
+      requests.push(request.userPrompt);
+      calls += 1;
+      return calls < 3
+        ? providerResponse("not-json")
+        : providerResponse({ items: [validAIWord] }, { model: request.model });
+    });
+    const payload = await new AIContentService(provider, config).generateWords(wordInput, "regenerate-request");
+    expect(payload.generation.validationStatus).toBe("repaired");
+    expect(requests).toHaveLength(3);
+    expect(requests[2]).toContain("上次输出未通过校验");
+    expect(requests[2]).toContain("INVALID_JSON");
   });
 
   it("returns partial success when local validation rejects one item", async () => {

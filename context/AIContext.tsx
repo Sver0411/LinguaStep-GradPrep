@@ -20,7 +20,12 @@ import {
   setAISecret,
 } from "@/lib/ai/client/ai-settings";
 import { AIError, normalizeAIError } from "@/lib/ai/errors/ai-error";
-import { mistakeExplanationPrompt } from "@/lib/ai/prompts/templates";
+import {
+  grammarGenerationPrompt,
+  mistakeExplanationPrompt,
+  quizGenerationPrompt,
+  wordGenerationPrompt,
+} from "@/lib/ai/prompts/templates";
 import type {
   AIGenerationPayload,
   AIHealthResponse,
@@ -96,10 +101,10 @@ interface AIContextValue {
 const AIContext = createContext<AIContextValue | null>(null);
 
 function operationPrompt(kind: AIGenerationKind): { name: string; version: string } {
-  if (kind === "words") return { name: "word-generation", version: "v1" };
-  if (kind === "grammar") return { name: "grammar-generation", version: "v1" };
-  if (kind === "quiz") return { name: "quiz-generation", version: "v1" };
-  return { name: "mistake-explanation", version: "v1" };
+  if (kind === "words") return wordGenerationPrompt;
+  if (kind === "grammar") return grammarGenerationPrompt;
+  if (kind === "quiz") return quizGenerationPrompt;
+  return mistakeExplanationPrompt;
 }
 
 export function AIProvider({ children }: { children: ReactNode }) {
