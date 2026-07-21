@@ -9,7 +9,7 @@
 ```text
 页面 / AI 组件
   ├─ LearningContext ─→ 学习纯函数 ─→ LearningRepository ─→ IndexedDB v3
-  └─ AIContext ─→ AIAPIClient ─→ /api/ai/*
+  └─ AIContext ─→ AIAPIClient ─→ /study-service/*
                                       ↓
                               Request Guard
                                       ↓
@@ -37,12 +37,14 @@
 | --- | --- |
 | `/ai` | 单词、语法、练习题生成；预览、保存、历史和用量 |
 | `/settings#deepseek-ai` | AI 开关、Key 模式、连接测试、默认生成和清理 |
-| `/api/ai/health` | 返回非敏感运行配置 |
-| `/api/ai/models` | 测试连接与允许模型 |
-| `/api/ai/generate-words` | 结构化词卡生成 |
-| `/api/ai/generate-grammar` | 语法或日英对比生成 |
-| `/api/ai/generate-quiz` | 基于最小内容摘要出题 |
-| `/api/ai/explain-mistake` | 当前错题中文解释 |
+| `/study-service/health` | 返回非敏感运行配置 |
+| `/study-service/models` | 测试连接与允许模型 |
+| `/study-service/generate-words` | 结构化词卡生成 |
+| `/study-service/generate-grammar` | 语法或日英对比生成 |
+| `/study-service/generate-quiz` | 基于最小内容摘要出题 |
+| `/study-service/explain-mistake` | 当前错题中文解释 |
+
+旧的 `/api/ai/*` 路由继续保留兼容；浏览器默认使用中性的 `/study-service/*` 路径，避免部分托管边缘层或浏览器扩展拦截通用 API 路径。
 
 其他学习路由保持第二阶段不变。AI 保存的词汇、语法和对比通过 `allWords/allGrammar/allComparisons` 进入同一学习、收藏、搜索、测试与统计流程。
 

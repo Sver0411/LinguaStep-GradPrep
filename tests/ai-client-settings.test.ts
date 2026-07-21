@@ -54,7 +54,7 @@ describe("AI client secret isolation", () => {
     const client = new AIAPIClient(fetchImpl);
     await client.testConnection({ ...DEFAULT_AI_SETTINGS, connectionMode: "byok", autoRetry: false });
     const [url, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("/api/ai/models");
+    expect(url).toBe("/study-service/models");
     expect(url).not.toContain("sk-request-secret");
     expect(init.body).not.toContain("sk-request-secret");
     expect((init.headers as Record<string, string>)["x-linguastep-api-key"]).toBe("sk-request-secret");

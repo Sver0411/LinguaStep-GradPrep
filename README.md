@@ -4,7 +4,7 @@
 
 LinguaStep 是一个中文界面的个人日语与英语学习网页应用，面向日语 JLPT N3→N2/N1、英语高中基础→四级/六级/TOEIC 800 的长期学习目标。它把日英对应词卡、语法、复习计划、测试、错题、收藏、统计和可选的 DeepSeek AI 集成在同一个学习闭环中。
 
-项目当前版本为 **v0.3.2**。无需注册账号；内置内容和学习记录保存在当前浏览器，断网时仍可继续核心学习。AI 是按需增强能力，没有配置 AI 也不影响其他功能。
+项目当前版本为 **v0.3.3**。无需注册账号；内置内容和学习记录保存在当前浏览器，断网时仍可继续核心学习。AI 是按需增强能力，没有配置 AI 也不影响其他功能。
 
 公开站点：[打开 LinguaStep](https://linguastep-personal-study.fleas-pepsin-1b.chatgpt.site)
 
@@ -171,7 +171,7 @@ DeepSeek JSON Output
   │    ├─ 学习、测试、计划、统计纯函数
   │    └─ LearningRepository → IndexedDB v3 / 内存降级
   └─ AIContext
-       └─ AIAPIClient → 同源 /api/ai/*
+       └─ AIAPIClient → 同源 /study-service/*
                           └─ 请求保护与限流
                                └─ AIContentService
                                     ├─ Prompt 模板
@@ -310,7 +310,7 @@ DEEPSEEK_API_KEY=你的密钥 npm run test:deepseek
 3. 在 Production/Preview 环境中配置 `.env.example` 对应变量。
 4. `DEEPSEEK_API_KEY` 和 `AI_PROXY_ACCESS_TOKEN` 必须设为敏感变量，不能添加 `NEXT_PUBLIC_` 等客户端公开前缀。
 5. 公网服务器 Key 模式必须同时配置代理访问令牌。
-6. 部署后检查页面源码、`/api/ai/health` 和错误响应，确认它们只显示是否配置，不包含密钥值。
+6. 部署后检查页面源码、`/study-service/health` 和错误响应，确认它们只显示是否配置，不包含密钥值。`/api/ai/*` 仅作为旧版兼容路径保留。
 7. 修改 `DEEPSEEK_MODEL_FAST/QUALITY` 可以切换允许模型；设置 `AI_ENABLED=false` 可关闭 AI 而不影响本地学习。
 
 服务端限流是单实例内存限流。在 Serverless 多实例环境中，它不是分布式全局配额；仍需结合代理访问令牌和 DeepSeek 账户配额。

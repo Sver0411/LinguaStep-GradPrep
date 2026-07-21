@@ -21,11 +21,13 @@ type AIInput =
   | ExplanationGenerationInput
   | Record<string, never>;
 
+const AI_SERVICE_BASE_PATH = "/study-service";
+
 export class AIAPIClient {
   constructor(private readonly fetchImpl: typeof fetch = fetch) {}
 
   async health(signal?: AbortSignal): Promise<AIHealthResponse> {
-    const response = await this.fetchImpl("/api/ai/health", {
+    const response = await this.fetchImpl(`${AI_SERVICE_BASE_PATH}/health`, {
       method: "GET",
       cache: "no-store",
       signal,
@@ -79,7 +81,7 @@ export class AIAPIClient {
     }
     let response: Response;
     try {
-      response = await this.fetchImpl(`/api/ai/${operation}`, {
+      response = await this.fetchImpl(`${AI_SERVICE_BASE_PATH}/${operation}`, {
         method: "POST",
         headers,
         body: JSON.stringify(input),

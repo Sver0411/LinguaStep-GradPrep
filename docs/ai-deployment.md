@@ -11,7 +11,7 @@
 
 部署验证：
 
-1. `/api/ai/health` 显示 configured/protected 布尔值，不能包含值。
+1. `/study-service/health` 显示 configured/protected 布尔值，不能包含值；旧 `/api/ai/health` 仅作兼容。
 2. 设置页测试 Fast/Quality 两个模型。
 3. 查看浏览器源码、静态包和 Network Response，不应出现服务器 Key。
 4. 错误代理令牌返回中文安全错误；跨域请求被拒绝。
