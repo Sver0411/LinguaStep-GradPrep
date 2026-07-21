@@ -6,7 +6,7 @@ LinguaStep 是一个中文界面的个人日语与英语学习网页应用，面
 
 项目当前版本为 **v0.3.1**。无需注册账号；内置内容和学习记录保存在当前浏览器，断网时仍可继续核心学习。AI 是按需增强能力，没有配置 AI 也不影响其他功能。
 
-公开站点：[打开 LinguaStep](https://linguastep-ai-study.christinewoods7817.chatgpt.site)
+公开站点：[打开 LinguaStep](https://linguastep-personal-study.fleas-pepsin-1b.chatgpt.site)
 
 ## 项目特点
 
