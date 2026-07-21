@@ -12,6 +12,10 @@ import {
 } from "react";
 import { AIAPIClient } from "@/lib/ai/client/ai-api-client";
 import {
+  filterGrammarPayloadAgainstLibrary,
+  filterWordPayloadAgainstLibrary,
+} from "@/lib/ai/client/library-dedup";
+import {
   AISettingsRepository,
   clearAISecret,
   clearAllAISecrets,
@@ -100,6 +104,52 @@ interface AIContextValue {
 
 const AIContext = createContext<AIContextValue | null>(null);
 
+function combineSavedPayloads(
+  payloads: AIGenerationPayload[],
+  requestedCount: number,
+): AIGenerationPayload {
+  const first = payloads[0];
+  const last = payloads[payloads.length - 1];
+  const words = payloads.flatMap((payload) => payload.words ?? []);
+  const grammar = payloads.flatMap((payload) => payload.grammar ?? []);
+  const comparisons = payloads.flatMap((payload) => payload.comparisons ?? []);
+  const rejectedReasons = payloads.flatMap((payload) => payload.rejectedReasons ?? []);
+  const acceptedCount = words.length + grammar.length + comparisons.length;
+  if (acceptedCount < requestedCount) {
+    rejectedReasons.push(`已自动跳过重复或不合格内容；本次最终补足 ${acceptedCount}/${requestedCount} 项。`);
+  }
+  const contentIds = [
+    ...words.map((item) => item.id),
+    ...grammar.map((item) => item.id),
+    ...comparisons.map((item) => item.id),
+  ];
+  const previewLabels = [
+    ...words.map((item) => `${item.japanese.term} / ${item.english.term}`),
+    ...grammar.map((item) => item.title),
+    ...comparisons.map((item) => item.semantic),
+  ];
+  return {
+    ...last,
+    generation: {
+      ...last.generation,
+      createdAt: first.generation.createdAt,
+      status: acceptedCount >= requestedCount ? "succeeded" : "partial",
+      saveMode: "saved",
+      validationStatus: payloads.some((payload) => payload.generation.validationStatus === "repaired") ? "repaired" : "passed",
+      requestedCount,
+      acceptedCount,
+      rejectedCount: Math.max(rejectedReasons.length, requestedCount - acceptedCount),
+      contentIds,
+      previewLabels,
+      parameters: { ...first.generation.parameters, count: requestedCount },
+    },
+    words: words.length > 0 ? words : undefined,
+    grammar: grammar.length > 0 ? grammar : undefined,
+    comparisons: comparisons.length > 0 ? comparisons : undefined,
+    rejectedReasons,
+  };
+}
+
 function operationPrompt(kind: AIGenerationKind): { name: string; version: string } {
   if (kind === "words") return wordGenerationPrompt;
   if (kind === "grammar") return grammarGenerationPrompt;
@@ -126,7 +176,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
   const [busyOperation, setBusyOperation] = useState<BusyOperation>(null);
   const [error, setError] = useState<AIError | null>(null);
   const [transientResult, setTransientResult] = useState<AITransientResult | null>(null);
-  const [lastSavedGenerationId, setLastSavedGenerationId] = useState<string | null>(null);
+  const [lastSavedGenerationIds, setLastSavedGenerationIds] = useState<string[]>([]);
   const [secretRevision, setSecretRevision] = useState(0);
 
   useEffect(() => {
@@ -256,21 +306,29 @@ export function AIProvider({ children }: { children: ReactNode }) {
     [health, saveAIArtifacts, settings.dailyRequestSoftLimit, settings.defaultQuality, snapshot.aiUsage],
   );
 
-  const persistPayload = useCallback(
-    async (payload: AIGenerationPayload, saveContent: boolean) => {
-      const generation = { ...payload.generation, saveMode: saveContent ? "saved" as const : "temporary" as const };
+  const persistPayloadBatch = useCallback(
+    async (payloads: AIGenerationPayload[], saveContent: boolean) => {
+      const persisted = payloads.map((payload) => ({
+        ...payload,
+        generation: { ...payload.generation, saveMode: saveContent ? "saved" as const : "temporary" as const },
+      }));
       await saveAIArtifacts({
-        words: saveContent ? payload.words : undefined,
-        grammar: saveContent ? payload.grammar : undefined,
-        comparisons: saveContent ? payload.comparisons : undefined,
-        generations: [generation],
-        usage: [payload.usage],
-        explanations: payload.explanation ? [payload.explanation] : undefined,
+        words: saveContent ? persisted.flatMap((payload) => payload.words ?? []) : undefined,
+        grammar: saveContent ? persisted.flatMap((payload) => payload.grammar ?? []) : undefined,
+        comparisons: saveContent ? persisted.flatMap((payload) => payload.comparisons ?? []) : undefined,
+        generations: persisted.map((payload) => payload.generation),
+        usage: persisted.map((payload) => payload.usage),
+        explanations: persisted.flatMap((payload) => payload.explanation ? [payload.explanation] : []),
       });
-      if (saveContent) setLastSavedGenerationId(generation.id);
-      return { ...payload, generation };
+      return persisted;
     },
     [saveAIArtifacts],
+  );
+
+  const persistPayload = useCallback(
+    async (payload: AIGenerationPayload, saveContent: boolean) =>
+      (await persistPayloadBatch([payload], saveContent))[0],
+    [persistPayloadBatch],
   );
 
   const testConnection = useCallback(async () => {
@@ -282,36 +340,99 @@ export function AIProvider({ children }: { children: ReactNode }) {
 
   const generateWords = useCallback(
     async (input: Omit<WordGenerationInput, "existingWords">) => run("words", "words", async (signal) => {
-      const payload = await clientRef.current.generateWords({
-        ...input,
-        existingWords: allWords.map((word) => ({
+      const existingWords = allWords.map((word) => ({
           japanese: word.japanese.term,
           reading: word.japanese.reading ?? "",
           english: word.english.term,
           meaningZh: word.meaningZh,
-        })),
-      }, settings, signal);
-      const persisted = await persistPayload(payload, settings.autoSave);
-      setTransientResult({ kind: "words", payload: persisted, saved: settings.autoSave });
-      return persisted;
+        }));
+      const payloads: AIGenerationPayload[] = [];
+      const addedWords = [] as NonNullable<AIGenerationPayload["words"]>;
+      let attempts = 0;
+      while (addedWords.length < input.count && attempts < 8) {
+        const remaining = input.count - addedWords.length;
+        const count: WordGenerationInput["count"] = attempts === 0
+          ? input.count
+          : remaining >= 5 ? 5 : 1;
+        attempts += 1;
+        try {
+          const payload = await clientRef.current.generateWords({
+            ...input,
+            count,
+            existingWords: [
+              ...existingWords,
+              ...addedWords.map((word) => ({
+                japanese: word.japanese.term,
+                reading: word.japanese.reading ?? "",
+                english: word.english.term,
+                meaningZh: word.meaningZh,
+              })),
+            ].slice(-500),
+          }, settings, signal);
+          const deduplicated = filterWordPayloadAgainstLibrary(payload, [...allWords, ...addedWords]);
+          payloads.push(deduplicated);
+          addedWords.push(...(deduplicated.words ?? []).slice(0, remaining));
+        } catch (caught) {
+          const normalized = normalizeAIError(caught);
+          if (normalized.code !== "CONTENT_VALIDATION_FAILED" || signal.aborted) throw caught;
+        }
+      }
+      if (payloads.length === 0 || addedWords.length === 0) {
+        throw new AIError("CONTENT_VALIDATION_FAILED");
+      }
+      const persistedPayloads = await persistPayloadBatch(payloads, true);
+      const combined = combineSavedPayloads(persistedPayloads, input.count);
+      setLastSavedGenerationIds(persistedPayloads.map((payload) => payload.generation.id));
+      setTransientResult({ kind: "words", payload: combined, saved: true });
+      return combined;
     }),
-    [allWords, persistPayload, run, settings],
+    [allWords, persistPayloadBatch, run, settings],
   );
 
   const generateGrammar = useCallback(
     async (input: Omit<GrammarGenerationInput, "existingTitles">) => run("grammar", "grammar", async (signal) => {
-      const payload = await clientRef.current.generateGrammar({
-        ...input,
-        existingTitles: [
-          ...allGrammar.map((item) => item.title),
-          ...allComparisons.map((item) => item.semantic),
-        ],
-      }, settings, signal);
-      const persisted = await persistPayload(payload, settings.autoSave);
-      setTransientResult({ kind: "grammar", payload: persisted, saved: settings.autoSave });
-      return persisted;
+      const existingTitles = [
+        ...allGrammar.map((item) => item.title),
+        ...allComparisons.map((item) => item.semantic),
+      ];
+      const payloads: AIGenerationPayload[] = [];
+      const addedTitles: string[] = [];
+      let attempts = 0;
+      while (addedTitles.length < input.count && attempts < 6) {
+        const remaining = input.count - addedTitles.length;
+        const count = (attempts === 0 ? input.count : Math.min(3, remaining)) as GrammarGenerationInput["count"];
+        attempts += 1;
+        try {
+          const payload = await clientRef.current.generateGrammar({
+            ...input,
+            count,
+            existingTitles: [...existingTitles, ...addedTitles].slice(-200),
+          }, settings, signal);
+          const deduplicated = filterGrammarPayloadAgainstLibrary(
+            payload,
+            [...allGrammar, ...payloads.flatMap((item) => item.grammar ?? [])],
+            [...allComparisons, ...payloads.flatMap((item) => item.comparisons ?? [])],
+          );
+          payloads.push(deduplicated);
+          addedTitles.push(
+            ...(deduplicated.grammar ?? []).map((item) => item.title),
+            ...(deduplicated.comparisons ?? []).map((item) => item.semantic),
+          );
+        } catch (caught) {
+          const normalized = normalizeAIError(caught);
+          if (normalized.code !== "CONTENT_VALIDATION_FAILED" || signal.aborted) throw caught;
+        }
+      }
+      if (payloads.length === 0 || addedTitles.length === 0) {
+        throw new AIError("CONTENT_VALIDATION_FAILED");
+      }
+      const persistedPayloads = await persistPayloadBatch(payloads, true);
+      const combined = combineSavedPayloads(persistedPayloads, input.count);
+      setLastSavedGenerationIds(persistedPayloads.map((payload) => payload.generation.id));
+      setTransientResult({ kind: "grammar", payload: combined, saved: true });
+      return combined;
     }),
-    [allComparisons, allGrammar, persistPayload, run, settings],
+    [allComparisons, allGrammar, persistPayloadBatch, run, settings],
   );
 
   const quizSources = useCallback((input: QuizRequestOptions) => {
@@ -428,6 +549,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
     if (!transientResult || transientResult.kind === "explanation") return;
     const payload = transientResult.payload;
     const persisted = await persistPayload(payload, true);
+    setLastSavedGenerationIds([persisted.generation.id]);
     setTransientResult({ ...transientResult, payload: persisted, saved: true });
   }, [persistPayload, transientResult]);
 
@@ -446,11 +568,13 @@ export function AIProvider({ children }: { children: ReactNode }) {
   }, [saveAIArtifacts, transientResult]);
 
   const undoLastSave = useCallback(async () => {
-    if (!lastSavedGenerationId) return;
-    await undoAIGeneration(lastSavedGenerationId);
-    setLastSavedGenerationId(null);
+    if (lastSavedGenerationIds.length === 0) return;
+    for (const generationId of [...lastSavedGenerationIds].reverse()) {
+      await undoAIGeneration(generationId);
+    }
+    setLastSavedGenerationIds([]);
     setTransientResult((current) => current && current.kind !== "explanation" ? { ...current, saved: false } : current);
-  }, [lastSavedGenerationId, undoAIGeneration]);
+  }, [lastSavedGenerationIds, undoAIGeneration]);
 
   const usageSummary = useMemo<AIUsageSummary>(() => {
     const today = dateKey(new Date());

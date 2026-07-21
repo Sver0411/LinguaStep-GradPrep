@@ -32,7 +32,7 @@ export function WordLibrary({
       <div className="section-title-row">
         <div>
           <span className="section-kicker">WORD LIBRARY</span>
-          <h2>内置词库</h2>
+          <h2>学习词库</h2>
         </div>
         <span className="count-label">共 {words.length} 组</span>
       </div>
@@ -47,6 +47,7 @@ export function WordLibrary({
         <div className={`word-library-grid density-${density}`}>
           {visible.map((word) => (
             <article className="word-item-card" key={word.id}>
+              {word.source === "ai-generated" && <span className="ai-source-badge">AI 新增</span>}
               <button
                 className={`favorite-button${isFavorite(word.id) ? " active" : ""}`}
                 onClick={() => onToggleFavorite(word.id)}

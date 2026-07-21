@@ -1195,6 +1195,7 @@ input[type="number"] {
   background: var(--panel);
   box-shadow: var(--shadow-sm);
 }
+.ai-source-badge { display: inline-flex; width: fit-content; border-radius: 999px; padding: 3px 7px; background: var(--primary-soft); color: var(--primary); font-size: 9px; font-weight: 800; letter-spacing: .04em; }
 
 .favorite-button {
   display: grid;

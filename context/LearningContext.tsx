@@ -24,11 +24,6 @@ import {
   updateWordMastery,
 } from "@/lib/learning";
 import type {
-  AIContentReport,
-  AIExplanationRecord,
-  AIGenerationRecord,
-  AISavedCollection,
-  AIUsageRecord,
   AppSettings,
   DailyPlan,
   GrammarProgress,
@@ -56,6 +51,12 @@ import {
   type SettingsRepository,
 } from "@/lib/repositories";
 import { migrateLearningSnapshot } from "@/lib/repositories/migrations";
+import {
+  appendAIArtifacts,
+  type AIArtifactBatch,
+} from "@/lib/ai/client/artifact-library";
+
+export type { AIArtifactBatch } from "@/lib/ai/client/artifact-library";
 
 export type ResetScope =
   | "progress"
@@ -66,16 +67,6 @@ export type ResetScope =
 type FavoriteKind = "word" | "grammar" | "comparison";
 export type AIClearScope = "history" | "explanations" | "content" | "all";
 
-export interface AIArtifactBatch {
-  words?: WordPair[];
-  grammar?: GrammarPoint[];
-  comparisons?: GrammarComparison[];
-  generations?: AIGenerationRecord[];
-  usage?: AIUsageRecord[];
-  explanations?: AIExplanationRecord[];
-  collections?: AISavedCollection[];
-  reports?: AIContentReport[];
-}
 const DATA_LOCK_NAME = "lingua-step:data-write";
 const SYNC_CHANNEL_NAME = "lingua-step:data-sync";
 
@@ -279,12 +270,6 @@ function mergeSnapshotChange(
     aiCollections: mergeKeyedChanges(latest.aiCollections, previous.aiCollections, next.aiCollections, (item) => item.id),
     aiContentReports: mergeKeyedChanges(latest.aiContentReports, previous.aiContentReports, next.aiContentReports, (item) => item.id),
   };
-}
-
-function upsertById<T>(current: readonly T[], incoming: readonly T[], keyOf: (item: T) => string): T[] {
-  const next = new Map(current.map((item) => [keyOf(item), item]));
-  incoming.forEach((item) => next.set(keyOf(item), item));
-  return [...next.values()];
 }
 
 function removeAIContentFromSnapshot(
@@ -812,17 +797,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
   const saveAIArtifacts = useCallback(
     async (batch: AIArtifactBatch) => {
       const current = snapshotRef.current;
-      await persistSnapshot({
-        ...current,
-        aiWords: upsertById(current.aiWords, batch.words ?? [], (item) => item.id),
-        aiGrammar: upsertById(current.aiGrammar, batch.grammar ?? [], (item) => item.id),
-        aiComparisons: upsertById(current.aiComparisons, batch.comparisons ?? [], (item) => item.id),
-        aiGenerations: upsertById(current.aiGenerations, batch.generations ?? [], (item) => item.id),
-        aiUsage: upsertById(current.aiUsage, batch.usage ?? [], (item) => item.id),
-        aiExplanations: upsertById(current.aiExplanations, batch.explanations ?? [], (item) => item.id),
-        aiCollections: upsertById(current.aiCollections, batch.collections ?? [], (item) => item.id),
-        aiContentReports: upsertById(current.aiContentReports, batch.reports ?? [], (item) => item.id),
-      });
+      await persistSnapshot(appendAIArtifacts(current, batch));
     },
     [persistSnapshot],
   );

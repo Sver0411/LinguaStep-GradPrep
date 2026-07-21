@@ -16,6 +16,7 @@ import { GRAMMAR_POINTS } from "../data/grammar";
 import { GRAMMAR_COMPARISONS } from "../data/grammar-comparisons";
 import {
   makeDailyPlan,
+  makeGrammar,
   makeSnapshot,
   makeTestResult,
   makeWord,
@@ -25,6 +26,7 @@ import { dateKey } from "../lib/learning";
 import { WordStudySession } from "../components/words/WordStudySession";
 import { HomeView } from "../components/views/HomeView";
 import { WordsView } from "../components/views/WordsView";
+import { GrammarView } from "../components/views/GrammarView";
 import { TestView } from "../components/views/TestView";
 import { MistakesView } from "../components/views/MistakesView";
 import { SettingsView } from "../components/views/SettingsView";
@@ -62,7 +64,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function aiMock() {
+function aiMock(overrides: Record<string, unknown> = {}) {
   return {
     settings: DEFAULT_AI_SETTINGS,
     health: null,
@@ -86,6 +88,7 @@ function aiMock() {
     cancel: vi.fn(),
     resetAISettings: vi.fn(),
     clearAllSecrets: vi.fn(),
+    ...overrides,
   };
 }
 
@@ -178,6 +181,25 @@ describe("phase-two components", () => {
       () => expect(screen.getByText("没有符合条件的单词")).toBeTruthy(),
       { timeout: 1000 },
     );
+  });
+
+  it("generates ten deduplicated words from the word library and starts studying them", async () => {
+    const generated = { ...makeWord("ai-inline-word", "AI新增"), source: "ai-generated" as const };
+    mocked.ai = aiMock({ generateWords: vi.fn().mockResolvedValue({ words: [generated] }) });
+    mocked.learning = learningMock();
+    render(<WordsView />);
+    await userEvent.click(screen.getByRole("button", { name: /AI 新增 10 组并学习/ }));
+    expect(mocked.ai.generateWords).toHaveBeenCalledWith(expect.objectContaining({ count: 10 }));
+    await waitFor(() => expect(screen.getByRole("button", { name: /揭示答案/ })).toBeTruthy());
+  });
+
+  it("generates grammar inline using the current grammar mode", async () => {
+    const generated = { ...makeGrammar("ai-inline-grammar"), source: "ai-generated" as const };
+    mocked.ai = aiMock({ generateGrammar: vi.fn().mockResolvedValue({ grammar: [generated] }) });
+    mocked.learning = learningMock({ allGrammar: [...GRAMMAR_POINTS, generated] });
+    render(<GrammarView />);
+    await userEvent.click(screen.getByRole("button", { name: /AI 新增 1 项/ }));
+    expect(mocked.ai.generateGrammar).toHaveBeenCalledWith(expect.objectContaining({ count: 1, language: "japanese" }));
   });
 
   it("completes a one-question test and renders the result breakdown", async () => {

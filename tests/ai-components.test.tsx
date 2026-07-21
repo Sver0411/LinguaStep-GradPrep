@@ -47,7 +47,7 @@ function aiMock(overrides: Record<string, unknown> = {}) {
 
 function learningMock(overrides: Record<string, unknown> = {}) {
   return {
-    snapshot: makeSnapshot(), removeAIContent: vi.fn(), undoAIGeneration: vi.fn(), removeAIGeneration: vi.fn(), saveAIArtifacts: vi.fn(), clearAIData: vi.fn(),
+    snapshot: makeSnapshot(), allWords: [], allGrammar: [], allComparisons: [], removeAIContent: vi.fn(), undoAIGeneration: vi.fn(), removeAIGeneration: vi.fn(), saveAIArtifacts: vi.fn(), clearAIData: vi.fn(),
     ...overrides,
   };
 }
@@ -62,10 +62,10 @@ describe("phase-three AI components", () => {
 
   it("submits the word, grammar and quiz generator forms through the AI context", async () => {
     render(<AIView />);
-    await userEvent.click(screen.getByRole("button", { name: /开始生成/ }));
+    await userEvent.click(screen.getByRole("button", { name: /生成并加入词库/ }));
     expect(mocked.ai.generateWords).toHaveBeenCalledWith(expect.objectContaining({ count: 5, japaneseLevel: "N2", quality: "fast" }));
     await userEvent.click(screen.getByRole("tab", { name: /生成语法/ }));
-    await userEvent.click(screen.getByRole("button", { name: /开始生成/ }));
+    await userEvent.click(screen.getByRole("button", { name: /生成并加入语法库/ }));
     expect(mocked.ai.generateGrammar).toHaveBeenCalledWith(expect.objectContaining({ language: "japanese", level: "N2" }));
     await userEvent.click(screen.getByRole("tab", { name: /生成练习题/ }));
     await userEvent.click(screen.getByRole("button", { name: /开始生成/ }));
@@ -81,14 +81,15 @@ describe("phase-three AI components", () => {
     expect(mocked.ai.cancel).toHaveBeenCalled();
   });
 
-  it("renders partial success, validation rejection details and manual save", async () => {
+  it("shows accumulated-library status for a validated word batch", async () => {
     const word = { ...makeWord("ai-word-1", "AI"), source: "ai-generated" as const };
-    mocked.ai = aiMock({ transientResult: { kind: "words", saved: false, payload: { generation: generation(), usage: {}, words: [word], rejectedReasons: ["第 2 项 duplicate：与现有词库重复"] } } });
+    mocked.learning = learningMock({ allWords: [word], snapshot: { ...makeSnapshot(), aiWords: [word] } });
+    mocked.ai = aiMock({ transientResult: { kind: "words", saved: true, payload: { generation: generation({ saveMode: "saved" }), usage: {}, words: [word], rejectedReasons: ["第 2 项 duplicate：与现有词库重复"] } } });
     render(<AIView />);
-    expect(screen.getByText("部分内容通过校验")).toBeTruthy();
+    expect(screen.getByText("本次新增 1 组词汇")).toBeTruthy();
+    expect(screen.getByText(/当前总词库 1 组（AI 1）/)).toBeTruthy();
     expect(screen.getByText("查看未通过项的原因")).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: /保存到学习库/ }));
-    expect(mocked.ai.saveTransient).toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: /去背新增单词/ })).toBeTruthy();
   });
 
   it("edits masked secrets and tests the connection from settings", async () => {

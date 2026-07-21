@@ -3,13 +3,16 @@
 import {
   BookOpenText,
   Layers3,
+  LoaderCircle,
   Play,
   RotateCcw,
   Search,
   SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
+import { useAI } from "@/context/AIContext";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import {
@@ -43,6 +46,13 @@ export function WordsView() {
     toggleFavorite,
     setFocusMode,
   } = useLearning();
+  const {
+    settings: aiSettings,
+    online: aiOnline,
+    busyOperation,
+    error: aiError,
+    generateWords,
+  } = useAI();
   const now = useCurrentTime();
   const [mode, setMode] = useState<StudyMode>(settings.defaultStudyMode);
   const [sessionItems, setSessionItems] = useState<WordPair[] | null>(null);
@@ -170,6 +180,21 @@ export function WordsView() {
     ],
   );
 
+  const generateAndStudy = async () => {
+    const payload = await generateWords({
+      count: 10,
+      japaneseLevel: aiSettings.defaultJapaneseLevel,
+      englishLevel: aiSettings.defaultEnglishLevel,
+      frequency: aiSettings.defaultFrequency,
+      purpose: aiSettings.defaultPurpose,
+      quality: aiSettings.defaultQuality,
+      qualityReview: aiSettings.qualityReview,
+    });
+    if (!payload?.words?.length) return;
+    setSessionItems(payload.words);
+    setFocusMode(true);
+  };
+
   useEffect(() => {
     if (autoStarted.current || now === null) return;
     const search = new URLSearchParams(window.location.search);
@@ -263,6 +288,7 @@ export function WordsView() {
           <div className="deck-card-top">
             <span className="deck-icon"><BookOpenText size={28} /></span>
             <div className="deck-stat"><strong>{allWords.length}</strong><span>组词汇</span></div>
+            <div className="deck-stat"><strong>{snapshot.aiWords.length}</strong><span>AI 新增</span></div>
             <div className="deck-stat"><strong>{modeProgress.length}</strong><span>已学习</span></div>
             <div className="deck-stat"><strong>{masteredCount}</strong><span>已掌握</span></div>
             <div className="deck-stat"><strong>{needsReview.length}</strong><span>今日到期</span></div>
@@ -295,6 +321,9 @@ export function WordsView() {
               <Button onClick={() => startSession("all")} disabled={filteredWords.length === 0}>
                 <Play size={18} fill="currentColor" />开始一轮
               </Button>
+              <Button variant="secondary" onClick={() => void generateAndStudy()} disabled={!aiSettings.enabled || !aiOnline || busyOperation !== null}>
+                {busyOperation === "words" ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />}{busyOperation === "words" ? "正在生成并去重" : "AI 新增 10 组并学习"}
+              </Button>
             </div>
           </div>
         </article>
@@ -309,6 +338,8 @@ export function WordsView() {
           </ol>
         </aside>
       </section>
+
+      {aiError && busyOperation === null && <section className="inline-alert error" role="alert"><span>AI 新增没有完成：{aiError.message}</span></section>}
 
       <FilterPanel ariaLabel="单词搜索与筛选">
         <div className="search-field">

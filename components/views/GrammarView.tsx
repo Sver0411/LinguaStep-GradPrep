@@ -6,14 +6,17 @@ import {
   Check,
   Heart,
   Languages,
+  LoaderCircle,
   Play,
   Quote,
   RotateCcw,
   Route,
   Search,
+  Sparkles,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
+import { useAI } from "@/context/AIContext";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { searchGrammar, type GrammarSearchFilters } from "@/lib/search";
@@ -42,6 +45,13 @@ export function GrammarView() {
     isFavorite,
     toggleFavorite,
   } = useLearning();
+  const {
+    settings: aiSettings,
+    online: aiOnline,
+    busyOperation,
+    error: aiError,
+    generateGrammar,
+  } = useAI();
   const now = useCurrentTime();
   const [viewMode, setViewMode] = useState<GrammarViewMode>("japanese");
   const [selectedId, setSelectedId] = useState("");
@@ -150,6 +160,19 @@ export function GrammarView() {
     setDueOnly(false);
   };
 
+  const generateAndOpen = async () => {
+    const payload = await generateGrammar({
+      count: 1,
+      language: viewMode,
+      level: level !== "all" ? level : viewMode === "english" ? aiSettings.defaultEnglishLevel : aiSettings.defaultJapaneseLevel,
+      topic: query.trim() || undefined,
+      quality: aiSettings.defaultQuality,
+      qualityReview: aiSettings.qualityReview,
+    });
+    const point = payload?.grammar?.[0];
+    if (point) setSelectedId(point.id);
+  };
+
   if (practicing && selected) {
     return <GrammarPractice point={selected} onClose={() => setPracticing(false)} />;
   }
@@ -169,13 +192,20 @@ export function GrammarView() {
         title="分别学习，也按相似语义进行比较"
         description={`日语 ${allGrammar.filter((item) => item.language === "japanese").length} 项、英语 ${allGrammar.filter((item) => item.language === "english").length} 项，并提供 ${allComparisons.length} 组非逐字对应的日英语法对比。`}
         actions={
-          <div className="segmented-control" aria-label="语法学习模式">
-            <button className={viewMode === "japanese" ? "active" : ""} onClick={() => changeMode("japanese")}>日语 · {allGrammar.filter((item) => item.language === "japanese").length}</button>
-            <button className={viewMode === "english" ? "active" : ""} onClick={() => changeMode("english")}>英语 · {allGrammar.filter((item) => item.language === "english").length}</button>
-            <button className={viewMode === "comparison" ? "active" : ""} onClick={() => changeMode("comparison")}>日英对比 · {allComparisons.length}</button>
+          <div className="page-actions">
+            <div className="segmented-control" aria-label="语法学习模式">
+              <button className={viewMode === "japanese" ? "active" : ""} onClick={() => changeMode("japanese")}>日语 · {allGrammar.filter((item) => item.language === "japanese").length}</button>
+              <button className={viewMode === "english" ? "active" : ""} onClick={() => changeMode("english")}>英语 · {allGrammar.filter((item) => item.language === "english").length}</button>
+              <button className={viewMode === "comparison" ? "active" : ""} onClick={() => changeMode("comparison")}>日英对比 · {allComparisons.length}</button>
+            </div>
+            <Button variant="secondary" onClick={() => void generateAndOpen()} disabled={!aiSettings.enabled || !aiOnline || busyOperation !== null}>
+              {busyOperation === "grammar" ? <LoaderCircle className="spin" size={17} /> : <Sparkles size={17} />}{busyOperation === "grammar" ? "正在生成并去重" : "AI 新增 1 项"}
+            </Button>
           </div>
         }
       />
+
+      {aiError && busyOperation === null && <section className="inline-alert error" role="alert"><span>AI 新增没有完成：{aiError.message}</span></section>}
 
       <FilterPanel ariaLabel="语法搜索与筛选">
         <div className="search-field">
@@ -206,7 +236,7 @@ export function GrammarView() {
             {filteredComparisons.map((item) => (
               <article className="comparison-card card" key={item.id}>
                 <div className="grammar-title-row">
-                  <div><span className="section-kicker">{item.level}</span><h2>{item.semantic}</h2></div>
+                  <div><span className="section-kicker">{item.source === "ai-generated" ? `AI 新增 · ${item.level}` : item.level}</span><h2>{item.semantic}</h2></div>
                   <button className={`favorite-button${isFavorite("comparison", item.id) ? " active" : ""}`} onClick={() => void toggleFavorite("comparison", item.id)} aria-label={isFavorite("comparison", item.id) ? "取消收藏对比" : "收藏对比"}><Heart size={18} fill={isFavorite("comparison", item.id) ? "currentColor" : "none"} /></button>
                 </div>
                 <div className="comparison-language-grid">
@@ -233,7 +263,7 @@ export function GrammarView() {
                 return (
                   <button className={`grammar-list-item${selected?.id === point.id ? " active" : ""}`} onClick={() => setSelectedId(point.id)} key={point.id}>
                     <span className="grammar-index">{String(index + 1).padStart(2, "0")}</span>
-                    <span><strong>{point.title}</strong><small>{point.level} · {progress ? STATUS_LABEL[progress.status] : "未学习"}</small></span>
+                    <span><strong>{point.title}</strong><small>{point.level} · {progress ? STATUS_LABEL[progress.status] : "未学习"}{point.source === "ai-generated" ? " · AI 新增" : ""}</small></span>
                     {progress?.status === "mastered" && <Check size={16} />}
                   </button>
                 );
@@ -244,7 +274,7 @@ export function GrammarView() {
           {selected && (
             <article className="grammar-detail card">
               <div className="grammar-title-row">
-                <div><div className="tag-row"><span>{selected.level}</span><span>{selected.language === "japanese" ? "日语" : "英语"}</span>{progressMap.get(selected.id) && <span>{STATUS_LABEL[progressMap.get(selected.id)!.status]}</span>}</div><h2>{selected.title}</h2></div>
+                <div><div className="tag-row">{selected.source === "ai-generated" && <span>AI 新增</span>}<span>{selected.level}</span><span>{selected.language === "japanese" ? "日语" : "英语"}</span>{progressMap.get(selected.id) && <span>{STATUS_LABEL[progressMap.get(selected.id)!.status]}</span>}</div><h2>{selected.title}</h2></div>
                 <button className={`favorite-button large${isFavorite("grammar", selected.id) ? " active" : ""}`} onClick={() => void toggleFavorite("grammar", selected.id)} aria-label={isFavorite("grammar", selected.id) ? "取消收藏语法" : "收藏语法"}><Heart size={20} fill={isFavorite("grammar", selected.id) ? "currentColor" : "none"} /></button>
               </div>
               <section className="grammar-explanation"><p>{selected.explanation}</p></section>

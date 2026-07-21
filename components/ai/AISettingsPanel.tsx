@@ -96,7 +96,7 @@ export function AISettingsPanel() {
             <label><span>最大重试</span><input type="number" min={0} max={5} value={settings.maxRetries} disabled={!settings.autoRetry} onChange={(event) => updateSettings({ maxRetries: Math.max(0, Math.min(5, Number(event.target.value) || 0)) })} /></label>
           </div>
           <div className="ai-toggle-list">
-            <div><span><strong>生成后自动保存</strong><small>关闭时先预览，再手动加入词库或语法库。</small></span><Toggle checked={settings.autoSave} label="自动保存" onChange={() => updateSettings({ autoSave: !settings.autoSave })} /></div>
+            <div><span><strong>词汇与语法固定追加保存</strong><small>每批合格内容都会加入现有学习库；新生成不会替换旧内容，重复项会自动跳过并补足。</small></span><CheckCircle2 className="status-ok" size={20} /></div>
             <div><span><strong>质量复核</strong><small>额外调用质量模型检查内容，耗时和 token 会增加。</small></span><Toggle checked={settings.qualityReview} label="质量复核" onChange={() => updateSettings({ qualityReview: !settings.qualityReview })} /></div>
             <div><span><strong>自动重试</strong><small>只重试限流、超时、网络与服务繁忙等瞬时错误。</small></span><Toggle checked={settings.autoRetry} label="自动重试" onChange={() => updateSettings({ autoRetry: !settings.autoRetry })} /></div>
           </div>
