@@ -2,62 +2,229 @@
 
 > 日语与英语，一起稳步进阶
 
-LinguaStep 是一个中文界面的个人日语与英语学习应用。v0.3.1 在完整的本地学习闭环上加入了可控的 DeepSeek AI：生成词卡、语法和四选一练习，为错题生成中文解释，同时保留离线学习、IndexedDB 数据和第二阶段全部功能。
+LinguaStep 是一个中文界面的个人日语与英语学习网页应用，面向日语 JLPT N3→N2/N1、英语高中基础→四级/六级/TOEIC 800 的长期学习目标。它把日英对应词卡、语法、复习计划、测试、错题、收藏、统计和可选的 DeepSeek AI 集成在同一个学习闭环中。
 
-当前公开站点：[直接打开 LinguaStep](https://linguastep-ai-study.christinewoods7817.chatgpt.site)。无需登录；未配置部署端密钥时，可在“设置 → DeepSeek AI”选择个人 API Key（BYOK）。
+项目当前版本为 **v0.3.1**。无需注册账号；内置内容和学习记录保存在当前浏览器，断网时仍可继续核心学习。AI 是按需增强能力，没有配置 AI 也不影响其他功能。
 
-## 第三阶段能力
+公开站点：[打开 LinguaStep](https://linguastep-ai-study.christinewoods7817.chatgpt.site)
 
-- 两种安全接入：部署端环境变量保管 DeepSeek Key，或用户自带 Key（BYOK）；浏览器只调用同源 `/api/ai/*` 代理。
-- 结构化生成：日英对应词卡、日语/英语语法、日英语义对比和基于已学内容的四选一题。
-- 质量闸门：Zod Schema、字段/语言/等级检查、重复归一化、内容哈希、题目引用和干扰项校验；失败内容不会进入学习库。
-- Prompt 合约 v2：为词汇、语法、日英对比和测试题定义精确字段、英文枚举与嵌套结构；空的可选上下文会规范化为未提供，减少无意义修复调用。
-- 保存控制：默认自动保存，也可仅在当前会话预览；支持手动保存、撤销最近批量保存、删除内容、反馈问题和移出学习库。
-- 错题解释：只发送当前题、用户选择和必要摘要；支持简洁/详细、缓存和强制重新生成。
-- 可恢复请求：超时、有限指数退避、并发限制、同请求去重、取消、中文错误分类、前端每日软限制和服务端内存限流。
-- 可追踪用量：记录请求 ID、模型、Prompt 版本、状态、校验、耗时、重试和 token；不记录密钥、完整请求头或系统提示词。
-- 数据兼容：IndexedDB v1/v2 原地升级到 v3，保留旧学习记录并新增 AI 内容、历史、用量、解释、练习集和纠错记录。
-- 离线降级：断网只禁用 AI 操作；内置内容、已保存 AI 内容、学习、复习、测试、错题、收藏和统计继续工作。
+## 项目特点
 
-第二阶段的 300 组词、50 个语法、15 组日英对比、三模式间隔复习、每日计划、测试、错题生命周期、收藏和统计均保留。
+- **完整而非原型**：学习、复习、测试、错题和进度保存都是真实可操作功能。
+- **日英同步学习**：同一中文语义下同时理解日语与英语，也可以只学其中一种语言。
+- **本地优先**：无需登录，IndexedDB 保存结构化学习数据，核心功能不依赖网络。
+- **长期复习**：使用可解释的间隔重复调度和每日计划，不只浏览静态词表。
+- **内容可直接学习**：内置 300 组日英对应词、50 个语法点和 15 组日英语法对比。
+- **AI 可控增强**：DeepSeek 生成内容必须通过结构和业务校验后才能保存。
+- **适配个人设备**：电脑端侧边栏、手机端底部导航、专注模式、键盘快捷键和三种主题。
 
-## 技术栈与目录
+## 功能总览
 
-- React 19、Next.js 16 App Router API、Vinext、TypeScript strict
-- 原生 CSS、Lucide React
-- IndexedDB v3 + Repository Pattern；localStorage 只保存非敏感设置
-- 原生 `fetch` 接入 DeepSeek OpenAI-compatible API；Zod 校验 JSON
-- Vitest、fake-indexeddb、Testing Library、jsdom
+### 首页与每日计划
+
+- 自动生成当天的新词、到期复习、错题、语法和测试任务。
+- 同一天刷新或多标签页打开不会重复创建计划。
+- 显示今日完成量、剩余量、逾期复习、活跃错题和连续学习天数。
+- 根据当前进度推荐下一步，可按最新设置重新计算当天计划。
+- 支持自动补足未完成任务，以及周末轻量、不变或加强三种节奏。
+- 保留自由学习入口，不强制用户按计划学习。
+
+### 单词学习
+
+- 内置 **300 组**真实日英对应词：日语以 N3/N2 为主并含少量 N1 过渡，英语覆盖高中、四级、六级和 TOEIC 过渡。
+- 每组包含中文核心义、日语写法/假名/罗马音、英语单词/音标、词性、等级、例句、翻译、搭配和差异说明。
+- 支持三种独立学习轨迹：
+  - 日英对照
+  - 只学日语
+  - 只学英语
+- 支持简洁版与完整版、同时揭示与分步揭示、日语优先/英语优先/随机揭示。
+- 可选择 10、20、30 或自定义轮次，完成后查看认识、模糊、不认识和掌握比例。
+- 支持中文、日语汉字、假名、罗马音、英语、例句和搭配搜索。
+- 支持按语言等级、频率、掌握状态、收藏、错词、到期状态和来源筛选。
+
+学习快捷键：
+
+| 按键 | 操作 |
+| --- | --- |
+| `Space` | 揭示答案 |
+| `1` | 认识 |
+| `2` | 模糊 |
+| `3` | 不认识 |
+| `←` / `→` | 上一张 / 下一张 |
+| `Esc` | 退出专注模式 |
+
+### 间隔重复复习
+
+LinguaStep 使用可解释的 **SM-2 衍生调度器**，而不是宣称实现完整 FSRS。三种反馈会产生不同的复习间隔：
+
+| 反馈 | 主要效果 |
+| --- | --- |
+| 认识 | 延长间隔，提高连续正确次数；连续认识后进入已掌握 |
+| 模糊 | 约 1 天后再次复习，降低稳定度 |
+| 不认识 | 约 10 分钟后重现，提高遗忘次数和优先级 |
+
+复习状态包含首次/最近学习时间、下次复习时间、复习次数、连续正确、遗忘次数、稳定度、难度、暂停状态、语言模式和算法版本。队列优先处理逾期错题、逾期内容、不认识、模糊、今日到期和新内容。
+
+### 语法与日英对比
+
+- 内置 **50 个语法点**：35 个日语语法、15 个英语语法。
+- 日语覆盖 N3 巩固、N2 核心和少量 N1 过渡；英语覆盖高中、四级和少量六级过渡。
+- 每个语法点包含中文讲解、结构、接续/用法、场景、语气、例句、翻译、常见错误、易混点和 5 道四选一练习。
+- 内置 **15 组日英语法对比**，按进行、完成、条件、推测、原因、让步等相近语义组织，不强行逐字对应。
+- 语法支持未学习、学习中、待复习、已掌握状态；练习答错后会降低掌握度并进入错题和后续复习。
+- 支持按关键词、语言、等级、状态、收藏、错题和到期状态搜索筛选。
+
+### 测试系统
+
+- 支持日语、英语、日英混合三种四选一测试模式。
+- 题目默认只来自已学内容，可选择今日、最近 7 天、全部已学、错题、收藏或到期复习。
+- 支持 10、20、30 或自定义题数、难度筛选、错题优先和即时/统一反馈。
+- 题型包括中日/中英/日英互选、语境表达、自然译文、语法形式和易混辨析。
+- 测试结果记录总分、正确率、用时、语言/内容/难度分项和逐题中文解析。
+- 错题自动进入错题本；AI 生成的练习集也可以直接进入同一测试流程。
+
+### 错题本
+
+- 按单词、日语语法、英语语法和日英对比分组管理。
+- 状态生命周期：活跃错题 → 巩固中 → 已掌握 → 已归档。
+- 记录错误次数、连续答对、最近错误时间、来源和历史选项快照。
+- 默认连续答对 3 次后移出活跃错题，也可在设置中调整。
+- 支持专项重练、标记掌握、重新加入、归档、移出和收藏。
+- 配置 AI 后，可为当前错题生成简洁或详细的中文解释。
+
+### 收藏
+
+- 可收藏单词、语法和日英语法对比。
+- 支持关键词、语言和难度筛选。
+- 可以从收藏内容直接开始学习或生成专项测试。
+- 支持批量取消收藏，并提供确认保护。
+
+### 学习统计
+
+- 展示今日、本周、累计学习量以及已学/已掌握单词和语法。
+- 展示测试次数、总体正确率、当前/最长连续学习天数、待复习和活跃错题。
+- 提供最近 7 天和 30 天的学习量、正确率、新学/复习、日语/英语趋势。
+- 展示日语、英语、日英对照和语法的掌握分布。
+- 图表兼容浅色、深色和手机屏幕，同时提供文字数字，不只依赖颜色和图形。
+
+### DeepSeek AI 助学
+
+AI 页面是可选的次要入口，提供：
+
+- 生成日英对应词卡。
+- 生成日语语法、英语语法和日英语义对比。
+- 基于指定已学内容生成四选一练习题。
+- 为错题生成六字段中文解释，并按题目、答案、Prompt 和模型缓存。
+- 自动保存或仅当前会话临时预览；支持手动保存、撤销最近批量保存和删除 AI 内容。
+- 查看生成历史、校验结果、模型、耗时、重试和 Token 用量。
+- 反馈内容问题、清理解释缓存、历史或全部 AI 内容。
+
+所有可保存 AI 内容依次经过：
 
 ```text
-app/api/ai/             同源 AI 路由和健康检查
-components/ai/          AI 设置与错因解释 UI
-components/views/       学习页面与 AI 助学页面
-context/                LearningContext 与独立 AIContext
-lib/ai/                 config、provider、prompt、schema、validation、service、server、client
-lib/repositories/       IndexedDB v3、迁移与内存降级
-tests/                  领域、AI、接口、组件、迁移和工作流测试
-docs/                   架构、安全、校验、测试和部署文档
+DeepSeek JSON Output
+  → Zod Schema
+  → 语言、等级、长度和引用规则
+  → 重复、内容哈希和选项校验
+  → 必要时一次结构修复或受约束重生成
+  → 可选高质量模型复核
+  → 合格后保存 / 不合格则拒绝
 ```
 
-## 本地开发
+请求层支持超时、取消、有界指数退避、并发限制、重复请求合并、请求 ID、中文错误分类和服务端基础限流。AI 断网或配置失败不会影响内置学习功能。
+
+### 设置、主题与设备适配
+
+- 学习设置：默认模式、揭示顺序、每日新词/复习/语法/测试数量、每轮数量、错题优先和周末节奏。
+- 显示设置：浅色、深色、跟随系统；简洁/完整；标准/较大字体；动画和减少动态效果。
+- 数据设置：分别重置学习进度、测试、错题、收藏、AI 数据或全部数据，危险操作均需确认。
+- AI 设置：总开关、接入方式、连接测试、默认生成参数、自动保存、质量复核、重试和每日软限制。
+- 电脑端使用侧边栏，手机端使用底部导航和“更多”抽屉；学习时可进入专注模式。
+
+## 推荐使用流程
+
+1. 打开首页，查看今天自动安排的任务。
+2. 先完成到期复习，再学习当天新词。
+3. 阅读一个语法点并完成配套练习。
+4. 使用“今日学过”或“到期复习”完成综合测试。
+5. 在错题本巩固薄弱内容，在统计页观察趋势。
+6. 需要扩充内容或更详细错因时，再启用 DeepSeek AI。
+
+## 技术栈与选择理由
+
+| 技术 | 用途与选择理由 |
+| --- | --- |
+| React 19 + Next.js 16 | 成熟的组件、路由和服务端 API 能力，可本地运行并适配 Vercel |
+| Vinext + Vite | 为 OpenAI Sites/Cloudflare 构建提供 Next.js 兼容运行路径和快速开发体验 |
+| TypeScript strict | 集中约束学习、复习、存储、API 和 AI 内容模型，降低迁移错误 |
+| 原生 CSS + Lucide React | 保持视觉系统可控、依赖轻量，并支持响应式、主题和可访问焦点 |
+| IndexedDB + Repository Pattern | 在浏览器本地保存结构化学习数据，同时隔离 UI 与存储实现，便于未来替换云端仓库 |
+| Zod | 校验服务端输入和 AI 结构化输出，阻止不完整内容进入数据库 |
+| 原生 `fetch` | 接入 DeepSeek OpenAI-compatible API，避免引入庞大 AI 框架 |
+| Vitest + Testing Library + fake-indexeddb | 覆盖纯业务逻辑、组件、接口、数据库迁移和完整 Mock 工作流 |
+
+## 架构
+
+```text
+页面与组件
+  ├─ LearningContext
+  │    ├─ 学习、测试、计划、统计纯函数
+  │    └─ LearningRepository → IndexedDB v3 / 内存降级
+  └─ AIContext
+       └─ AIAPIClient → 同源 /api/ai/*
+                          └─ 请求保护与限流
+                               └─ AIContentService
+                                    ├─ Prompt 模板
+                                    ├─ Zod 与业务校验
+                                    └─ AIProvider
+                                         ├─ DeepSeekProvider
+                                         └─ MockAIProvider
+```
+
+页面不直接操作 IndexedDB，也不直接调用 DeepSeek。学习逻辑、存储、AI Provider、内容校验和 UI 分层独立；AI 保存的词汇、语法和对比会进入与内置内容相同的学习、搜索、收藏、测试和统计流程。
+
+## 目录结构
+
+```text
+app/                    页面入口、布局和同源 AI API
+components/             应用壳、学习组件、筛选器、图表和页面视图
+context/                LearningContext 与 AIContext
+data/                   300 组词、50 个语法和 15 组对比
+lib/                    模型、复习、计划、测试、统计与通用逻辑
+lib/ai/                 AI 配置、Provider、Prompt、Schema、校验和服务
+lib/repositories/       IndexedDB、迁移、Repository 与内存降级
+tests/                  单元、接口、组件、迁移和工作流测试
+docs/                   架构、算法、存储、安全、测试和部署文档
+.openai/hosting.json    OpenAI Sites 项目配置
+```
+
+## 本地安装与运行
 
 环境要求：Node.js `>= 22.13`。
 
 ```bash
 npm install
-cp .env.example .env.local
 npm run dev
 ```
 
-默认地址通常是 `http://localhost:3000`。不配置 Key 也能使用全部本地学习功能。
+默认地址通常是 `http://localhost:3000`。不配置任何 API Key 也可以使用全部本地学习功能。
 
-### 服务器托管 Key
+本地生产构建与启动：
 
-1. 在 DeepSeek 开放平台创建 API Key。
-2. 在 `.env.local` 设置 `DEEPSEEK_API_KEY`。真实 `.env*` 已被 Git 忽略，切勿提交。
-3. 本地 `localhost` 可不设置 `AI_PROXY_ACCESS_TOKEN`；仅该开发例外生效。
-4. 打开“设置 → DeepSeek AI”，选择“服务器代理”并测试连接。
+```bash
+npm run build
+npm start
+```
+
+## DeepSeek 配置
+
+### 方式一：服务器托管 Key
+
+这是推荐方式。复制环境变量模板，并把真实值只写入未提交的 `.env.local`：
+
+```bash
+cp .env.example .env.local
+```
 
 ```env
 AI_PROVIDER=deepseek
@@ -72,22 +239,39 @@ AI_MAX_CONCURRENCY=2
 AI_PROXY_ACCESS_TOKEN=
 ```
 
-### 用户自带 Key（BYOK）
+本地 `localhost` 可以不设置代理访问令牌。公网部署使用服务器 Key 时，必须设置足够长且随机的 `AI_PROXY_ACCESS_TOKEN`，并在个人浏览器的 AI 设置中输入相同令牌；否则生产服务器模式会拒绝请求，避免公开网址消耗个人额度。
 
-在设置页选择“个人 API Key”。Key 通过专用请求头按次发送到同源代理，服务端不保存、不返回；它不会进入 IndexedDB、学习设置、URL 或请求正文。
+配置后打开“设置 → DeepSeek AI”，选择“服务器代理”并点击“测试连接”。
 
-默认使用 `sessionStorage`，浏览器会话结束后失效。“保存在此设备”使用 `localStorage`，只应在可信的个人设备上开启；浏览器存储无法提供服务器密钥级别的保护。
+### 方式二：用户自带 Key（BYOK）
 
-## DeepSeek 模型与行为
+在设置页选择“个人 API Key”。浏览器把 Key 放入专用请求头，按次发送到同源代理；服务端不保存、不返回，Key 不进入 URL、请求正文、IndexedDB、学习快照或 AI 历史。
 
-- Fast：`deepseek-v4-flash`，普通生成显式使用非思考模式。
-- Quality：`deepseek-v4-pro`，复杂内容、N1、日英语法对比或质量复核可启用思考模式。
-- API 基址：`https://api.deepseek.com`；请求使用 `/chat/completions`、`response_format: {"type":"json_object"}`。
-- 模型名、地址、超时、重试和并发均从集中配置读取，客户端不能指定任意模型。
+- 默认仅保存在 `sessionStorage`，浏览器会话结束后失效。
+- “保存在此设备”使用 `localStorage`，只应在可信个人设备上启用。
+- 浏览器不会直接跨域请求 DeepSeek。
 
-接口以 DeepSeek 官方文档为准：[Models](https://api-docs.deepseek.com/api/list-models)、[Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion)、[Thinking Mode](https://api-docs.deepseek.com/guides/thinking_mode)。
+当前默认模型：
 
-## 质量检查与测试
+- Fast：`deepseek-v4-flash`，用于普通结构化生成。
+- Quality：`deepseek-v4-pro`，用于复杂语法、日英对比、错题解释或质量复核。
+- API 基址：`https://api.deepseek.com`。
+
+模型和接口以 DeepSeek 官方文档为准：[Models](https://api-docs.deepseek.com/api/list-models)、[Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion)、[Thinking Mode](https://api-docs.deepseek.com/guides/thinking_mode)。
+
+## 数据存储与迁移
+
+数据库名为 `lingua-step-learning`，当前 IndexedDB 版本为 **v3**，共 15 个对象仓库。
+
+- v1：基础学习进度、错题、收藏、测试和每日记录。
+- v2：三模式复习状态、每日计划和完整第二阶段数据。
+- v3：AI 词汇、语法、对比、生成历史、用量、解释缓存、练习集和纠错记录。
+
+升级在原数据库中通过事务完成，不清空旧库、不改变已有内容 ID。迁移失败时浏览器会回滚事务，应用降级到本次会话的内存仓库并保留原数据。
+
+主题和非敏感设置保存在 localStorage；BYOK 和代理令牌使用独立 session/localStorage 键，不属于学习数据库。应用可通过 Web Locks 和 BroadcastChannel 合并并通知多标签页变更。
+
+## 测试与质量检查
 
 ```bash
 npm run typecheck
@@ -99,59 +283,75 @@ npm run build
 npm run build:vercel
 ```
 
-常规测试全部使用 Mock Provider 和固定 Fixture，不调用真实 DeepSeek，不产生 API 费用。
+当前验收状态（2026-07-21）：
 
-### 当前验收状态（2026-07-21）
+- TypeScript strict、ESLint、Vinext/Sites 构建和 Next.js/Vercel 构建通过。
+- 16 个自动化测试文件，共 **101 项测试通过**。
+- 测试覆盖 300 组词/50 个语法/15 组对比的完整性、复习算法、每日计划、日期边界、三种学习模式、搜索筛选、测试判定、错题生命周期、统计聚合、设置、重置和 v1/v2→v3 数据迁移。
+- AI 测试覆盖配置、Provider、JSON Schema、业务校验、密钥隔离、接口保护、超时、取消、重试、组件和完整 Mock 工作流。
+- 已使用真实 DeepSeek API 验证两个默认模型，以及词卡、日语语法、日英对比、练习题和错题解释全链路。
 
-- TypeScript strict、ESLint、Vinext/Sites 构建与 Next.js/Vercel 构建通过。
-- 16 个自动化测试文件共 101 项测试通过，覆盖配置、Provider、重试/超时/取消、代理安全、Schema、本地校验、组件、IndexedDB v1/v2→v3 和 Mock 工作流。
-- 使用真实 DeepSeek API 验证了 `deepseek-v4-flash`、`deepseek-v4-pro`、JSON Output、普通非思考模式和复杂任务思考模式。
-- 真实生成验证通过：日英词卡、N2 日语语法、N2/四级日英对比、基于指定已学词汇的四选一题、六字段中文错因解释。
-- 真实测试不会保存 API Key、完整请求头、完整 Prompt 或原始响应到仓库和测试快照。
-
-可选的手动冒烟测试：
+常规测试全部使用 Mock Provider，不访问 DeepSeek，不产生 API 费用。可选的最小真实冒烟测试：
 
 ```bash
 DEEPSEEK_API_KEY=你的密钥 npm run test:deepseek
 ```
 
-没有 `DEEPSEEK_API_KEY` 时脚本自动跳过。启用后只发送一个最小 JSON 请求，可能产生少量 API 费用，且不会输出密钥。该脚本不在默认测试或 CI 中运行。
+未提供环境变量时脚本会自动跳过；启用后可能产生少量 API 费用，且不会输出密钥。
 
-## Vercel 部署
+## 部署
 
-1. 将仓库导入 Vercel，Framework Preset 选择 Next.js。
+### Vercel
+
+1. 将项目导入 Vercel，Framework Preset 选择 Next.js。
 2. Build Command 使用 `npm run build:vercel`，Install Command 使用 `npm install`。
-3. 在 Production/Preview 环境配置 `.env.example` 中的变量。
-4. `DEEPSEEK_API_KEY` 与 `AI_PROXY_ACCESS_TOKEN` 都是敏感变量，不能使用 `NEXT_PUBLIC_` 等客户端公开前缀。
-5. 公网部署使用服务器 Key 时必须设置一个足够长、随机的 `AI_PROXY_ACCESS_TOKEN`，并在个人浏览器设置页输入相同令牌。未配置时代理会拒绝生产服务器模式。
-6. 部署后检查页面源码、`/api/ai/health`、错误响应和浏览器网络响应：它们只能显示“是否配置”，不能包含 Key 值。
-7. 修改 `DEEPSEEK_MODEL_FAST/QUALITY` 可切换允许的模型；设置 `AI_ENABLED=false` 可关闭全部 AI 请求而不影响本地学习。
+3. 在 Production/Preview 环境中配置 `.env.example` 对应变量。
+4. `DEEPSEEK_API_KEY` 和 `AI_PROXY_ACCESS_TOKEN` 必须设为敏感变量，不能添加 `NEXT_PUBLIC_` 等客户端公开前缀。
+5. 公网服务器 Key 模式必须同时配置代理访问令牌。
+6. 部署后检查页面源码、`/api/ai/health` 和错误响应，确认它们只显示是否配置，不包含密钥值。
+7. 修改 `DEEPSEEK_MODEL_FAST/QUALITY` 可以切换允许模型；设置 `AI_ENABLED=false` 可关闭 AI 而不影响本地学习。
 
-服务端限流是单实例内存限流。在 Serverless 多实例环境中它不是分布式全局配额；代理访问令牌、DeepSeek 账户配额和前端软限制仍需同时使用。详见 [AI 部署](docs/ai-deployment.md)。
+服务端限流是单实例内存限流。在 Serverless 多实例环境中，它不是分布式全局配额；仍需结合代理访问令牌和 DeepSeek 账户配额。
 
-项目同时保留 `.openai/hosting.json`，可部署到 OpenAI Sites；部署端未配置服务器 Key 时仍可使用 BYOK 和本地学习。
+### OpenAI Sites
 
-## 数据与隐私
+项目包含 `.openai/hosting.json` 和 Vinext 构建，可发布到 OpenAI Sites。运行时环境变量应在 Sites 项目中配置，不要写入 `hosting.json` 或提交到仓库。
 
-- IndexedDB 数据库 `lingua-step-learning` 当前版本为 3，共 15 个对象仓库。
-- 只在用户明确触发时发送生成参数或当前题目；出题最多发送 100 条必要的内容摘要。
-- 不发送姓名、邮箱、全部测试历史或无关学习数据。
-- 临时生成内容只存在 React 内存；历史和用量可保存，但不包含完整 Prompt 或密钥。
-- 删除 AI 内容会同时清理对应进度、收藏、错题和练习集引用，避免悬空数据。
+## 安全与隐私
 
-## 文档
+- 服务器 Key 只从服务端环境变量读取，不进入客户端 Bundle。
+- BYOK 和代理令牌不写入 IndexedDB、URL、请求正文、日志、生成历史或测试快照。
+- 服务器校验同源、方法、请求大小、生成数量、字符串/数组长度和允许模型。
+- AI 输出只作为普通文本数据处理，不执行代码、不作为 HTML 注入。
+- 出题最多发送 100 条必要的学习摘要；错题解释只发送当前题和相关摘要。
+- 不发送姓名、邮箱、完整数据库或无关学习历史。
+- 删除 AI 内容会同时清理相关进度、收藏、错题、练习集和反馈引用。
+- AI 内容可能有误，应结合可靠教材或官方资料判断。
+
+## 版本阶段
+
+| 版本 | 状态 | 主要内容 |
+| --- | --- | --- |
+| v0.1 | 已完成 | 首页、100 组词、20 个语法、基础学习/测试/错题/收藏/统计、IndexedDB v1、主题和响应式 |
+| v0.2 | 已完成 | 300 组词、50 个语法、15 组对比、三模式复习、每日计划、搜索筛选、完整统计、IndexedDB v2 |
+| v0.3 | 已完成 | DeepSeek 双 Key 模式、AI 内容生成/解释/校验/历史/用量、离线降级、IndexedDB v3 |
+| 后续 | 未承诺 | 账号与云同步、导入导出、发音、语音识别、自由文本批改、PWA 和完整 FSRS |
+
+## 当前边界
+
+项目目前不提供账号、云端学习进度、多设备同步、发音播放、语音识别、拼写输入、自由文本翻译/作文批改、AI 聊天陪练、数据导入导出、完整 PWA、管理员后台或社交功能。项目以个人、本地优先的日英学习为边界，不加入金币、排行榜或体力系统。
+
+## 详细文档
 
 - [架构说明](docs/architecture.md)
 - [本地存储](docs/storage.md)
+- [间隔重复算法](docs/spaced-repetition.md)
+- [每日计划](docs/daily-plan.md)
 - [v1/v2 → v3 数据迁移](docs/data-migration.md)
+- [开发路线图](docs/roadmap.md)
 - [DeepSeek 集成](docs/deepseek-integration.md)
 - [AI 安全](docs/ai-security.md)
 - [Prompt 管理](docs/ai-prompts.md)
 - [AI 内容校验](docs/ai-content-validation.md)
 - [AI 测试](docs/ai-testing.md)
 - [AI 部署](docs/ai-deployment.md)
-- [开发路线图](docs/roadmap.md)
-
-## 当前边界
-
-本阶段仍不实现账号/云同步、自由输入翻译题、AI 自由文本批改、发音与语音识别、PWA、社交、管理员后台或自动同步。AI 内容可能出错，最终学习判断仍应以可靠教材和官方资料为准。
