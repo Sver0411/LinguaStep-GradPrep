@@ -245,6 +245,14 @@ function buildOptions(
   return { options: values as [string, string, string, string], correctIndex };
 }
 
+function seededRank(value: string, seed: number): number {
+  let hash = seed | 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
+  }
+  return hash >>> 0;
+}
+
 function createWordQuestions(
   word: WordPair,
   vocabulary: WordPair[],
@@ -300,7 +308,12 @@ function createWordQuestions(
               distractors: optionCandidates(word, vocabulary, (item) => item.japanese.term),
             },
             {
-              prompt: `“${word.english.term} / ${word.japanese.term}”最准确的中文含义是？`,
+              prompt: `日语“${word.japanese.term}”的中文含义是？`,
+              correct: word.meaningZh,
+              distractors: optionCandidates(word, vocabulary, (item) => item.meaningZh),
+            },
+            {
+              prompt: `英语“${word.english.term}”的中文含义是？`,
               correct: word.meaningZh,
               distractors: optionCandidates(word, vocabulary, (item) => item.meaningZh),
             },
@@ -423,31 +436,51 @@ export function createTestQuestions(
     return passesTimeSource(progress.lastStudiedAt, options.sourceFilter, options.now);
   });
 
+  const sessionSeed = Math.abs(Math.floor(nowTimestamp / 1_000));
   const orderedWords = options.prioritizeMistakes
     ? [...learnedWords].sort(
         (left, right) =>
           Number(mistakeRefs.has(`word:${right.id}`)) -
-          Number(mistakeRefs.has(`word:${left.id}`)),
+            Number(mistakeRefs.has(`word:${left.id}`)) ||
+          seededRank(left.id, sessionSeed) - seededRank(right.id, sessionSeed),
       )
-    : learnedWords;
+    : [...learnedWords].sort(
+        (left, right) =>
+          seededRank(left.id, sessionSeed) - seededRank(right.id, sessionSeed),
+      );
   const orderedGrammar = options.prioritizeMistakes
     ? [...learnedGrammar].sort(
         (left, right) =>
           Number(mistakeRefs.has(`grammar:${right.id}`)) -
-          Number(mistakeRefs.has(`grammar:${left.id}`)),
+            Number(mistakeRefs.has(`grammar:${left.id}`)) ||
+          seededRank(left.id, sessionSeed) - seededRank(right.id, sessionSeed),
       )
-    : learnedGrammar;
-  const wordCandidates = orderedWords.flatMap((word, index) =>
-    createWordQuestions(word, vocabulary, options.mode, index * 11),
-  );
-  const grammarCandidates = orderedGrammar.flatMap((point) =>
-    point.exercises.map((question) => ({
+    : [...learnedGrammar].sort(
+        (left, right) =>
+          seededRank(left.id, sessionSeed) - seededRank(right.id, sessionSeed),
+      );
+  // A test samples content before question variants. This guarantees that one
+  // word or grammar point appears at most once per round, while the chosen
+  // translation direction/exercise still rotates between rounds.
+  const wordCandidates = orderedWords.map((word, index) => {
+    const variants = createWordQuestions(
+      word,
+      vocabulary,
+      options.mode,
+      sessionSeed + index * 11,
+    );
+    return variants[(sessionSeed + index) % variants.length];
+  });
+  const grammarCandidates = orderedGrammar.flatMap((point, index): ChoiceQuestion[] => {
+    const question = point.exercises[(sessionSeed + index) % point.exercises.length];
+    if (!question) return [];
+    return [{
       ...question,
       language: point.language,
       difficulty: point.level,
       category: "grammar",
-    })),
-  );
+    }];
+  });
   const result: ChoiceQuestion[] = [];
   let wordIndex = 0;
   let grammarIndex = 0;

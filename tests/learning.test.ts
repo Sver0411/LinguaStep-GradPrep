@@ -279,6 +279,34 @@ describe("test generation", () => {
     });
   });
 
+  it("uses each vocabulary item at most once in the same test round", () => {
+    const questions = createTestQuestions(
+      vocabulary.map((word) => makeWordProgress(word.id)),
+      [],
+      vocabulary,
+      [],
+      { mode: "mixed", sourceFilter: "all-learned", count: 30, now: NOW },
+    );
+    expect(questions).toHaveLength(vocabulary.length);
+    expect(new Set(questions.map((question) => question.sourceId)).size).toBe(
+      questions.length,
+    );
+  });
+
+  it("rotates mixed translation directions across different words", () => {
+    const largerVocabulary = Array.from({ length: 12 }, (_, index) =>
+      makeWord(`word-${index + 1}`, `词义${index + 1}`),
+    );
+    const questions = createTestQuestions(
+      largerVocabulary.map((word) => makeWordProgress(word.id)),
+      [],
+      largerVocabulary,
+      [],
+      { mode: "mixed", sourceFilter: "all-learned", count: 12, now: NOW },
+    );
+    expect(new Set(questions.map((question) => question.id.split("-v")[1])).size).toBe(6);
+  });
+
   it("places active mistake content first when prioritization is enabled", () => {
     const mistakeQuestion = makeQuestion("mistake-word-3", "word", "word-3");
     const questions = createTestQuestions(

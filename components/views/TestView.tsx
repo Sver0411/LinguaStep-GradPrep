@@ -345,7 +345,7 @@ export function TestView() {
           </div>
           <div className="advanced-start-action"><Button onClick={() => start()}><Play size={17} />按本次设置开始测试</Button></div>
           </details>
-          <div className="test-features"><span><ShieldCheck size={17} />只测试符合来源条件的已学内容</span><span><ClipboardCheck size={17} />保存用时与分项正确率</span></div>
+          <div className="test-features"><span><ShieldCheck size={17} />同一轮每个词或语法点最多出现一次</span><span><ClipboardCheck size={17} />六种翻译方向分散到不同词条</span><span><ClipboardCheck size={17} />保存用时与分项正确率</span></div>
           {availableCount === 0 && <EmptyState title="还没有可测试内容" description="先完成至少一张单词卡或一个语法练习。" action={<Link className="button button-primary" href="/words?study=1">先学单词</Link>} />}
           {generationEmpty && <div className="inline-alert" role="status">当前筛选条件下没有可生成的题目。请更换内容来源、难度或语言模式。</div>}
         </article>
