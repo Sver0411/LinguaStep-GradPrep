@@ -39,6 +39,28 @@ describe("built-in vocabulary", () => {
       phaseTwo.filter((word) => word.japanese.difficulty === "JLPT N1 过渡"),
     ).toHaveLength(30);
   });
+
+  it("stores verbs as dictionary headwords and suru verbs as stems", () => {
+    const verbs = WORD_PAIRS.filter((word) =>
+      word.japanese.partOfSpeech.includes("动词"),
+    );
+    expect(verbs.length).toBeGreaterThan(1_000);
+    expect(
+      verbs.filter((word) => word.note.includes("词条按サ变词干")).length,
+    ).toBe(60);
+    expect(verbs.every((word) => !word.japanese.term.endsWith("する"))).toBe(true);
+    expect(
+      verbs.every(
+        (word) =>
+          !/(ます|ました|ません|ている|ない|かった|です)$/.test(
+            word.japanese.term,
+          ),
+      ),
+    ).toBe(true);
+    const participate = WORD_PAIRS.find((word) => word.id === "word-021");
+    expect(participate?.japanese.term).toBe("参加");
+    expect(participate?.japanese.reading).toBe("さんか");
+  });
 });
 
 describe("curated grammar", () => {

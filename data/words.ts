@@ -2613,13 +2613,47 @@ const HAND_EDITED_WORDS: WordPair[] = [
   ...PHASE_TWO_WORDS,
 ];
 
+/**
+ * Keep Japanese verb cards in a consistent headword form. Regular verbs retain
+ * their dictionary ending (食べる、行く); verbal nouns such as 勉強する are
+ * indexed by their する-stem (勉強), with the part of speech preserving the
+ * information that する can be attached in actual usage.
+ */
+function normalizeJapaneseVerbHeadword(word: WordPair): WordPair {
+  const { japanese } = word;
+  if (!japanese.partOfSpeech.includes("动词") || !japanese.term.endsWith("する")) {
+    return word;
+  }
+  const term = japanese.term.slice(0, -2).trim();
+  const reading = japanese.reading?.endsWith("する")
+    ? japanese.reading.slice(0, -2).trim()
+    : japanese.reading;
+  const romanization = japanese.romanization
+    ?.replace(/\s*suru$/i, "")
+    .trim();
+  const partOfSpeech = japanese.partOfSpeech === "动词"
+    ? "名词・サ变动词"
+    : japanese.partOfSpeech;
+  return {
+    ...word,
+    japanese: {
+      ...japanese,
+      term,
+      reading,
+      romanization,
+      partOfSpeech,
+    },
+    note: `${word.note} 词条按サ变词干「${term}」收录，实际作动词时接「する」。`,
+  };
+}
+
 const usedJapanese = new Set<string>();
 const usedEnglish = new Set<string>();
 
 export const WORD_PAIRS: WordPair[] = [
   ...HAND_EDITED_WORDS,
   ...EXPANDED_WORDS,
-].filter((word) => {
+].map(normalizeJapaneseVerbHeadword).filter((word) => {
   const japanese = word.japanese.term.trim();
   const english = word.english.term.trim().toLocaleLowerCase("en-US");
   if (usedJapanese.has(japanese) || usedEnglish.has(english)) return false;
