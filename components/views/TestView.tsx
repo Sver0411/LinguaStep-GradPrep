@@ -1,229 +1,127 @@
 "use client";
 
-import Link from "next/link";
 import {
+  ArrowLeft,
   ArrowRight,
+  BookOpenCheck,
   CheckCircle2,
-  ClipboardCheck,
+  FileText,
   Languages,
   Play,
   RotateCcw,
-  ShieldCheck,
   Timer,
   XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
-import { createTestQuestions, dateKey, isAnswerCorrect } from "@/lib/learning";
-import { getNextLearningAction } from "@/lib/learning-flow";
-import type {
-  ChoiceQuestion,
-  TestAnswer,
-  TestMode,
-  TestResult,
-  TestSourceFilter,
-} from "@/lib/models";
-import { Button, EmptyState, PageHeader, ProgressBar } from "@/components/ui";
-import { AIExplanationPanel } from "@/components/ai/AIExplanationPanel";
+import {
+  ENGLISH_EXAM_LEVELS,
+  EXAM_QUESTIONS,
+  EXAM_SECTION_LABELS,
+  JAPANESE_EXAM_LEVELS,
+  type EnglishExamLevel,
+  type ExamLanguage,
+  type ExamQuestion,
+  type ExamSection,
+  type JapaneseExamLevel,
+} from "@/data/exam-questions";
+import { isAnswerCorrect } from "@/lib/learning";
+import type { TestAnswer, TestResult } from "@/lib/models";
+import { Button, PageHeader, ProgressBar } from "@/components/ui";
 
-const MODE_LABEL: Record<TestMode, string> = {
-  mixed: "日英混合",
+const LANGUAGE_LABEL: Record<ExamLanguage, string> = {
   japanese: "日语",
   english: "英语",
 };
 
-const SOURCE_LABEL: Record<TestSourceFilter, string> = {
-  "all-learned": "所有已学内容",
-  today: "今日学过",
-  "recent-7": "最近 7 天",
-  mistakes: "错题专项",
-  favorites: "收藏专项",
-  due: "到期复习",
-  comparisons: "日英语法对比",
-};
-
-function initialSourceFilter(): TestSourceFilter {
-  if (typeof window === "undefined") return "all-learned";
-  const source = new URLSearchParams(window.location.search).get("source");
-  return source === "favorites" ||
-    source === "mistakes" ||
-    source === "due" ||
-    source === "comparisons" ||
-    source === "today" ||
-    source === "recent-7"
-    ? source
-    : "all-learned";
+function stableShuffle(items: ExamQuestion[]): ExamQuestion[] {
+  const seed = Math.floor(Date.now() / 60_000);
+  const rank = (id: string) => {
+    let value = seed;
+    for (const character of id) value = Math.imul(value ^ character.charCodeAt(0), 16777619);
+    return value >>> 0;
+  };
+  return [...items].sort((left, right) => rank(left.id) - rank(right.id));
 }
 
-function resultBreakdown(result: TestResult) {
-  const group = (predicate: (answer: TestAnswer) => boolean) => {
-    const values = result.answers.filter(predicate);
-    return {
-      total: values.length,
-      correct: values.filter((answer) => answer.isCorrect).length,
-      percent:
-        values.length > 0
-          ? Math.round(
-              (values.filter((answer) => answer.isCorrect).length / values.length) *
-                100,
-            )
-          : 0,
-    };
-  };
-  const difficulties = [
-    ...new Set(
-      result.answers.map((answer) => answer.question.difficulty ?? "未标注"),
-    ),
-  ].map((label) => ({
-    label,
-    data: group(
-      (answer) => (answer.question.difficulty ?? "未标注") === label,
-    ),
-  }));
-  return {
-    word: group((answer) => answer.question.source === "word"),
-    grammar: group((answer) => answer.question.source !== "word"),
-    japanese: group((answer) => answer.question.language === "japanese"),
-    english: group((answer) => answer.question.language === "english"),
-    mixed: group((answer) => answer.question.language === "mixed"),
-    difficulties,
-  };
+function categoryLabel(category: string | undefined): string {
+  if (category === "characters") return "文字";
+  if (category === "grammar") return "文法";
+  if (category === "reading") return "阅读";
+  return "综合";
 }
 
 export function TestView() {
-  const { snapshot, settings, allWords, allGrammar, allComparisons, completeTest, setFocusMode } = useLearning();
-  const [mode, setMode] = useState<TestMode>("mixed");
-  const [sourceFilter, setSourceFilter] =
-    useState<TestSourceFilter>(initialSourceFilter);
-  const [questionCount, setQuestionCount] = useState(settings.dailyTestQuestions);
-  const [difficulty, setDifficulty] = useState("all");
-  const [immediateFeedback, setImmediateFeedback] = useState(
-    settings.immediateTestFeedback,
-  );
-  const [prioritizeMistakes, setPrioritizeMistakes] = useState(
-    settings.prioritizeMistakes,
-  );
-  const [questions, setQuestions] = useState<ChoiceQuestion[]>([]);
+  const { snapshot, settings, completeTest, setFocusMode } = useLearning();
+  const [language, setLanguage] = useState<ExamLanguage>("japanese");
+  const [japaneseLevel, setJapaneseLevel] = useState<JapaneseExamLevel>("N3");
+  const [englishLevel, setEnglishLevel] = useState<EnglishExamLevel>("CET-4");
+  const [section, setSection] = useState<ExamSection>("characters");
+  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [index, setIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [answers, setAnswers] = useState<TestAnswer[]>([]);
   const [result, setResult] = useState<TestResult | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [startedAt, setStartedAt] = useState("");
-  const [generationEmpty, setGenerationEmpty] = useState(false);
-  const [collectionTitle, setCollectionTitle] = useState("");
-  const collectionStarted = useRef(false);
-  const presetStarted = useRef(false);
+  const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const question = questions[index];
-  const selectionCorrect =
-    question && selectedIndex !== null
-      ? isAnswerCorrect(question, selectedIndex)
-      : false;
+  const level = language === "japanese" ? japaneseLevel : englishLevel;
 
-  const availableCount =
-    snapshot.wordProgress.length + snapshot.grammarProgress.length;
-  const activeMistakes = snapshot.mistakes.filter((item) => item.active).length;
+  const selectedPool = useMemo(
+    () =>
+      EXAM_QUESTIONS.filter(
+        (item) =>
+          item.examLanguage === language &&
+          item.examLevel === level &&
+          (language === "english" || item.examSection === section),
+      ),
+    [language, level, section],
+  );
   const overallAccuracy = useMemo(() => {
-    const allAnswers = snapshot.testResults.flatMap((item) => item.answers);
-    if (allAnswers.length === 0) return 0;
-    return Math.round(
-      (allAnswers.filter((answer) => answer.isCorrect).length /
-        allAnswers.length) *
-        100,
-    );
+    const values = snapshot.testResults.flatMap((item) => item.answers);
+    if (values.length === 0) return 0;
+    return Math.round(values.filter((answer) => answer.isCorrect).length / values.length * 100);
   }, [snapshot.testResults]);
-  const difficultyOptions = useMemo(() => {
-    if (sourceFilter === "comparisons") {
-      return [...new Set(allComparisons.map((item) => item.level))];
-    }
-    const wordLevels = allWords.flatMap((word) =>
-      mode === "english"
-        ? [word.english.difficulty]
-        : mode === "japanese"
-          ? [word.japanese.difficulty]
-          : [word.japanese.difficulty, word.english.difficulty],
-    );
-    const grammarLevels = allGrammar.filter(
-      (point) => mode === "mixed" || point.language === mode,
-    ).map((point) => point.level);
-    return [...new Set([...wordLevels, ...grammarLevels])];
-  }, [allComparisons, allGrammar, allWords, mode, sourceFilter]);
 
-  const start = useCallback((overrides: Partial<{
-    mode: TestMode;
-    sourceFilter: TestSourceFilter;
-    questionCount: number;
-  }> = {}) => {
-    const selectedSource = overrides.sourceFilter ?? sourceFilter;
-    const selectedMode = selectedSource === "comparisons" ? "mixed" : overrides.mode ?? mode;
-    const selectedCount = overrides.questionCount ?? questionCount;
-    const now = new Date().toISOString();
-    const generated = createTestQuestions(
-      snapshot.wordProgress,
-      snapshot.grammarProgress,
-      allWords,
-      allGrammar,
-      {
-        mode: selectedMode,
-        sourceFilter: selectedSource,
-        count: selectedCount,
-        now,
-        favorites: snapshot.favorites,
-        mistakes: snapshot.mistakes.filter((item) => item.active),
-        difficulty: difficulty === "all" ? undefined : difficulty,
-        prioritizeMistakes,
-        comparisons: allComparisons,
-      },
-    );
-    setMode(selectedMode);
-    setSourceFilter(selectedSource);
-    setQuestionCount(selectedCount);
-    setQuestions(generated);
+  const exitTest = useCallback(() => {
+    setQuestions([]);
     setIndex(0);
     setSelectedIndex(null);
     setAnswers([]);
     setResult(null);
-    setStartedAt(now);
-    setGenerationEmpty(generated.length === 0);
-    if (generated.length > 0) setFocusMode(true);
-  }, [allComparisons, allGrammar, allWords, difficulty, mode, prioritizeMistakes, questionCount, setFocusMode, snapshot.favorites, snapshot.grammarProgress, snapshot.mistakes, snapshot.wordProgress, sourceFilter]);
+    setStartedAt("");
+    setFocusMode(false);
+  }, [setFocusMode]);
 
   useEffect(() => {
-    if (questions.length === 0 || result) return;
+    window.addEventListener("linguastep:exit-session", exitTest);
+    return () => window.removeEventListener("linguastep:exit-session", exitTest);
+  }, [exitTest]);
+
+  useEffect(() => {
+    if (!question || result) return;
     const handleKey = (event: KeyboardEvent) => {
-      if (immediateFeedback && selectedIndex !== null) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input, textarea, select, button")) return;
       const number = Number(event.key);
       if (number >= 1 && number <= 4) setSelectedIndex(number - 1);
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [immediateFeedback, questions.length, result, selectedIndex]);
+  }, [question, result]);
 
-  useEffect(() => {
-    if (collectionStarted.current || questions.length > 0) return;
-    const collectionId = new URLSearchParams(window.location.search).get("collection");
-    if (!collectionId) return;
-    const collection = snapshot.aiCollections.find((item) => item.id === collectionId);
-    if (!collection || collection.questions.length === 0) return;
-    collectionStarted.current = true;
-    const timer = window.setTimeout(() => {
-      setQuestions(collection.questions);
-      setCollectionTitle(collection.title);
-      setStartedAt(new Date().toISOString());
-      setFocusMode(true);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [questions.length, setFocusMode, snapshot.aiCollections]);
-
-  useEffect(() => {
-    if (presetStarted.current || questions.length > 0 || result) return;
-    const search = new URLSearchParams(window.location.search);
-    if (search.get("start") !== "1") return;
-    presetStarted.current = true;
-    const timer = window.setTimeout(() => start(), 0);
-    return () => window.clearTimeout(timer);
-  }, [questions.length, result, start]);
+  const startTest = () => {
+    const generated = stableShuffle(selectedPool);
+    if (generated.length === 0) return;
+    setQuestions(generated);
+    setIndex(0);
+    setSelectedIndex(null);
+    setAnswers([]);
+    setResult(null);
+    setStartedAt(new Date().toISOString());
+    setFocusMode(true);
+  };
 
   const next = async () => {
     if (!question || selectedIndex === null || submittingRef.current) return;
@@ -238,8 +136,8 @@ export function TestView() {
     try {
       if (index >= questions.length - 1) {
         const completed = await completeTest(nextAnswers, {
-          mode,
-          sourceFilter,
+          mode: language,
+          sourceFilter: "all-learned",
           startedAt,
         });
         setAnswers(nextAnswers);
@@ -257,38 +155,28 @@ export function TestView() {
   };
 
   if (result) {
-    const percent = Math.round(
-      (result.correctCount / Math.max(1, result.answers.length)) * 100,
-    );
-    const breakdown = resultBreakdown(result);
-    const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
+    const percent = Math.round(result.correctCount / Math.max(1, result.answers.length) * 100);
     return (
-      <div className="page-stack test-results-page">
+      <div className="page-stack exam-results-page">
         <section className="result-hero card">
           <span className={`result-ring ${percent >= 80 ? "good" : percent >= 60 ? "medium" : "needs-work"}`}><strong>{percent}</strong><small>分</small></span>
-          <div><span className="section-kicker">TEST COMPLETE</span><h1>{percent >= 80 ? "掌握得很稳" : percent >= 60 ? "基础不错，再巩固一下" : "已经找到下一步重点"}</h1><p>{MODE_LABEL[result.mode]} · {SOURCE_LABEL[result.sourceFilter]} · 正确 {result.correctCount} 题，错误 {result.answers.length - result.correctCount} 题。</p><p className="keyboard-note"><Timer size={15} />用时 {Math.floor(result.durationSeconds / 60)} 分 {result.durationSeconds % 60} 秒</p></div>
-          <div className="result-actions"><Link className="button button-primary" href={nextAction.href}><ArrowRight size={18} />{nextAction.label}</Link><Button variant="secondary" onClick={() => start()}><RotateCcw size={18} />再测一次</Button></div>
+          <div><span className="section-kicker">PRACTICE COMPLETE</span><h1>{LANGUAGE_LABEL[language]} {level} 练习完成</h1><p>正确 {result.correctCount} 题，错误 {result.answers.length - result.correctCount} 题。</p><p className="keyboard-note"><Timer size={15} />用时 {Math.floor(result.durationSeconds / 60)} 分 {result.durationSeconds % 60} 秒</p></div>
+          <div className="result-actions"><Button onClick={exitTest}><ArrowLeft size={18} />返回测试首页</Button><Button variant="secondary" onClick={startTest}><RotateCcw size={18} />再做一组</Button></div>
         </section>
-
-        <section className="breakdown-grid" aria-label="测试分项正确率">
-          {[{ label:"单词", data:breakdown.word }, { label:"语法与对比", data:breakdown.grammar }, { label:"日语", data:breakdown.japanese }, { label:"英语", data:breakdown.english }, { label:"日英对照", data:breakdown.mixed }, ...breakdown.difficulties.map((item) => ({ ...item, label:`难度 · ${item.label}` }))].filter((item) => item.data.total > 0).map((item) => (
-            <article className="card mini-stat-card" key={item.label}><span>{item.label}</span><strong>{item.data.percent}<small>%</small></strong><p>{item.data.correct} / {item.data.total} 正确</p></article>
-          ))}
+        <section className="breakdown-grid" aria-label="分类正确率">
+          {(["characters", "grammar", "reading"] as ExamSection[]).map((item) => {
+            const values = result.answers.filter((answer) => answer.question.category === item);
+            if (values.length === 0) return null;
+            const correct = values.filter((answer) => answer.isCorrect).length;
+            return <article className="card mini-stat-card" key={item}><span>{EXAM_SECTION_LABELS[item]}</span><strong>{Math.round(correct / values.length * 100)}<small>%</small></strong><p>{correct} / {values.length} 正确</p></article>;
+          })}
         </section>
-
         <section className="answer-review">
           <div className="section-title-row"><div><span className="section-kicker">ANSWER REVIEW</span><h2>逐题解析</h2></div></div>
           {result.answers.map((answer, answerIndex) => (
             <article className={`answer-review-card card ${answer.isCorrect ? "correct" : "wrong"}`} key={`${answer.question.id}-${answerIndex}`}>
               <span className="review-number">{answerIndex + 1}</span>
-              <div className="review-content">
-                <div className="review-heading"><span>{answer.question.source === "word" ? "单词" : answer.question.source === "comparison" ? "日英对比" : "语法"}</span>{answer.isCorrect ? <strong className="correct-text"><CheckCircle2 size={17} />正确</strong> : <strong className="wrong-text"><XCircle size={17} />错误</strong>}</div>
-                <h3>{answer.question.prompt}</h3>
-                <p>你的答案：<b>{answer.question.options[answer.selectedIndex]}</b></p>
-                {!answer.isCorrect && <p>正确答案：<b>{answer.question.options[answer.question.correctIndex]}</b></p>}
-                <div className="review-explanation">{answer.question.explanation}</div>
-                {!answer.isCorrect && <AIExplanationPanel question={answer.question} selectedIndex={answer.selectedIndex} />}
-              </div>
+              <div className="review-content"><div className="review-heading"><span>{categoryLabel(answer.question.category)}</span>{answer.isCorrect ? <strong className="correct-text"><CheckCircle2 size={17} />正确</strong> : <strong className="wrong-text"><XCircle size={17} />错误</strong>}</div><h3>{answer.question.prompt}</h3><p>你的答案：<b>{answer.question.options[answer.selectedIndex]}</b></p>{!answer.isCorrect && <p>正确答案：<b>{answer.question.options[answer.question.correctIndex]}</b></p>}<div className="review-explanation">{answer.question.explanation}</div></div>
             </article>
           ))}
         </section>
@@ -296,29 +184,26 @@ export function TestView() {
     );
   }
 
-  if (questions.length > 0 && question) {
-    const showFeedback = immediateFeedback && selectedIndex !== null;
+  if (question) {
+    const showFeedback = settings.immediateTestFeedback && selectedIndex !== null;
+    const correct = selectedIndex !== null && isAnswerCorrect(question, selectedIndex);
     return (
-      <section className="quiz-session test-session">
-        <div className="session-topline"><span>{collectionTitle || `${MODE_LABEL[mode]}测试 · ${SOURCE_LABEL[sourceFilter]}`}</span><strong>{index + 1} / {questions.length}</strong></div>
+      <section className="quiz-session exam-session">
+        <div className="session-topline"><span>{LANGUAGE_LABEL[language]} {level} · {language === "japanese" ? EXAM_SECTION_LABELS[section] : "综合练习"}</span><div className="session-top-actions"><strong>{index + 1} / {questions.length}</strong><button className="text-button" onClick={exitTest}><ArrowLeft size={16} />退出测试</button></div></div>
         <div className="session-progress"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
         <article className="question-card card">
-          <div className="question-meta"><span className="question-type">{question.source === "word" ? "词汇选择" : question.source === "comparison" ? "语法对比" : "语法判断"}</span><span>{question.difficulty}</span></div>
-          {question.context && <p className="question-context">{question.context}</p>}
+          <div className="question-meta"><span className="question-type">{EXAM_SECTION_LABELS[question.examSection]}</span><span>{question.examLevel}</span></div>
+          {question.context && <div className="exam-passage"><span><BookOpenCheck size={17} />阅读材料</span><p>{question.context}</p></div>}
           <h1>{question.prompt}</h1>
           <div className={`option-list${showFeedback ? "" : " neutral"}`}>
             {question.options.map((option, optionIndex) => {
               const selected = selectedIndex === optionIndex;
               const showCorrect = showFeedback && optionIndex === question.correctIndex;
-              const showWrong = showFeedback && selected && !selectionCorrect;
-              return (
-                <button className={`quiz-option${selected ? " selected" : ""}${showCorrect ? " correct" : ""}${showWrong ? " wrong" : ""}`} key={`${option}-${optionIndex}`} onClick={() => (!showFeedback || selectedIndex === null) && setSelectedIndex(optionIndex)} disabled={showFeedback}>
-                  <span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span>{showCorrect && <CheckCircle2 size={20} />}{showWrong && <XCircle size={20} />}
-                </button>
-              );
+              const showWrong = showFeedback && selected && !correct;
+              return <button className={`quiz-option${selected ? " selected" : ""}${showCorrect ? " correct" : ""}${showWrong ? " wrong" : ""}`} key={`${option}-${optionIndex}`} onClick={() => (!showFeedback || selectedIndex === null) && setSelectedIndex(optionIndex)} disabled={showFeedback}><span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span>{showCorrect && <CheckCircle2 size={20} />}{showWrong && <XCircle size={20} />}</button>;
             })}
           </div>
-          {showFeedback && <div className={`answer-explanation ${selectionCorrect ? "correct" : "wrong"}`}><strong>{selectionCorrect ? "回答正确" : "再留意一下"}</strong><p>{question.explanation}</p></div>}
+          {showFeedback && <div className={`answer-explanation ${correct ? "correct" : "wrong"}`}><strong>{correct ? "回答正确" : "再留意一下"}</strong><p>{question.explanation}</p></div>}
           <div className="question-footer"><span>按 1–4 快速选择</span><Button onClick={() => void next()} disabled={selectedIndex === null || submitting}>{index >= questions.length - 1 ? "提交测试" : "下一题"}<ArrowRight size={18} /></Button></div>
         </article>
       </section>
@@ -326,40 +211,27 @@ export function TestView() {
   }
 
   return (
-    <div className="page-stack test-page">
-      <PageHeader eyebrow="测试" title="一键开始今日测试" description="先用推荐设置完成今日任务；专项测试和高级设置按需展开。" />
-      <section className="test-overview-grid">
-        <article className="card test-config-card">
-          <span className="test-icon"><Languages size={28} /></span>
-          <span className="section-kicker">QUICK START</span>
-          <h2>选择一个测试</h2>
-          <div className="quick-test-actions">
-            <Button className="button-large" onClick={() => start({ sourceFilter: "today", questionCount: settings.dailyTestQuestions })}><Play size={18} fill="currentColor" />开始今日测试 · {settings.dailyTestQuestions} 题</Button>
-            <Button variant="secondary" onClick={() => start({ sourceFilter: "mistakes" })}>错题专项</Button>
-            <Button variant="secondary" onClick={() => start({ sourceFilter: "due" })}>到期复习</Button>
-            <Button variant="secondary" onClick={() => start({ sourceFilter: "favorites" })}>收藏专项</Button>
-            <Button variant="secondary" onClick={() => start({ mode: "mixed", sourceFilter: "comparisons" })}>日英对比混合测试</Button>
+    <div className="page-stack test-page exam-home-page">
+      <PageHeader eyebrow="真题练习" title="选择考试语言与难度" description="日语使用本地红蓝宝书文字、文法题，并补充同级阅读；英语提供考试型综合练习。" />
+      <section className="exam-setup-layout">
+        <article className="card exam-config-card">
+          <div className="exam-step-heading"><span>1</span><div><strong>选择语言</strong><small>日语或英语</small></div></div>
+          <div className="exam-language-picker">
+            {(["japanese", "english"] as ExamLanguage[]).map((item) => <button type="button" className={language === item ? "active" : ""} onClick={() => setLanguage(item)} key={item}><Languages size={23} /><span><strong>{LANGUAGE_LABEL[item]}</strong><small>{item === "japanese" ? "JLPT N3 / N2 / N1" : "四级 / 六级 / TOEIC"}</small></span></button>)}
           </div>
-          <details className="advanced-panel compact-details">
-          <summary><span><strong>高级测试设置</strong><small>本次语言、来源、难度、题数与反馈方式</small></span></summary>
-          <div className="setting-stack compact-setting-stack">
-            <label><span>语言模式</span><div className="segmented-control">{(["japanese","english","mixed"] as TestMode[]).map((item) => <button type="button" className={mode === item ? "active" : ""} onClick={() => { setMode(item); setDifficulty("all"); }} key={item}>{MODE_LABEL[item]}</button>)}</div></label>
-            <label><span>内容来源</span><select value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as TestSourceFilter)}>{Object.entries(SOURCE_LABEL).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-            <label><span>指定难度</span><select value={difficulty} onChange={(event) => setDifficulty(event.target.value)}><option value="all">全部难度</option>{difficultyOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
-            <label className="question-count-control"><span>本次题数</span><div className="segmented-control">{[10,20,30].map((count) => <button className={questionCount === count ? "active" : ""} onClick={() => setQuestionCount(count)} type="button" key={count}>{count}</button>)}</div><input aria-label="自定义测试题数" type="number" min={1} max={100} value={questionCount} onChange={(event) => setQuestionCount(Math.max(1, Math.min(100, Number(event.target.value) || 1)))} /></label>
-            <label className="switch-setting"><span><strong>立即显示答案</strong><small>关闭后在测试完成时统一解析</small></span><button className={`switch${immediateFeedback ? " active" : ""}`} role="switch" aria-checked={immediateFeedback} onClick={() => setImmediateFeedback((value) => !value)}><span /></button></label>
-            <label className="switch-setting"><span><strong>优先出错题</strong><small>在当前来源范围内把活跃错题对应内容排在前面</small></span><button className={`switch${prioritizeMistakes ? " active" : ""}`} role="switch" aria-checked={prioritizeMistakes} onClick={() => setPrioritizeMistakes((value) => !value)}><span /></button></label>
+          <div className="exam-step-heading"><span>2</span><div><strong>选择难度</strong><small>{language === "japanese" ? "仅提供 N3 至 N1" : "选择考试目标"}</small></div></div>
+          <div className="segmented-control exam-level-picker">
+            {language === "japanese"
+              ? JAPANESE_EXAM_LEVELS.map((item) => <button type="button" className={japaneseLevel === item ? "active" : ""} onClick={() => setJapaneseLevel(item)} key={item}>{item}</button>)
+              : ENGLISH_EXAM_LEVELS.map((item) => <button type="button" className={englishLevel === item ? "active" : ""} onClick={() => setEnglishLevel(item)} key={item}>{item === "CET-4" ? "四级" : item === "CET-6" ? "六级" : item}</button>)}
           </div>
-          <div className="advanced-start-action"><Button onClick={() => start()}><Play size={17} />按本次设置开始测试</Button></div>
-          </details>
-          <div className="test-features"><span><ShieldCheck size={17} />同一轮每个词或语法点最多出现一次</span><span><ClipboardCheck size={17} />六种翻译方向分散到不同词条</span><span><ClipboardCheck size={17} />保存用时与分项正确率</span></div>
-          {availableCount === 0 && <EmptyState title="还没有可测试内容" description="先完成至少一张单词卡或一个语法练习。" action={<Link className="button button-primary" href="/words?study=1">先学单词</Link>} />}
-          {generationEmpty && <div className="inline-alert" role="status">当前筛选条件下没有可生成的题目。请更换内容来源、难度或语言模式。</div>}
+          {language === "japanese" && <><div className="exam-step-heading"><span>3</span><div><strong>选择题型</strong><small>文字包含汉字读音与词汇运用</small></div></div><div className="exam-section-picker">{(["characters", "grammar", "reading"] as ExamSection[]).map((item) => { const Icon = item === "reading" ? FileText : item === "grammar" ? BookOpenCheck : Languages; const count = EXAM_QUESTIONS.filter((question) => question.examLanguage === "japanese" && question.examLevel === japaneseLevel && question.examSection === item).length; return <button type="button" className={section === item ? "active" : ""} onClick={() => setSection(item)} key={item}><Icon size={20} /><span><strong>{EXAM_SECTION_LABELS[item]}</strong><small>{count} 题</small></span></button>; })}</div></>}
+          <div className="exam-start-row"><div><span>本组内容</span><strong>{language === "japanese" ? `${japaneseLevel} · ${EXAM_SECTION_LABELS[section]}` : `${englishLevel} · 综合`}</strong><small>共 {selectedPool.length} 题</small></div><Button className="button-large" onClick={startTest} disabled={selectedPool.length === 0}><Play size={18} fill="currentColor" />开始测试</Button></div>
         </article>
-        <aside className="test-stats-column">
-          <article className="card mini-stat-card"><span>已学习内容</span><strong>{availableCount}<small>项</small></strong><p>单词 {snapshot.wordProgress.length} · 语法 {snapshot.grammarProgress.length}</p></article>
+        <aside className="exam-info-column">
+          <article className="card mini-stat-card"><span>日语题库</span><strong>{EXAM_QUESTIONS.filter((item) => item.examLanguage === "japanese").length}<small>题</small></strong><p>红蓝宝书文字、文法 + 原创阅读</p></article>
+          <article className="card mini-stat-card"><span>英语题库</span><strong>{EXAM_QUESTIONS.filter((item) => item.examLanguage === "english").length}<small>题</small></strong><p>四级、六级、TOEIC 综合练习</p></article>
           <article className="card mini-stat-card"><span>历史正确率</span><strong>{overallAccuracy}<small>%</small></strong><ProgressBar value={overallAccuracy} label="历史测试正确率" /></article>
-          <article className="card mini-stat-card"><span>活跃错题</span><strong>{activeMistakes}<small>道</small></strong><Link href="/mistakes">前往专项练习 <ArrowRight size={16} /></Link></article>
         </aside>
       </section>
     </div>

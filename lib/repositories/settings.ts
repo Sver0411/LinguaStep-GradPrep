@@ -2,6 +2,7 @@ import { DEFAULT_SETTINGS } from "../constants";
 import type { AppSettings } from "../models";
 
 export const SETTINGS_STORAGE_KEY = "lingua-step:settings";
+const SETTINGS_SCHEMA_VERSION = 3;
 
 export interface SettingsRepository {
   get(): AppSettings;
@@ -149,7 +150,24 @@ export class LocalStorageSettingsRepository implements SettingsRepository {
       if (serialized === null) return { ...this.memorySettings };
 
       const parsed: unknown = JSON.parse(serialized);
-      this.memorySettings = normalizeSettings(parsed);
+      const storedVersion = isRecord(parsed) && typeof parsed._settingsVersion === "number"
+        ? parsed._settingsVersion
+        : 0;
+      const isLegacy = storedVersion < SETTINGS_SCHEMA_VERSION;
+      const migrationInput = isRecord(parsed)
+        ? {
+            ...parsed,
+            ...(storedVersion < 2 ? { revealMode: DEFAULT_SETTINGS.revealMode } : {}),
+            ...(storedVersion < 3 ? { focusModeEnabled: DEFAULT_SETTINGS.focusModeEnabled } : {}),
+          }
+        : parsed;
+      this.memorySettings = normalizeSettings(migrationInput);
+      if (isLegacy) {
+        storage.setItem(
+          this.storageKey,
+          JSON.stringify({ ...this.memorySettings, _settingsVersion: SETTINGS_SCHEMA_VERSION }),
+        );
+      }
     } catch {
       this.memorySettings = { ...DEFAULT_SETTINGS };
     }
@@ -163,7 +181,10 @@ export class LocalStorageSettingsRepository implements SettingsRepository {
 
     if (storage) {
       try {
-        storage.setItem(this.storageKey, JSON.stringify(this.memorySettings));
+        storage.setItem(
+          this.storageKey,
+          JSON.stringify({ ...this.memorySettings, _settingsVersion: SETTINGS_SCHEMA_VERSION }),
+        );
       } catch {
         // Memory state remains usable if storage is full or access is denied.
       }

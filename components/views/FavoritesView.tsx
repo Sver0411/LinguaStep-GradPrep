@@ -123,9 +123,9 @@ export function FavoritesView() {
     <div className="page-stack favorites-page">
       <PageHeader
         eyebrow="收藏"
-        title="从收藏直接开始学习或生成测试"
+        title="集中学习收藏内容"
         description={`当前收藏 ${snapshot.favorites.length} 项，可按语言、难度和关键词筛选。`}
-        actions={<div className="page-actions"><Link className="button button-secondary" href="/words?favorites=1&study=1"><Play size={17} />学习收藏单词</Link><Link className="button button-primary" href="/test?source=favorites"><Languages size={17} />生成收藏测试</Link></div>}
+        actions={<div className="page-actions"><Link className="button button-secondary" href="/words?favorites=1&study=1"><Play size={17} />学习收藏单词</Link><Link className="button button-primary" href="/test?source=favorites&start=1"><Languages size={17} />练习收藏内容</Link></div>}
       />
 
       <details className="advanced-panel compact-details">

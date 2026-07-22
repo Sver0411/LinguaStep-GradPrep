@@ -77,6 +77,50 @@ describe("MemoryLearningRepository", () => {
 });
 
 describe("LocalStorageSettingsRepository", () => {
+  it("migrates the old simultaneous reveal default once and preserves later choices", () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      SETTINGS_STORAGE_KEY,
+      JSON.stringify({ ...DEFAULT_SETTINGS, revealMode: "together" }),
+    );
+    const repository = new LocalStorageSettingsRepository(
+      SETTINGS_STORAGE_KEY,
+      storage,
+    );
+    expect(repository.get().revealMode).toBe("step-by-step");
+    expect(JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY) ?? "{}")).toMatchObject({
+      _settingsVersion: 3,
+      revealMode: "step-by-step",
+      focusModeEnabled: false,
+    });
+
+    repository.update({ revealMode: "together" });
+    const reloaded = new LocalStorageSettingsRepository(
+      SETTINGS_STORAGE_KEY,
+      storage,
+    );
+    expect(reloaded.get().revealMode).toBe("together");
+  });
+
+  it("turns focus mode off for existing version-two settings without changing reveal choice", () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      SETTINGS_STORAGE_KEY,
+      JSON.stringify({
+        ...DEFAULT_SETTINGS,
+        _settingsVersion: 2,
+        revealMode: "together",
+        focusModeEnabled: true,
+      }),
+    );
+    const settings = new LocalStorageSettingsRepository(
+      SETTINGS_STORAGE_KEY,
+      storage,
+    ).get();
+    expect(settings.revealMode).toBe("together");
+    expect(settings.focusModeEnabled).toBe(false);
+  });
+
   it("migrates phase-one settings by filling phase-two defaults", () => {
     const storage = new MemoryStorage();
     storage.setItem(

@@ -34,13 +34,13 @@ type AdverbSpec = [
 function levels(index: number): { japanese: string; english: string } {
   return {
     japanese:
-      index < 60 ? "JLPT N3" : index < 170 ? "JLPT N2" : "JLPT N1 过渡",
+      index < 60 ? "JLPT N3" : index < 170 ? "JLPT N2" : "JLPT N1",
     english:
       index < 100
-        ? "高中・CET-4"
+        ? "CET-4"
         : index < 170
-          ? "CET-4・CET-6 过渡"
-          : "CET-6・TOEIC 进阶",
+          ? "CET-6"
+          : "TOEIC",
   };
 }
 

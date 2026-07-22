@@ -18,7 +18,6 @@ import { isAnswerCorrect } from "@/lib/learning";
 import type { MistakeRecord, MistakeState, QuestionSource } from "@/lib/models";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { FilterPanel } from "@/components/filters/FilterPanel";
-import { AIExplanationPanel } from "@/components/ai/AIExplanationPanel";
 
 type MistakeLanguage = "all" | "japanese" | "english" | "mixed";
 
@@ -32,6 +31,12 @@ function formatDate(value: string): string {
 }
 
 function sourceLabel(mistake: MistakeRecord, grammar: ReturnType<typeof useLearning>["allGrammar"]): string {
+  if (mistake.contentRef.sourceId.startsWith("exam-")) {
+    const language = mistake.question.language === "english" ? "英语" : "日语";
+    if (mistake.question.category === "reading") return `${language}阅读`;
+    if (mistake.question.category === "characters") return `${language}文字词汇`;
+    return `${language}文法`;
+  }
   if (mistake.contentRef.source === "comparison") return "日英对比";
   if (mistake.contentRef.source === "word") return "单词";
   const point = grammar.find(
@@ -125,6 +130,17 @@ export function MistakesView() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [reviewResult, reviewing]);
 
+  useEffect(() => {
+    const exitSession = () => {
+      setReviewing(null);
+      setSelectedIndex(null);
+      setReviewResult(null);
+      setFocusMode(false);
+    };
+    window.addEventListener("linguastep:exit-session", exitSession);
+    return () => window.removeEventListener("linguastep:exit-session", exitSession);
+  }, [setFocusMode]);
+
   const startReview = useCallback((mistake: MistakeRecord) => {
     setReviewing(mistake);
     setSelectedIndex(null);
@@ -196,7 +212,6 @@ export function MistakesView() {
               <p>{question.explanation}</p>
             </div>
           )}
-          {reviewResult && !correct && selectedIndex !== null && <AIExplanationPanel question={question} selectedIndex={selectedIndex} />}
           <div className="question-footer">
             <button className="text-button" onClick={() => { setReviewing(null); setFocusMode(false); }}>退出练习</button>
             {!reviewResult ? <Button onClick={() => void submitReview()} disabled={selectedIndex === null || submitting}>提交答案</Button> : <Button onClick={continueReview}>{activeQueue.some((item) => item.id !== reviewing.id) ? "下一道错题" : "完成本轮巩固"}<ArrowRight size={18} /></Button>}
@@ -212,7 +227,7 @@ export function MistakesView() {
         eyebrow="错题巩固"
         title={activeQueue.length > 0 ? `${activeQueue.length} 道活跃错题待处理` : "活跃错题已清空"}
         description="直接开始一轮巩固；筛选、归档和删除等管理操作按需展开。"
-        actions={<div className="page-actions">{activeQueue.length > 0 && <Button onClick={() => startReview(activeQueue[0])}><RotateCcw size={17} />开始复习活跃错题</Button>}<Link className="button button-secondary" href="/test?source=mistakes&start=1">错题专项测试</Link></div>}
+        actions={activeQueue.length > 0 ? <Button onClick={() => startReview(activeQueue[0])}><RotateCcw size={17} />开始复习活跃错题</Button> : undefined}
       />
 
       <details className="advanced-panel compact-details">
@@ -252,7 +267,6 @@ export function MistakesView() {
                   <div className="mistake-detail-content">
                     <p>正确答案：<strong>{mistake.question.options[mistake.question.correctIndex]}</strong></p>
                     <div className="mistake-explanation">{mistake.question.explanation}</div>
-                    <AIExplanationPanel question={mistake.question} selectedIndex={mistake.selectedIndex} />
                     <details className="history-details"><summary>错误历史 · {mistake.history.length} 条</summary><ul>{[...mistake.history].reverse().slice(0, 8).map((item, index) => <li key={`${item.answeredAt}-${index}`}>{formatDate(item.answeredAt)} · {item.correct ? "答对" : "答错"} · 选择 {String.fromCharCode(65 + item.selectedIndex)}</li>)}</ul></details>
                     <div className="mistake-management-actions">
                       {mistake.state !== "mastered" && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "mastered")}><CheckCircle2 size={15} />标记掌握</button>}

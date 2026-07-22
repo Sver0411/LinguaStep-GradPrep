@@ -10,13 +10,12 @@ import {
   waitFor,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { DEFAULT_AI_SETTINGS, DEFAULT_SETTINGS } from "../lib/constants";
+import { DEFAULT_SETTINGS } from "../lib/constants";
 import { WORD_PAIRS } from "../data/words";
 import { GRAMMAR_POINTS } from "../data/grammar";
 import { GRAMMAR_COMPARISONS } from "../data/grammar-comparisons";
 import {
   makeDailyPlan,
-  makeGrammar,
   makeSnapshot,
   makeTestResult,
   makeWord,
@@ -30,18 +29,15 @@ import { GrammarView } from "../components/views/GrammarView";
 import { TestView } from "../components/views/TestView";
 import { MistakesView } from "../components/views/MistakesView";
 import { SettingsView } from "../components/views/SettingsView";
+import { AppShell } from "../components/AppShell";
+import { GrammarPractice } from "../components/grammar/GrammarPractice";
 
 const mocked = vi.hoisted(() => ({
   learning: {} as ReturnType<typeof learningMock>,
-  ai: {} as ReturnType<typeof aiMock>,
 }));
 
 vi.mock("@/context/LearningContext", () => ({
   useLearning: () => mocked.learning,
-}));
-
-vi.mock("@/context/AIContext", () => ({
-  useAI: () => mocked.ai,
 }));
 
 vi.mock("next/link", () => ({
@@ -59,38 +55,14 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/words",
+}));
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
 });
-
-function aiMock(overrides: Record<string, unknown> = {}) {
-  return {
-    settings: DEFAULT_AI_SETTINGS,
-    health: null,
-    online: true,
-    busyOperation: null,
-    error: null,
-    transientResult: null,
-    usageSummary: { todayRequests: 0, monthRequests: 0, todayTokens: 0, monthTokens: 0, successRate: 0, averageDurationMs: 0 },
-    updateSettings: vi.fn(),
-    setSecret: vi.fn(),
-    clearSecret: vi.fn(),
-    getSecretStatus: vi.fn().mockReturnValue({ configured: false, masked: "未设置" }),
-    testConnection: vi.fn().mockResolvedValue(undefined),
-    generateWords: vi.fn().mockResolvedValue(null),
-    generateGrammar: vi.fn().mockResolvedValue(null),
-    generateQuiz: vi.fn().mockResolvedValue(null),
-    explainMistake: vi.fn().mockResolvedValue(null),
-    saveTransient: vi.fn().mockResolvedValue(undefined),
-    saveQuizCollection: vi.fn().mockResolvedValue(null),
-    undoLastSave: vi.fn().mockResolvedValue(undefined),
-    cancel: vi.fn(),
-    resetAISettings: vi.fn(),
-    clearAllSecrets: vi.fn(),
-    ...overrides,
-  };
-}
 
 function learningMock(overrides: Record<string, unknown> = {}) {
   return {
@@ -131,7 +103,16 @@ function learningMock(overrides: Record<string, unknown> = {}) {
 }
 
 describe("phase-two components", () => {
-  mocked.ai = aiMock();
+  it("exits focus mode from both the top-right button and Escape", async () => {
+    const onExitFocus = vi.fn();
+    const { rerender } = render(<AppShell focusMode onExitFocus={onExitFocus}><div>练习内容</div></AppShell>);
+    await userEvent.click(screen.getByRole("button", { name: /退出专注/ }));
+    expect(onExitFocus).toHaveBeenCalledTimes(1);
+    rerender(<AppShell focusMode onExitFocus={onExitFocus}><div>练习内容</div></AppShell>);
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onExitFocus).toHaveBeenCalledTimes(2);
+  });
+
   it("reveals and rates a word in the selected independent mode", async () => {
     mocked.learning = learningMock();
     const word = makeWord("word-component", "组件");
@@ -155,6 +136,30 @@ describe("phase-two components", () => {
         "japanese",
       ),
     );
+  });
+
+  it("returns from word study through its explicit exit button", async () => {
+    mocked.learning = learningMock();
+    const onFinish = vi.fn();
+    render(
+      <WordStudySession
+        items={[makeWord("word-exit", "退出")]}
+        mode="japanese"
+        onFinish={onFinish}
+        onRestart={vi.fn()}
+        onReviewWeak={vi.fn()}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "退出学习" }));
+    expect(onFinish).toHaveBeenCalled();
+  });
+
+  it("returns from a grammar exercise through its explicit exit button", async () => {
+    mocked.learning = learningMock();
+    const onClose = vi.fn();
+    render(<GrammarPractice point={GRAMMAR_POINTS[0]} onClose={onClose} />);
+    await userEvent.click(screen.getByRole("button", { name: "退出练习" }));
+    expect(onClose).toHaveBeenCalled();
   });
 
   it("renders the persisted daily plan and recommended next step", () => {
@@ -184,38 +189,40 @@ describe("phase-two components", () => {
     );
   });
 
-  it("generates ten deduplicated words from the word library and starts studying them", async () => {
-    const generated = { ...makeWord("ai-inline-word", "AI新增"), source: "ai-generated" as const };
-    mocked.ai = aiMock({ generateWords: vi.fn().mockResolvedValue({ words: [generated] }) });
+  it("chooses the study language before showing its matching word difficulty", async () => {
     mocked.learning = learningMock();
     render(<WordsView />);
-    await userEvent.click(screen.getByRole("button", { name: /AI 新增 10 组并学习/ }));
-    expect(mocked.ai.generateWords).toHaveBeenCalledWith(expect.objectContaining({ count: 10 }));
-    await waitFor(() => expect(screen.getByRole("button", { name: /揭示答案/ })).toBeTruthy());
+    expect(screen.queryByText(/AI 新增/)).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "日语" }));
+    expect(screen.getByRole("combobox", { name: "2. 日语难度" })).toBeTruthy();
+    expect(screen.queryByRole("combobox", { name: "2. 英语难度" })).toBeNull();
+    expect(screen.queryByText("仅收藏")).toBeNull();
+    expect(screen.queryByText("仅错词")).toBeNull();
+    expect(screen.queryByText("仅到期")).toBeNull();
   });
 
-  it("generates grammar inline using the current grammar mode", async () => {
-    const generated = { ...makeGrammar("ai-inline-grammar"), source: "ai-generated" as const };
-    mocked.ai = aiMock({ generateGrammar: vi.fn().mockResolvedValue({ grammar: [generated] }) });
-    mocked.learning = learningMock({ allGrammar: [...GRAMMAR_POINTS, generated] });
+  it("keeps grammar search focused on difficulty and mastery", () => {
+    mocked.learning = learningMock();
     render(<GrammarView />);
-    await userEvent.click(screen.getByRole("button", { name: /AI 新增 10 项/ }));
-    expect(mocked.ai.generateGrammar).toHaveBeenCalledWith(expect.objectContaining({ count: 10, language: "japanese" }));
+    expect(screen.queryByText(/AI 新增/)).toBeNull();
+    expect(screen.queryByText("仅收藏")).toBeNull();
+    expect(screen.queryByText("仅错题")).toBeNull();
+    expect(screen.queryByText("仅到期")).toBeNull();
   });
 
-  it("completes a one-question test and renders the result breakdown", async () => {
+  it("completes a Japanese exam section and renders the result breakdown", async () => {
     const snapshot = makeSnapshot();
     snapshot.grammarProgress = [];
     snapshot.wordProgress = [makeWordProgress("word-001")];
     mocked.learning = learningMock({ snapshot });
     const { container } = render(<TestView />);
-    const customCount = screen.getByLabelText("自定义测试题数");
-    fireEvent.change(customCount, { target: { value: "1" } });
-    await userEvent.click(screen.getByRole("button", { name: /开始测试/ }));
-    const option = container.querySelector<HTMLButtonElement>(".quiz-option");
-    expect(option).not.toBeNull();
-    await userEvent.click(option!);
-    await userEvent.click(screen.getByRole("button", { name: /提交测试/ }));
+    await userEvent.click(screen.getByRole("button", { name: "开始测试" }));
+    for (let questionIndex = 0; questionIndex < 120; questionIndex += 1) {
+      const option = container.querySelector<HTMLButtonElement>(".quiz-option");
+      expect(option).not.toBeNull();
+      await userEvent.click(option!);
+      await userEvent.click(screen.getByRole("button", { name: questionIndex === 119 ? /提交测试/ : /下一题/ }));
+    }
     await waitFor(() => expect(screen.getByText("逐题解析")).toBeTruthy());
     expect(mocked.learning.completeTest).toHaveBeenCalled();
   });
@@ -233,13 +240,13 @@ describe("phase-two components", () => {
   it("saves settings and confirms a scoped reset", async () => {
     mocked.learning = learningMock();
     render(<SettingsView />);
-    await userEvent.click(screen.getByRole("button", { name: "只学英语" }));
+    await userEvent.click(screen.getByRole("button", { name: "英语" }));
     expect(mocked.learning.updateSettings).toHaveBeenCalledWith({
       defaultStudyMode: "english",
     });
     await userEvent.click(screen.getByRole("switch", { name: "学习专注模式" }));
     expect(mocked.learning.updateSettings).toHaveBeenCalledWith({
-      focusModeEnabled: false,
+      focusModeEnabled: true,
     });
     await userEvent.click(screen.getByRole("button", { name: /清空测试记录/ }));
     await userEvent.click(

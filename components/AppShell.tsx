@@ -13,7 +13,6 @@ import {
   Menu,
   NotebookPen,
   Settings,
-  Sparkles,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -25,7 +24,6 @@ const navigation = [
   { path: "/test", label: "测试", icon: CircleHelp },
   { path: "/mistakes", label: "错题本", icon: BookMarked },
   { path: "/favorites", label: "收藏", icon: Heart },
-  { path: "/ai", label: "AI 内容", icon: Sparkles },
   { path: "/stats", label: "学习统计", icon: BarChart3 },
   { path: "/settings", label: "设置", icon: Settings },
 ] as const;
@@ -66,11 +64,17 @@ export function AppShell({
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && moreOpen) closeMore();
+      if (event.key !== "Escape") return;
+      if (focusMode) {
+        event.preventDefault();
+        onExitFocus();
+      } else if (moreOpen) {
+        closeMore();
+      }
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [closeMore, moreOpen]);
+  }, [closeMore, focusMode, moreOpen, onExitFocus]);
 
   useEffect(() => {
     if (moreOpen) moreCloseRef.current?.focus();

@@ -2,17 +2,12 @@
 
 import {
   BookOpenText,
-  Layers3,
-  LoaderCircle,
   Play,
   RotateCcw,
   Search,
-  SlidersHorizontal,
-  Sparkles,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
-import { useAI } from "@/context/AIContext";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import {
@@ -27,13 +22,17 @@ import { Button, PageHeader, ProgressBar } from "@/components/ui";
 import { WordLibrary } from "@/components/words/WordLibrary";
 import { WordStudySession } from "@/components/words/WordStudySession";
 import { FilterPanel } from "@/components/filters/FilterPanel";
+import {
+  ENGLISH_STUDY_LEVELS,
+  JAPANESE_STUDY_LEVELS,
+} from "@/lib/word-levels";
 
 type SessionSource = "all" | "review" | "new" | "favorites";
 
 const MODE_LABELS: Record<StudyMode, string> = {
-  combined: "日英对照",
-  japanese: "只学日语",
-  english: "只学英语",
+  combined: "日英混合",
+  japanese: "日语",
+  english: "英语",
 };
 
 export function WordsView() {
@@ -46,13 +45,6 @@ export function WordsView() {
     toggleFavorite,
     setFocusMode,
   } = useLearning();
-  const {
-    settings: aiSettings,
-    online: aiOnline,
-    busyOperation,
-    error: aiError,
-    generateWords,
-  } = useAI();
   const now = useCurrentTime();
   const [mode, setMode] = useState<StudyMode>(settings.defaultStudyMode);
   const [pageMode, setPageMode] = useState<"study" | "library">("study");
@@ -108,7 +100,7 @@ export function WordsView() {
     () =>
       searchWords(
         allWords,
-        { ...filters, query: debouncedQuery, mode },
+        { ...filters, query: pageMode === "library" ? debouncedQuery : "", mode },
         {
           progress: snapshot.wordProgress,
           favorites: snapshot.favorites,
@@ -122,20 +114,12 @@ export function WordsView() {
       filters,
       mode,
       nowTimestamp,
+      pageMode,
       snapshot.favorites,
       snapshot.mistakes,
       snapshot.wordProgress,
     ],
   );
-  const japaneseLevels = useMemo(
-    () => [...new Set(allWords.map((word) => word.japanese.difficulty))],
-    [allWords],
-  );
-  const englishLevels = useMemo(
-    () => [...new Set(allWords.map((word) => word.english.difficulty))],
-    [allWords],
-  );
-
   const startSession = useCallback(
     (source: SessionSource = "all", selectedMode: StudyMode = mode) => {
       const todayPlan = snapshot.dailyPlans.find(
@@ -181,21 +165,6 @@ export function WordsView() {
     ],
   );
 
-  const generateAndStudy = async () => {
-    const payload = await generateWords({
-      count: 10,
-      japaneseLevel: aiSettings.defaultJapaneseLevel,
-      englishLevel: aiSettings.defaultEnglishLevel,
-      frequency: aiSettings.defaultFrequency,
-      purpose: aiSettings.defaultPurpose,
-      quality: aiSettings.defaultQuality,
-      qualityReview: aiSettings.qualityReview,
-    });
-    if (!payload?.words?.length) return;
-    setSessionItems(payload.words);
-    setFocusMode(true);
-  };
-
   useEffect(() => {
     if (autoStarted.current || now === null) return;
     const search = new URLSearchParams(window.location.search);
@@ -222,6 +191,15 @@ export function WordsView() {
       return () => window.clearTimeout(timer);
     }
   }, [mode, now, startSession]);
+
+  useEffect(() => {
+    const exitSession = () => {
+      setSessionItems(null);
+      setFocusMode(false);
+    };
+    window.addEventListener("linguastep:exit-session", exitSession);
+    return () => window.removeEventListener("linguastep:exit-session", exitSession);
+  }, [setFocusMode]);
 
   if (sessionItems) {
     return (
@@ -251,12 +229,21 @@ export function WordsView() {
     });
   };
 
+  const changeStudyMode = (nextMode: StudyMode) => {
+    setMode(nextMode);
+    setFilters((current) => ({
+      ...current,
+      japaneseLevel: nextMode === "english" ? "all" : current.japaneseLevel,
+      englishLevel: nextMode === "japanese" ? "all" : current.englishLevel,
+    }));
+  };
+
   return (
     <div className="page-stack words-page">
       <PageHeader
         eyebrow="单词"
         title={pageMode === "study" ? "开始一轮单词学习" : "浏览与检索词库"}
-        description={pageMode === "study" ? "优先处理到期内容，也可以直接学习今日新词。" : `词库共 ${allWords.length} 组，其中 AI 新增 ${snapshot.aiWords.length} 组。`}
+        description={pageMode === "study" ? "先选择学习语言，再按对应难度开始本轮学习。" : `词库共 ${allWords.length} 组，可按语言难度和掌握状态检索。`}
         actions={
           <div className="segmented-control" aria-label="单词页面模式">
             <button className={pageMode === "study" ? "active" : ""} onClick={() => setPageMode("study")}>开始学习</button>
@@ -271,7 +258,6 @@ export function WordsView() {
           <div className="deck-card-top">
             <span className="deck-icon"><BookOpenText size={28} /></span>
             <div className="deck-stat"><strong>{allWords.length}</strong><span>组词汇</span></div>
-            <div className="deck-stat"><strong>{snapshot.aiWords.length}</strong><span>AI 新增</span></div>
             <div className="deck-stat"><strong>{modeProgress.length}</strong><span>已学习</span></div>
             <div className="deck-stat"><strong>{masteredCount}</strong><span>已掌握</span></div>
             <div className="deck-stat"><strong>{needsReview.length}</strong><span>今日到期</span></div>
@@ -280,29 +266,32 @@ export function WordsView() {
             value={(masteredCount / Math.max(1, allWords.length)) * 100}
             label={`${MODE_LABELS[mode]}掌握进度`}
           />
+          <div className="study-filter-block" aria-label="本轮学习筛选">
+            <div className="study-filter-heading">
+              <div><strong>选择本轮内容</strong><span>先选语言，再选择对应等级和数量。</span></div>
+              <strong className="study-filter-count">{filteredWords.length} 组可学习</strong>
+            </div>
+            <div className="study-mode-picker">
+              <span>1. 学习语言</span>
+              <div className="segmented-control">{(Object.keys(MODE_LABELS) as StudyMode[]).map((item) => <button type="button" className={mode === item ? "active" : ""} onClick={() => changeStudyMode(item)} key={item}>{MODE_LABELS[item]}</button>)}</div>
+            </div>
+            <div className="filter-grid">
+              {mode !== "english" && <label><span>2. 日语难度</span><select value={filters.japaneseLevel} onChange={(event) => setFilters((current) => ({ ...current, japaneseLevel: event.target.value }))}><option value="all">全部</option>{JAPANESE_STUDY_LEVELS.map((level) => <option key={level}>{level}</option>)}</select></label>}
+              {mode !== "japanese" && <label><span>2. 英语难度</span><select value={filters.englishLevel} onChange={(event) => setFilters((current) => ({ ...current, englishLevel: event.target.value }))}><option value="all">全部</option>{ENGLISH_STUDY_LEVELS.map((level) => <option key={level}>{level === "CET-4" ? "四级" : level === "CET-6" ? "六级" : level}</option>)}</select></label>}
+              <label><span>掌握状态</span><select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as WordSearchFilters["status"] }))}><option value="all">全部</option><option value="unlearned">未学习</option><option value="learning">学习中</option><option value="review">待复习</option><option value="mastered">已掌握</option></select></label>
+              <label><span>本次数量</span><select value={settings.studyRoundSize} onChange={(event) => updateSettings({ studyRoundSize: Number(event.target.value) })}>{[10, 20, 30].map((count) => <option value={count} key={count}>{count} 个</option>)}{![10, 20, 30].includes(settings.studyRoundSize) && <option value={settings.studyRoundSize}>{settings.studyRoundSize} 个</option>}</select></label>
+            </div>
+            <div className="study-filter-actions">
+              <button className="text-button" onClick={clearFilters}><RotateCcw size={15} />清空筛选</button>
+            </div>
+          </div>
           <div className="deck-controls">
             <div className="deck-actions">
-              {needsReview.length > 0 && (
-                <Button variant="secondary" onClick={() => startSession("review")}>
-                  <Layers3 size={18} />复习到期内容
-                </Button>
-              )}
               <Button onClick={() => startSession("all")} disabled={filteredWords.length === 0}>
                 <Play size={18} fill="currentColor" />开始学习
               </Button>
-              <Button variant="secondary" onClick={() => void generateAndStudy()} disabled={!aiSettings.enabled || !aiOnline || busyOperation !== null}>
-                {busyOperation === "words" ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />}{busyOperation === "words" ? "正在生成并去重" : "AI 新增 10 组并学习"}
-              </Button>
             </div>
           </div>
-          <details className="inline-settings compact-details">
-            <summary><SlidersHorizontal size={17} />本次学习设置</summary>
-            <div className="inline-settings-grid">
-              <label><span>本次模式</span><select value={mode} onChange={(event) => setMode(event.target.value as StudyMode)}>{(Object.keys(MODE_LABELS) as StudyMode[]).map((item) => <option value={item} key={item}>{MODE_LABELS[item]}</option>)}</select></label>
-              <label><span>本次数量</span><select value={settings.studyRoundSize} onChange={(event) => updateSettings({ studyRoundSize: Number(event.target.value) })}>{[10, 20, 30].map((count) => <option value={count} key={count}>{count} 个</option>)}{![10, 20, 30].includes(settings.studyRoundSize) && <option value={settings.studyRoundSize}>{settings.studyRoundSize} 个</option>}</select></label>
-            </div>
-            <p>这里的调整会保存为后续默认值；更多显示与揭示方式请前往设置。</p>
-          </details>
         </article>
 
         <details className="card method-card compact-details">
@@ -315,7 +304,6 @@ export function WordsView() {
         </details>
       </section>
 
-      {aiError && busyOperation === null && <section className="inline-alert error" role="alert"><span>AI 新增没有完成：{aiError.message}</span></section>}
       </>}
 
       {pageMode === "library" && <>
@@ -331,15 +319,11 @@ export function WordsView() {
           />
         </div>
         <div className="filter-grid">
-          <label><span>JLPT</span><select value={filters.japaneseLevel} onChange={(event) => setFilters((current) => ({ ...current, japaneseLevel: event.target.value }))}><option value="all">全部</option>{japaneseLevels.map((level) => <option key={level}>{level}</option>)}</select></label>
-          <label><span>英语等级</span><select value={filters.englishLevel} onChange={(event) => setFilters((current) => ({ ...current, englishLevel: event.target.value }))}><option value="all">全部</option>{englishLevels.map((level) => <option key={level}>{level}</option>)}</select></label>
-          <label><span>频率</span><select value={filters.frequency} onChange={(event) => setFilters((current) => ({ ...current, frequency: event.target.value as WordSearchFilters["frequency"] }))}><option value="all">全部</option><option>高频</option><option>常用</option><option>普通</option><option>低频</option></select></label>
+          <label><span>日语等级</span><select value={filters.japaneseLevel} onChange={(event) => setFilters((current) => ({ ...current, japaneseLevel: event.target.value }))}><option value="all">全部</option>{JAPANESE_STUDY_LEVELS.map((level) => <option key={level}>{level}</option>)}</select></label>
+          <label><span>英语等级</span><select value={filters.englishLevel} onChange={(event) => setFilters((current) => ({ ...current, englishLevel: event.target.value }))}><option value="all">全部</option>{ENGLISH_STUDY_LEVELS.map((level) => <option key={level}>{level === "CET-4" ? "四级" : level === "CET-6" ? "六级" : level}</option>)}</select></label>
           <label><span>掌握状态</span><select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as WordSearchFilters["status"] }))}><option value="all">全部</option><option value="unlearned">未学习</option><option value="learning">学习中</option><option value="review">待复习</option><option value="mastered">已掌握</option></select></label>
         </div>
         <div className="filter-toggles">
-          <label><input type="checkbox" checked={filters.favorite} onChange={(event) => setFilters((current) => ({ ...current, favorite: event.target.checked }))} />仅收藏</label>
-          <label><input type="checkbox" checked={filters.mistake} onChange={(event) => setFilters((current) => ({ ...current, mistake: event.target.checked }))} />仅错词</label>
-          <label><input type="checkbox" checked={filters.due} onChange={(event) => setFilters((current) => ({ ...current, due: event.target.checked }))} />仅到期</label>
           <button className="text-button" onClick={clearFilters}><RotateCcw size={15} />清空筛选</button>
           <strong>{filteredWords.length} 个结果</strong>
         </div>

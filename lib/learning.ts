@@ -352,8 +352,26 @@ export interface TestGenerationOptions {
   favorites?: readonly string[];
   mistakes?: readonly MistakeRecord[];
   difficulty?: string;
+  japaneseDifficulty?: string;
+  englishDifficulty?: string;
   prioritizeMistakes?: boolean;
   comparisons?: readonly GrammarComparison[];
+}
+
+function matchesPracticeDifficulty(
+  actual: string,
+  requested: string | undefined,
+  language: "japanese" | "english",
+): boolean {
+  if (!requested) return true;
+  if (actual === requested) return true;
+  if (language === "japanese") {
+    const level = requested.match(/N[123]/i)?.[0];
+    return Boolean(level && actual.toUpperCase().includes(level.toUpperCase()));
+  }
+  if (requested === "CET-4") return /CET-4|四级|高中/i.test(actual);
+  if (requested === "CET-6") return /CET-6|六级/i.test(actual);
+  return requested === "TOEIC" && /TOEIC/i.test(actual);
 }
 
 function modeWasStudied(progress: WordProgress, mode: TestMode): boolean {
@@ -399,13 +417,18 @@ export function createTestQuestions(
     if (options.sourceFilter === "comparisons") return false;
     const progress = wordProgressMap.get(word.id);
     if (!progress || !modeWasStudied(progress, options.mode)) return false;
-    if (options.difficulty) {
-      const difficulty =
-        options.mode === "english"
-          ? word.english.difficulty
-          : word.japanese.difficulty;
-      if (difficulty !== options.difficulty) return false;
-    }
+    const japaneseDifficulty = options.japaneseDifficulty ??
+      (options.mode !== "english" ? options.difficulty : undefined);
+    const englishDifficulty = options.englishDifficulty ??
+      (options.mode === "english" ? options.difficulty : undefined);
+    if (
+      options.mode !== "english" &&
+      !matchesPracticeDifficulty(word.japanese.difficulty, japaneseDifficulty, "japanese")
+    ) return false;
+    if (
+      options.mode !== "japanese" &&
+      !matchesPracticeDifficulty(word.english.difficulty, englishDifficulty, "english")
+    ) return false;
     if (options.sourceFilter === "favorites") {
       return favoriteIds.has(`word:${word.id}`);
     }
@@ -427,7 +450,10 @@ export function createTestQuestions(
     if (options.mode !== "mixed" && point.language !== options.mode) return false;
     const progress = grammarProgressMap.get(point.id);
     if (!progress) return false;
-    if (options.difficulty && point.level !== options.difficulty) return false;
+    const requestedDifficulty = point.language === "japanese"
+      ? options.japaneseDifficulty ?? (options.mode !== "english" ? options.difficulty : undefined)
+      : options.englishDifficulty ?? (options.mode === "english" ? options.difficulty : undefined);
+    if (!matchesPracticeDifficulty(point.level, requestedDifficulty, point.language)) return false;
     if (options.sourceFilter === "favorites") {
       return favoriteIds.has(`grammar:${point.id}`);
     }

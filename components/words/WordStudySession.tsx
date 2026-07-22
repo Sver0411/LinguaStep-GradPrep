@@ -197,7 +197,7 @@ export function WordStudySession({
     <section className="study-session" aria-live="polite">
       <div className="session-topline">
         <span>{mode === "combined" ? "日英对照" : mode === "japanese" ? "日语" : "英语"}学习</span>
-        <strong>{index + 1} / {items.length}</strong>
+        <div className="session-top-actions"><strong>{index + 1} / {items.length}</strong><button className="text-button" onClick={onFinish}><ArrowLeft size={16} />退出学习</button></div>
       </div>
       <div className="session-progress"><span style={{ width: `${((index + 1) / items.length) * 100}%` }} /></div>
 

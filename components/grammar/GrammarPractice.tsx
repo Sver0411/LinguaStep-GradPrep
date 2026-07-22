@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
 import { dateKey, isAnswerCorrect } from "@/lib/learning";
 import { getNextLearningAction } from "@/lib/learning-flow";
 import type { GrammarPoint, TestAnswer } from "@/lib/models";
 import { Button, ProgressBar } from "@/components/ui";
-import { AIExplanationPanel } from "@/components/ai/AIExplanationPanel";
 
 export function GrammarPractice({
   point,
@@ -107,7 +106,7 @@ export function GrammarPractice({
     <section className="quiz-session grammar-quiz">
       <div className="session-topline">
         <span>{point.title} · 配套练习</span>
-        <strong>{index + 1} / {questions.length}</strong>
+        <div className="session-top-actions"><strong>{index + 1} / {questions.length}</strong><button className="text-button" onClick={onClose}><ArrowLeft size={16} />退出练习</button></div>
       </div>
       <div className="session-progress"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
       <article className="question-card card">
@@ -140,7 +139,6 @@ export function GrammarPractice({
             <p>{question.explanation}</p>
           </div>
         )}
-        {selectedIndex !== null && !correct && <AIExplanationPanel question={question} selectedIndex={selectedIndex} />}
         <div className="question-footer">
           <span>按 1–4 选择答案</span>
           <Button onClick={() => void next()} disabled={selectedIndex === null || submitting}>

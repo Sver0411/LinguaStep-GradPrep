@@ -1,23 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import {
   AlertCircle,
   BookOpenCheck,
   Check,
   Heart,
   Languages,
-  LoaderCircle,
   Play,
   Quote,
   RotateCcw,
   Route,
   Search,
-  Sparkles,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
-import { useAI } from "@/context/AIContext";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { dateKey } from "@/lib/learning";
@@ -42,13 +38,6 @@ export function GrammarView() {
     isFavorite,
     toggleFavorite,
   } = useLearning();
-  const {
-    settings: aiSettings,
-    online: aiOnline,
-    busyOperation,
-    error: aiError,
-    generateGrammar,
-  } = useAI();
   const now = useCurrentTime();
   const today = dateKey(new Date());
   const todayPlan = snapshot.dailyPlans.find((item) => item.date === today);
@@ -65,9 +54,6 @@ export function GrammarView() {
   const debouncedQuery = useDebouncedValue(query);
   const [level, setLevel] = useState("all");
   const [status, setStatus] = useState<GrammarSearchFilters["status"]>("all");
-  const [favoriteOnly, setFavoriteOnly] = useState(false);
-  const [mistakeOnly, setMistakeOnly] = useState(false);
-  const [dueOnly, setDueOnly] = useState(false);
   const nowTimestamp = now ?? Number.NEGATIVE_INFINITY;
   const filtered = useMemo(
     () =>
@@ -80,9 +66,9 @@ export function GrammarView() {
               language: viewMode,
               level,
               status,
-              favorite: favoriteOnly,
-              mistake: mistakeOnly,
-              due: dueOnly,
+              favorite: false,
+              mistake: false,
+              due: false,
             },
             {
               progress: snapshot.grammarProgress,
@@ -94,10 +80,7 @@ export function GrammarView() {
     [
       debouncedQuery,
       allGrammar,
-      dueOnly,
-      favoriteOnly,
       level,
-      mistakeOnly,
       nowTimestamp,
       snapshot.favorites,
       snapshot.grammarProgress,
@@ -121,19 +104,9 @@ export function GrammarView() {
         ].some((value) => value.toLocaleLowerCase("zh-CN").includes(normalized))
       ) return false;
       if (level !== "all" && item.level !== level) return false;
-      if (favoriteOnly && !snapshot.favorites.includes(`comparison:${item.id}`)) return false;
-      if (
-        mistakeOnly &&
-        !snapshot.mistakes.some(
-          (mistake) =>
-            mistake.active &&
-            mistake.contentRef.source === "comparison" &&
-            mistake.contentRef.sourceId === item.id,
-        )
-      ) return false;
       return true;
     });
-  }, [allComparisons, debouncedQuery, favoriteOnly, level, mistakeOnly, snapshot.favorites, snapshot.mistakes]);
+  }, [allComparisons, debouncedQuery, level]);
   const selected = filtered.find((point) => point.id === selectedId) ?? filtered.find((point) => point.id === todayGrammarId) ?? filtered[0];
   const progressMap = useMemo(
     () => new Map(snapshot.grammarProgress.map((item) => [item.grammarId, item])),
@@ -159,21 +132,13 @@ export function GrammarView() {
     setPracticing(false);
     setLevel("all");
     setStatus("all");
-    setDueOnly(false);
   };
 
-  const generateAndOpen = async () => {
-    const payload = await generateGrammar({
-      count: aiSettings.defaultGrammarCount,
-      language: viewMode,
-      level: level !== "all" ? level : viewMode === "english" ? aiSettings.defaultEnglishLevel : aiSettings.defaultJapaneseLevel,
-      topic: query.trim() || undefined,
-      quality: aiSettings.defaultQuality,
-      qualityReview: aiSettings.qualityReview,
-    });
-    const point = payload?.grammar?.[0];
-    if (point) setSelectedId(point.id);
-  };
+  useEffect(() => {
+    const exitSession = () => setPracticing(false);
+    window.addEventListener("linguastep:exit-session", exitSession);
+    return () => window.removeEventListener("linguastep:exit-session", exitSession);
+  }, []);
 
   if (practicing && selected) {
     return <GrammarPractice point={selected} onClose={() => setPracticing(false)} />;
@@ -191,15 +156,9 @@ export function GrammarView() {
               <button className={viewMode === "english" ? "active" : ""} onClick={() => changeMode("english")}>英语 · {allGrammar.filter((item) => item.language === "english").length}</button>
               <button className={viewMode === "comparison" ? "active" : ""} onClick={() => changeMode("comparison")}>日英对比 · {allComparisons.length}</button>
             </div>
-            {viewMode === "comparison" && <Link className="button button-primary" href="/test?source=comparisons&start=1"><Play size={17} />日英对比混合测试</Link>}
-            <Button variant="secondary" onClick={() => void generateAndOpen()} disabled={!aiSettings.enabled || !aiOnline || busyOperation !== null}>
-              {busyOperation === "grammar" ? <LoaderCircle className="spin" size={17} /> : <Sparkles size={17} />}{busyOperation === "grammar" ? "正在生成并去重" : `AI 新增 ${aiSettings.defaultGrammarCount} 项`}
-            </Button>
           </div>
         }
       />
-
-      {aiError && busyOperation === null && <section className="inline-alert error" role="alert"><span>AI 新增没有完成：{aiError.message}</span></section>}
 
       {todayPoint && (
         <section className="card next-learning-card">
@@ -209,7 +168,7 @@ export function GrammarView() {
       )}
 
       <details className="advanced-panel compact-details">
-        <summary><span><strong>查找其他语法</strong><small>搜索、难度、掌握状态和收藏筛选</small></span></summary>
+        <summary><span><strong>查找其他语法</strong><small>按关键词、难度和掌握状态筛选</small></span></summary>
       <FilterPanel ariaLabel="语法搜索与筛选">
         <div className="search-field">
           <Search size={18} />
@@ -223,10 +182,7 @@ export function GrammarView() {
           )}
         </div>
         <div className="filter-toggles">
-          <label><input type="checkbox" checked={favoriteOnly} onChange={(event) => setFavoriteOnly(event.target.checked)} />仅收藏</label>
-          <label><input type="checkbox" checked={mistakeOnly} onChange={(event) => setMistakeOnly(event.target.checked)} />仅错题</label>
-          {viewMode !== "comparison" && <label><input type="checkbox" checked={dueOnly} onChange={(event) => setDueOnly(event.target.checked)} />仅到期</label>}
-          <button className="text-button" onClick={() => { setQuery(""); setLevel("all"); setStatus("all"); setFavoriteOnly(false); setMistakeOnly(false); setDueOnly(false); }}><RotateCcw size={15} />清空筛选</button>
+          <button className="text-button" onClick={() => { setQuery(""); setLevel("all"); setStatus("all"); }}><RotateCcw size={15} />清空筛选</button>
           <strong>{viewMode === "comparison" ? filteredComparisons.length : filtered.length} 个结果</strong>
         </div>
       </FilterPanel>
@@ -240,7 +196,7 @@ export function GrammarView() {
             {filteredComparisons.map((item) => (
               <article className="comparison-card card" key={item.id}>
                 <div className="grammar-title-row">
-                  <div><span className="section-kicker">{item.source === "ai-generated" ? `AI 新增 · ${item.level}` : item.level}</span><h2>{item.semantic}</h2></div>
+                  <div><span className="section-kicker">{item.level}</span><h2>{item.semantic}</h2></div>
                   <button className={`favorite-button${isFavorite("comparison", item.id) ? " active" : ""}`} onClick={() => void toggleFavorite("comparison", item.id)} aria-label={isFavorite("comparison", item.id) ? "取消收藏对比" : "收藏对比"}><Heart size={18} fill={isFavorite("comparison", item.id) ? "currentColor" : "none"} /></button>
                 </div>
                 <div className="comparison-language-grid">
@@ -250,7 +206,6 @@ export function GrammarView() {
                 <p>{item.translationZh}</p>
                 <div className="review-explanation">{item.difference}</div>
                 <ul className="plain-list">{item.pitfalls.map((pitfall) => <li key={pitfall}>{pitfall}</li>)}</ul>
-                <Link className="button button-secondary" href="/test?source=comparisons&start=1"><Play size={17} />进入混合测试</Link>
               </article>
             ))}
           </section>
@@ -267,7 +222,7 @@ export function GrammarView() {
                 return (
                   <button className={`grammar-list-item${selected?.id === point.id ? " active" : ""}`} onClick={() => setSelectedId(point.id)} key={point.id}>
                     <span className="grammar-index">{String(index + 1).padStart(2, "0")}</span>
-                    <span><strong>{point.title}</strong><small>{point.level} · {progress ? STATUS_LABEL[progress.status] : "未学习"}{point.source === "ai-generated" ? " · AI 新增" : ""}</small></span>
+                    <span><strong>{point.title}</strong><small>{point.level} · {progress ? STATUS_LABEL[progress.status] : "未学习"}</small></span>
                     {progress?.status === "mastered" && <Check size={16} />}
                   </button>
                 );
@@ -278,7 +233,7 @@ export function GrammarView() {
           {selected && (
             <article className="grammar-detail card">
               <div className="grammar-title-row">
-                <div><div className="tag-row">{selected.source === "ai-generated" && <span>AI 新增</span>}<span>{selected.level}</span><span>{selected.language === "japanese" ? "日语" : "英语"}</span>{progressMap.get(selected.id) && <span>{STATUS_LABEL[progressMap.get(selected.id)!.status]}</span>}</div><h2>{selected.title}</h2></div>
+                <div><div className="tag-row"><span>{selected.level}</span><span>{selected.language === "japanese" ? "日语" : "英语"}</span>{progressMap.get(selected.id) && <span>{STATUS_LABEL[progressMap.get(selected.id)!.status]}</span>}</div><h2>{selected.title}</h2></div>
                 <button className={`favorite-button large${isFavorite("grammar", selected.id) ? " active" : ""}`} onClick={() => void toggleFavorite("grammar", selected.id)} aria-label={isFavorite("grammar", selected.id) ? "取消收藏语法" : "收藏语法"}><Heart size={20} fill={isFavorite("grammar", selected.id) ? "currentColor" : "none"} /></button>
               </div>
               <section className="grammar-explanation"><p>{selected.explanation}</p></section>

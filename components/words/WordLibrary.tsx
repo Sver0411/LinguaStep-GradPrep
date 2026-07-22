@@ -47,7 +47,6 @@ export function WordLibrary({
         <div className={`word-library-grid density-${density}`}>
           {visible.map((word) => (
             <article className="word-item-card" key={word.id}>
-              {word.source === "ai-generated" && <span className="ai-source-badge">AI 新增</span>}
               <button
                 className={`favorite-button${isFavorite(word.id) ? " active" : ""}`}
                 onClick={() => onToggleFavorite(word.id)}

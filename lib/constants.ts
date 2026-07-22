@@ -7,9 +7,9 @@ export const REVIEW_ALGORITHM_VERSION = 2;
 
 export const DEFAULT_SETTINGS: AppSettings = {
   theme: "system",
-  focusModeEnabled: true,
+  focusModeEnabled: false,
   displayDensity: "compact",
-  revealMode: "together",
+  revealMode: "step-by-step",
   revealOrder: "japanese-first",
   defaultStudyMode: "combined",
   dailyNewWords: 20,

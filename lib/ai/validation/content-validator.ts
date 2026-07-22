@@ -124,7 +124,7 @@ export function validateGrammar(
     }
     const legalLevel = item.language === "japanese"
       ? /^(JLPT )?N[123]( 过渡)?$/.test(item.level)
-      : /^(高中基础|四级|六级|CET-4|CET-6|TOEIC 过渡)$/.test(item.level);
+      : /^(四级|六级|TOEIC|CET-4|CET-6)$/.test(item.level);
     if (!legalLevel) {
       issues.push({ index, field: "level", message: "语法等级标签不合法" });
     }

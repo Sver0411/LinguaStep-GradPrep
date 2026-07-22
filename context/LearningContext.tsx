@@ -51,6 +51,7 @@ import {
   type SettingsRepository,
 } from "@/lib/repositories";
 import { migrateLearningSnapshot } from "@/lib/repositories/migrations";
+import { normalizeWordStudyLevels } from "@/lib/word-levels";
 import {
   appendAIArtifacts,
   type AIArtifactBatch,
@@ -364,7 +365,7 @@ function createPlan(
     date: dateKey(now),
     now: now.toISOString(),
     settings,
-    words: [...WORD_PAIRS, ...snapshot.aiWords],
+    words: [...WORD_PAIRS, ...snapshot.aiWords.map(normalizeWordStudyLevels)],
     grammar: [...GRAMMAR_POINTS, ...snapshot.aiGrammar],
     wordProgress: snapshot.wordProgress,
     grammarProgress: snapshot.grammarProgress,
@@ -452,14 +453,6 @@ export function LearningProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => applyTheme(settings), [settings]);
-
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setFocusMode(false);
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, []);
 
   const persistSnapshot = useCallback(async (next: LearningSnapshot) => {
     const previous = snapshotRef.current;
@@ -935,7 +928,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     () => ({
       snapshot,
       settings,
-      allWords: [...WORD_PAIRS, ...snapshot.aiWords],
+      allWords: [...WORD_PAIRS, ...snapshot.aiWords.map(normalizeWordStudyLevels)],
       allGrammar: [...GRAMMAR_POINTS, ...snapshot.aiGrammar],
       allComparisons: [...GRAMMAR_COMPARISONS, ...snapshot.aiComparisons],
       ready,

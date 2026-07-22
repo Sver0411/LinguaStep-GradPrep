@@ -23,7 +23,10 @@ type AIInput =
   | ExplanationGenerationInput
   | Record<string, never>;
 
-const AI_SERVICE_BASE_PATH = "/study-service";
+const APP_BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "")
+  .trim()
+  .replace(/\/+$/, "");
+const AI_SERVICE_BASE_PATH = `${APP_BASE_PATH}/study-service`;
 
 export class AIAPIClient {
   constructor(private readonly fetchImpl?: typeof fetch) {}

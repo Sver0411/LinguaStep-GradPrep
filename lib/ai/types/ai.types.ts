@@ -63,7 +63,7 @@ export interface ExistingWordSummary {
 export interface WordGenerationInput {
   count: 1 | 5 | 10;
   japaneseLevel: "N3" | "N2" | "N1";
-  englishLevel: "高中基础" | "四级" | "六级" | "TOEIC 过渡";
+  englishLevel: "四级" | "六级" | "TOEIC";
   frequency: "高频" | "常用" | "普通";
   purpose: "日常" | "考试" | "综合";
   quality: "fast" | "quality";

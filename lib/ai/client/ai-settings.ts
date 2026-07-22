@@ -26,11 +26,11 @@ export function normalizeAISettings(value: unknown): AISettings {
     defaultGrammarCount: clampInteger(input.defaultGrammarCount, defaults.defaultGrammarCount, 10, 30),
     defaultJapaneseLevel: input.defaultJapaneseLevel === "N3" || input.defaultJapaneseLevel === "N1" ? input.defaultJapaneseLevel : "N2",
     defaultEnglishLevel:
-      input.defaultEnglishLevel === "高中基础" ||
-      input.defaultEnglishLevel === "六级" ||
-      input.defaultEnglishLevel === "TOEIC 过渡"
-        ? input.defaultEnglishLevel
-        : "四级",
+      input.defaultEnglishLevel === "六级"
+        ? "六级"
+        : input.defaultEnglishLevel === "TOEIC" || input.defaultEnglishLevel === "TOEIC 过渡"
+          ? "TOEIC"
+          : "四级",
     defaultFrequency: input.defaultFrequency === "常用" || input.defaultFrequency === "普通" ? input.defaultFrequency : "高频",
     defaultPurpose: input.defaultPurpose === "日常" || input.defaultPurpose === "考试" ? input.defaultPurpose : "综合",
     defaultQuality: input.defaultQuality === "quality" ? "quality" : "fast",

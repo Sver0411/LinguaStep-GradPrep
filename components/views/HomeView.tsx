@@ -12,7 +12,6 @@ import {
   NotebookPen,
   Play,
   RefreshCw,
-  Sparkles,
 } from "lucide-react";
 import { dateKey } from "@/lib/learning";
 import { calculateDailyPlanProgress } from "@/lib/daily-plan";
@@ -74,7 +73,7 @@ export function HomeView() {
               <Link className="task-row" href={`/words?review=1&mode=${todayPlan.studyMode}`}><span className="task-icon review"><Layers3 size={20} /></span><div><strong>到期复习</strong><small>其中逾期 {todayPlan.overdueWordIds.length} 个</small></div><span>{todayPlan.reviewWordIds.length} 个</span></Link>
               <Link className="task-row" href={`/words?plan=new&mode=${todayPlan.studyMode}`}><span className="task-icon japanese"><BookOpenText size={20} /></span><div><strong>今日新词</strong><small>已完成 {planProgress.newCompleted}</small></div><span>{todayPlan.newWordIds.length} 个</span></Link>
               <Link className="task-row" href="/grammar?today=1"><span className="task-icon grammar"><NotebookPen size={20} /></span><div><strong>今日语法</strong><small>已完成 {planProgress.grammarCompleted}</small></div><span>{todayPlan.grammarIds.length} 个</span></Link>
-              <Link className="task-row" href="/test?source=today&start=1"><span className="task-icon test"><ListTodo size={20} /></span><div><strong>今日测试</strong><small>已完成 {planProgress.testCompleted}</small></div><span>{todayPlan.testTarget} 题</span></Link>
+              <Link className="task-row" href="/test?start=1"><span className="task-icon test"><ListTodo size={20} /></span><div><strong>今日练习</strong><small>已完成 {planProgress.testCompleted}</small></div><span>{todayPlan.testTarget} 题</span></Link>
               {mistakeCount > 0 && <Link className="task-row" href="/mistakes?review=1"><span className="task-icon mistake"><CircleAlert size={20} /></span><div><strong>本次错题巩固</strong><small>测试后集中处理</small></div><span>{mistakeCount} 道</span></Link>}
             </div>
           )}
@@ -83,12 +82,11 @@ export function HomeView() {
       </section>
 
       <details className="free-study-section card compact-details">
-        <summary><span><strong>自由学习与内容工具</strong><small>按需浏览词库、语法、测试或 AI 内容</small></span><ArrowRight size={18} /></summary>
+        <summary><span><strong>自由学习</strong><small>按需学习单词、语法或进行练习</small></span><ArrowRight size={18} /></summary>
         <div className="free-study-grid">
           <Link href="/words" className="study-entry"><span className="study-entry-icon japanese"><BookOpenText size={22} /></span><div><strong>单词与检索</strong><small>{allWords.length} 组 · 三种学习模式</small></div><ArrowRight size={18} /></Link>
           <Link href="/grammar" className="study-entry"><span className="study-entry-icon grammar"><NotebookPen size={22} /></span><div><strong>语法与对比</strong><small>{allGrammar.length} 个语法 · {allComparisons.length} 组对比</small></div><ArrowRight size={18} /></Link>
-          <Link href="/test" className="study-entry"><span className="study-entry-icon test"><CircleAlert size={22} /></span><div><strong>自定义测试</strong><small>语言、来源、难度和反馈方式</small></div><ArrowRight size={18} /></Link>
-          <Link href="/ai" className="study-entry"><span className="study-entry-icon grammar"><Sparkles size={22} /></span><div><strong>AI 内容</strong><small>生成并管理词卡、语法和练习题</small></div><ArrowRight size={18} /></Link>
+          <Link href="/test" className="study-entry"><span className="study-entry-icon test"><CircleAlert size={22} /></span><div><strong>语言练习</strong><small>日语、英语或日英混合，可按难度选择</small></div><ArrowRight size={18} /></Link>
         </div>
       </details>
     </div>

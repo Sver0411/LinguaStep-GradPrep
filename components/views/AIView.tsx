@@ -128,7 +128,9 @@ export function AIView() {
     if (record.kind === "words") {
       if (parameters.count === 1 || parameters.count === 5 || parameters.count === 10) setWordCount(parameters.count);
       if (parameters.japaneseLevel === "N3" || parameters.japaneseLevel === "N2" || parameters.japaneseLevel === "N1") setJapaneseLevel(parameters.japaneseLevel);
-      if (parameters.englishLevel === "高中基础" || parameters.englishLevel === "四级" || parameters.englishLevel === "六级" || parameters.englishLevel === "TOEIC 过渡") setEnglishLevel(parameters.englishLevel);
+      if (parameters.englishLevel === "四级" || parameters.englishLevel === "六级" || parameters.englishLevel === "TOEIC") setEnglishLevel(parameters.englishLevel);
+      if (parameters.englishLevel === "高中基础") setEnglishLevel("四级");
+      if (parameters.englishLevel === "TOEIC 过渡") setEnglishLevel("TOEIC");
       if (parameters.frequency === "高频" || parameters.frequency === "常用" || parameters.frequency === "普通") setFrequency(parameters.frequency);
       if (parameters.purpose === "日常" || parameters.purpose === "考试" || parameters.purpose === "综合") setPurpose(parameters.purpose);
     }
@@ -176,7 +178,7 @@ export function AIView() {
               <div className="ai-form-grid">
                 <label><span>数量</span><select value={wordCount} onChange={(event) => setWordCount(Number(event.target.value) as 1 | 5 | 10)}><option value={1}>1 组</option><option value={5}>5 组</option><option value={10}>10 组</option></select></label>
                 <label><span>JLPT</span><select value={japaneseLevel} onChange={(event) => setJapaneseLevel(event.target.value as typeof japaneseLevel)}><option>N3</option><option>N2</option><option>N1</option></select></label>
-                <label><span>英语等级</span><select value={englishLevel} onChange={(event) => setEnglishLevel(event.target.value as typeof englishLevel)}><option>高中基础</option><option>四级</option><option>六级</option><option>TOEIC 过渡</option></select></label>
+                <label><span>英语等级</span><select value={englishLevel} onChange={(event) => setEnglishLevel(event.target.value as typeof englishLevel)}><option>四级</option><option>六级</option><option>TOEIC</option></select></label>
                 <label><span>频率</span><select value={frequency} onChange={(event) => setFrequency(event.target.value as typeof frequency)}><option>高频</option><option>常用</option><option>普通</option></select></label>
                 <label><span>用途</span><select value={purpose} onChange={(event) => setPurpose(event.target.value as typeof purpose)}><option>综合</option><option>日常</option><option>考试</option></select></label>
               </div>

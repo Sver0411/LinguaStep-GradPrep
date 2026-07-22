@@ -1,4 +1,8 @@
 import type { FrequencyLevel, WordPair } from "@/lib/models";
+import {
+  englishStudyLevelFromRank,
+  japaneseStudyLevelFromRank,
+} from "@/lib/word-levels";
 import compactRows from "./words-expanded.generated.json";
 
 type CompactWord = [
@@ -18,18 +22,6 @@ function frequency(rank: number): FrequencyLevel {
   if (rank <= 6_000) return "常用";
   if (rank <= 15_000) return "普通";
   return "低频";
-}
-
-function japaneseLevel(rank: number): string {
-  if (rank <= 2_000) return "高频基础";
-  if (rank <= 8_000) return "常用进阶";
-  return "扩展词汇";
-}
-
-function englishLevel(rank: number): string {
-  if (rank <= 3_000) return "高中・CET-4";
-  if (rank <= 10_000) return "CET-4・CET-6";
-  return "CET-6・TOEIC 扩展";
 }
 
 export const EXPANDED_WORDS: WordPair[] = (compactRows as CompactWord[]).map(
@@ -54,7 +46,7 @@ export const EXPANDED_WORDS: WordPair[] = (compactRows as CompactWord[]).map(
         reading,
         romanization,
         partOfSpeech: japanesePartOfSpeech,
-        difficulty: japaneseLevel(frequencyRank),
+        difficulty: japaneseStudyLevelFromRank(frequencyRank),
         example: `「${japanese}」は「${meaningZh}」という意味で使われます。`,
         exampleZh: `“${japanese}”可用于表达“${meaningZh}”。`,
         collocations: [japanese, reading],
@@ -63,7 +55,7 @@ export const EXPANDED_WORDS: WordPair[] = (compactRows as CompactWord[]).map(
         term: english,
         phonetic,
         partOfSpeech: englishPartOfSpeech,
-        difficulty: englishLevel(frequencyRank),
+        difficulty: englishStudyLevelFromRank(frequencyRank),
         example: `“${english}” can express the meaning “${meaningZh}”.`,
         exampleZh: `“${english}”可用于表达“${meaningZh}”。`,
         collocations: [english],

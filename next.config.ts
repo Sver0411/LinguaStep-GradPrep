@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
+const configuredBasePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "")
+  .trim()
+  .replace(/\/+$/, "");
+
+if (configuredBasePath && !configuredBasePath.startsWith("/")) {
+  throw new Error("NEXT_PUBLIC_BASE_PATH must start with '/'.");
+}
+
 const nextConfig: NextConfig = {
+  basePath: configuredBasePath || undefined,
+  output: process.env.NEXT_STANDALONE === "true" ? "standalone" : undefined,
   async headers() {
     return [
       {

@@ -1,0 +1,15 @@
+.git
+.gitignore
+.next
+.vinext
+.wrangler
+dist
+node_modules
+coverage
+outputs
+work
+.DS_Store
+.env
+.env.*
+!.env.example
+npm-debug.log*

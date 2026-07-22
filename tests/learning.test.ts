@@ -235,6 +235,28 @@ describe("test generation", () => {
     expect(questions.every((question) => question.language !== "english")).toBe(true);
   });
 
+  it("applies separate Japanese and English difficulty filters in mixed practice", () => {
+    const basic = makeWord("word-basic", "基础");
+    const advanced = makeWord("word-advanced", "进阶");
+    advanced.japanese.difficulty = "JLPT N1";
+    advanced.english.difficulty = "TOEIC";
+    const questions = createTestQuestions(
+      [makeWordProgress(basic.id), makeWordProgress(advanced.id)],
+      [],
+      [basic, advanced],
+      [],
+      {
+        mode: "mixed",
+        sourceFilter: "all-learned",
+        count: 10,
+        now: NOW,
+        japaneseDifficulty: "JLPT N1",
+        englishDifficulty: "TOEIC",
+      },
+    );
+    expect(questions.map((item) => item.sourceId)).toEqual([advanced.id]);
+  });
+
   it("filters favorite and due sources", () => {
     const due = makeWordProgress(
       "word-1",

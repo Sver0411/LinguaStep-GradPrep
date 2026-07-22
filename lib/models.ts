@@ -302,7 +302,7 @@ export interface AISettings {
   defaultWordCount: 1 | 5 | 10;
   defaultGrammarCount: number;
   defaultJapaneseLevel: "N3" | "N2" | "N1";
-  defaultEnglishLevel: "高中基础" | "四级" | "六级" | "TOEIC 过渡";
+  defaultEnglishLevel: "四级" | "六级" | "TOEIC";
   defaultFrequency: "高频" | "常用" | "普通";
   defaultPurpose: "日常" | "考试" | "综合";
   defaultQuality: "fast" | "quality";
