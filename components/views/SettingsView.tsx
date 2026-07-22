@@ -249,7 +249,7 @@ export function SettingsView() {
         </div>
       </details>
 
-      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><div><strong>LinguaStep 日英阶梯</strong><p>数据库 v3 · 复习算法 v2 · DeepSeek AI 安全代理</p></div><span>版本 {APP_VERSION}</span></section>
+      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><div><strong>LinguaStep 日英阶梯</strong><p>数据库 v3 · 复习算法 v2 · 6000 组日英词汇 · 137 组语法对比</p><p>扩展词汇数据参考 <a href="https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html" target="_blank" rel="noreferrer">JMdict/EDRDG</a>（CC BY-SA 4.0）与 <a href="https://github.com/skywind3000/ECDICT" target="_blank" rel="noreferrer">ECDICT</a>（MIT）。</p></div><span>版本 {APP_VERSION}</span></section>
 
       {resetScope && (
         <div className="modal-backdrop" role="presentation" onClick={closeReset}>

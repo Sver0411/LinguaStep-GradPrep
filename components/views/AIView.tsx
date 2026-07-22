@@ -86,7 +86,7 @@ export function AIView() {
   const [englishLevel, setEnglishLevel] = useState(settings.defaultEnglishLevel);
   const [frequency, setFrequency] = useState(settings.defaultFrequency);
   const [purpose, setPurpose] = useState(settings.defaultPurpose);
-  const [grammarCount, setGrammarCount] = useState<1 | 2 | 3>(1);
+  const [grammarCount, setGrammarCount] = useState(settings.defaultGrammarCount);
   const [grammarLanguage, setGrammarLanguage] = useState<GrammarLanguage | "comparison">("japanese");
   const [grammarLevel, setGrammarLevel] = useState("N2");
   const [grammarTopic, setGrammarTopic] = useState("");
@@ -133,7 +133,7 @@ export function AIView() {
       if (parameters.purpose === "日常" || parameters.purpose === "考试" || parameters.purpose === "综合") setPurpose(parameters.purpose);
     }
     if (record.kind === "grammar") {
-      if (parameters.count === 1 || parameters.count === 2 || parameters.count === 3) setGrammarCount(parameters.count);
+      if (typeof parameters.count === "number") setGrammarCount(Math.max(10, Math.min(30, parameters.count)));
       if (parameters.language === "japanese" || parameters.language === "english" || parameters.language === "comparison") setGrammarLanguage(parameters.language);
       if (typeof parameters.level === "string") setGrammarLevel(parameters.level);
       if (typeof parameters.topic === "string") setGrammarTopic(parameters.topic);
@@ -141,7 +141,7 @@ export function AIView() {
     if (record.kind === "quiz") {
       if (typeof parameters.count === "number") setQuizCount(parameters.count);
       if (parameters.mode === "mixed" || parameters.mode === "japanese" || parameters.mode === "english") setQuizMode(parameters.mode);
-      if (parameters.sourceFilter === "all-learned" || parameters.sourceFilter === "today" || parameters.sourceFilter === "recent-7" || parameters.sourceFilter === "mistakes" || parameters.sourceFilter === "favorites" || parameters.sourceFilter === "due") setQuizSource(parameters.sourceFilter);
+      if (parameters.sourceFilter === "all-learned" || parameters.sourceFilter === "today" || parameters.sourceFilter === "recent-7" || parameters.sourceFilter === "mistakes" || parameters.sourceFilter === "favorites" || parameters.sourceFilter === "due" || parameters.sourceFilter === "comparisons") setQuizSource(parameters.sourceFilter);
     }
     setTab(record.kind);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -188,7 +188,7 @@ export function AIView() {
               <div><span className="section-kicker">GRAMMAR GENERATOR</span><h2>生成语法知识点或日英对比</h2><p>对比模式与 N1 内容会自动使用质量模型和思考模式。</p></div>
               <div className="ai-form-grid">
                 <label><span>类型</span><select value={grammarLanguage} onChange={(event) => setGrammarLanguage(event.target.value as typeof grammarLanguage)}><option value="japanese">日语语法</option><option value="english">英语语法</option><option value="comparison">日英语义对比</option></select></label>
-                <label><span>数量</span><select value={grammarCount} onChange={(event) => setGrammarCount(Number(event.target.value) as 1 | 2 | 3)}><option value={1}>1 个</option><option value={2}>2 个</option><option value={3}>3 个</option></select></label>
+                <label><span>数量</span><input aria-label="语法生成数量" type="number" min={10} max={30} value={grammarCount} onChange={(event) => setGrammarCount(Math.max(10, Math.min(30, Number(event.target.value) || 10)))} /></label>
                 <label><span>难度</span><input value={grammarLevel} onChange={(event) => setGrammarLevel(event.target.value)} placeholder={grammarLanguage === "english" ? "四级" : "N2"} maxLength={20} /></label>
                 <label className="wide"><span>主题（可选）</span><input value={grammarTopic} onChange={(event) => setGrammarTopic(event.target.value)} placeholder="例如：条件表达、职场邮件" maxLength={80} /></label>
               </div>
@@ -201,7 +201,7 @@ export function AIView() {
               <div className="ai-form-grid">
                 <label><span>题数</span><input type="number" min={1} max={30} value={quizCount} onChange={(event) => setQuizCount(Math.max(1, Math.min(30, Number(event.target.value) || 1)))} /></label>
                 <label><span>语言</span><select value={quizMode} onChange={(event) => setQuizMode(event.target.value as TestMode)}><option value="mixed">日英混合</option><option value="japanese">日语</option><option value="english">英语</option></select></label>
-                <label><span>内容来源</span><select value={quizSource} onChange={(event) => setQuizSource(event.target.value as TestSourceFilter)}><option value="all-learned">所有已学内容</option><option value="today">今日学过</option><option value="recent-7">最近 7 天</option><option value="mistakes">错题专项</option><option value="favorites">收藏专项</option><option value="due">到期复习</option></select></label>
+                <label><span>内容来源</span><select value={quizSource} onChange={(event) => setQuizSource(event.target.value as TestSourceFilter)}><option value="all-learned">所有已学内容</option><option value="today">今日学过</option><option value="recent-7">最近 7 天</option><option value="mistakes">错题专项</option><option value="favorites">收藏专项</option><option value="due">到期复习</option><option value="comparisons">日英语法对比</option></select></label>
               </div>
             </div>
           )}

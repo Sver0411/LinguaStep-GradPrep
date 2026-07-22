@@ -2,7 +2,7 @@ import type { AISettings, AppSettings, LearningSnapshot } from "./models";
 
 export const APP_NAME = "LinguaStep";
 export const APP_NAME_ZH = "日英阶梯";
-export const APP_VERSION = "0.4.2";
+export const APP_VERSION = "0.5.0";
 export const REVIEW_ALGORITHM_VERSION = 2;
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -35,6 +35,7 @@ export const DEFAULT_AI_SETTINGS: AISettings = {
   proxyTokenPersistence: "session",
   autoSave: true,
   defaultWordCount: 5,
+  defaultGrammarCount: 10,
   defaultJapaneseLevel: "N2",
   defaultEnglishLevel: "四级",
   defaultFrequency: "高频",

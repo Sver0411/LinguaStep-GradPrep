@@ -10,6 +10,7 @@ import {
   updateMistakeRecord,
   updateWordMastery,
 } from "../lib/learning";
+import { GRAMMAR_COMPARISONS } from "../data/grammar-comparisons";
 import { applyReviewRating } from "../lib/spaced-repetition";
 import type { MistakeRecord } from "../lib/models";
 import {
@@ -291,6 +292,20 @@ describe("test generation", () => {
     expect(new Set(questions.map((question) => question.sourceId)).size).toBe(
       questions.length,
     );
+  });
+
+  it("builds a mixed comparison test from different grammar comparison items", () => {
+    const questions = createTestQuestions([], [], [], [], {
+      mode: "mixed",
+      sourceFilter: "comparisons",
+      count: 20,
+      now: NOW,
+      comparisons: GRAMMAR_COMPARISONS,
+    });
+    expect(questions).toHaveLength(20);
+    expect(questions.every((question) => question.source === "comparison")).toBe(true);
+    expect(questions.every((question) => question.language === "mixed")).toBe(true);
+    expect(new Set(questions.map((question) => question.sourceId)).size).toBe(20);
   });
 
   it("rotates mixed translation directions across different words", () => {

@@ -39,6 +39,7 @@ const SOURCE_LABEL: Record<TestSourceFilter, string> = {
   mistakes: "错题专项",
   favorites: "收藏专项",
   due: "到期复习",
+  comparisons: "日英语法对比",
 };
 
 function initialSourceFilter(): TestSourceFilter {
@@ -47,6 +48,7 @@ function initialSourceFilter(): TestSourceFilter {
   return source === "favorites" ||
     source === "mistakes" ||
     source === "due" ||
+    source === "comparisons" ||
     source === "today" ||
     source === "recent-7"
     ? source
@@ -89,7 +91,7 @@ function resultBreakdown(result: TestResult) {
 }
 
 export function TestView() {
-  const { snapshot, settings, allWords, allGrammar, completeTest, setFocusMode } = useLearning();
+  const { snapshot, settings, allWords, allGrammar, allComparisons, completeTest, setFocusMode } = useLearning();
   const [mode, setMode] = useState<TestMode>("mixed");
   const [sourceFilter, setSourceFilter] =
     useState<TestSourceFilter>(initialSourceFilter);
@@ -132,6 +134,9 @@ export function TestView() {
     );
   }, [snapshot.testResults]);
   const difficultyOptions = useMemo(() => {
+    if (sourceFilter === "comparisons") {
+      return [...new Set(allComparisons.map((item) => item.level))];
+    }
     const wordLevels = allWords.flatMap((word) =>
       mode === "english"
         ? [word.english.difficulty]
@@ -143,15 +148,15 @@ export function TestView() {
       (point) => mode === "mixed" || point.language === mode,
     ).map((point) => point.level);
     return [...new Set([...wordLevels, ...grammarLevels])];
-  }, [allGrammar, allWords, mode]);
+  }, [allComparisons, allGrammar, allWords, mode, sourceFilter]);
 
   const start = useCallback((overrides: Partial<{
     mode: TestMode;
     sourceFilter: TestSourceFilter;
     questionCount: number;
   }> = {}) => {
-    const selectedMode = overrides.mode ?? mode;
     const selectedSource = overrides.sourceFilter ?? sourceFilter;
+    const selectedMode = selectedSource === "comparisons" ? "mixed" : overrides.mode ?? mode;
     const selectedCount = overrides.questionCount ?? questionCount;
     const now = new Date().toISOString();
     const generated = createTestQuestions(
@@ -168,6 +173,7 @@ export function TestView() {
         mistakes: snapshot.mistakes.filter((item) => item.active),
         difficulty: difficulty === "all" ? undefined : difficulty,
         prioritizeMistakes,
+        comparisons: allComparisons,
       },
     );
     setMode(selectedMode);
@@ -181,7 +187,7 @@ export function TestView() {
     setStartedAt(now);
     setGenerationEmpty(generated.length === 0);
     if (generated.length > 0) setFocusMode(true);
-  }, [allGrammar, allWords, difficulty, mode, prioritizeMistakes, questionCount, setFocusMode, snapshot.favorites, snapshot.grammarProgress, snapshot.mistakes, snapshot.wordProgress, sourceFilter]);
+  }, [allComparisons, allGrammar, allWords, difficulty, mode, prioritizeMistakes, questionCount, setFocusMode, snapshot.favorites, snapshot.grammarProgress, snapshot.mistakes, snapshot.wordProgress, sourceFilter]);
 
   useEffect(() => {
     if (questions.length === 0 || result) return;
@@ -332,6 +338,7 @@ export function TestView() {
             <Button variant="secondary" onClick={() => start({ sourceFilter: "mistakes" })}>错题专项</Button>
             <Button variant="secondary" onClick={() => start({ sourceFilter: "due" })}>到期复习</Button>
             <Button variant="secondary" onClick={() => start({ sourceFilter: "favorites" })}>收藏专项</Button>
+            <Button variant="secondary" onClick={() => start({ mode: "mixed", sourceFilter: "comparisons" })}>日英对比混合测试</Button>
           </div>
           <details className="advanced-panel compact-details">
           <summary><span><strong>高级测试设置</strong><small>本次语言、来源、难度、题数与反馈方式</small></span></summary>

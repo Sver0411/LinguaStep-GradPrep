@@ -14,6 +14,7 @@ import {
 import type {
   ChoiceQuestion,
   DailyRecord,
+  GrammarComparison,
   GrammarPoint,
   GrammarProgress,
   MasteryRating,
@@ -352,6 +353,7 @@ export interface TestGenerationOptions {
   mistakes?: readonly MistakeRecord[];
   difficulty?: string;
   prioritizeMistakes?: boolean;
+  comparisons?: readonly GrammarComparison[];
 }
 
 function modeWasStudied(progress: WordProgress, mode: TestMode): boolean {
@@ -394,6 +396,7 @@ export function createTestQuestions(
   );
 
   const learnedWords = vocabulary.filter((word) => {
+    if (options.sourceFilter === "comparisons") return false;
     const progress = wordProgressMap.get(word.id);
     if (!progress || !modeWasStudied(progress, options.mode)) return false;
     if (options.difficulty) {
@@ -420,6 +423,7 @@ export function createTestQuestions(
   });
 
   const learnedGrammar = grammar.filter((point) => {
+    if (options.sourceFilter === "comparisons") return false;
     if (options.mode !== "mixed" && point.language !== options.mode) return false;
     const progress = grammarProgressMap.get(point.id);
     if (!progress) return false;
@@ -462,7 +466,8 @@ export function createTestQuestions(
   // A test samples content before question variants. This guarantees that one
   // word or grammar point appears at most once per round, while the chosen
   // translation direction/exercise still rotates between rounds.
-  const wordCandidates = orderedWords.map((word, index) => {
+  const candidateLimit = Math.max(options.count * 2, options.count + 12);
+  const wordCandidates = orderedWords.slice(0, candidateLimit).map((word, index) => {
     const variants = createWordQuestions(
       word,
       vocabulary,
@@ -471,7 +476,7 @@ export function createTestQuestions(
     );
     return variants[(sessionSeed + index) % variants.length];
   });
-  const grammarCandidates = orderedGrammar.flatMap((point, index): ChoiceQuestion[] => {
+  const grammarCandidates = orderedGrammar.slice(0, candidateLimit).flatMap((point, index): ChoiceQuestion[] => {
     const question = point.exercises[(sessionSeed + index) % point.exercises.length];
     if (!question) return [];
     return [{
@@ -481,6 +486,23 @@ export function createTestQuestions(
       category: "grammar",
     }];
   });
+  if (options.sourceFilter === "comparisons") {
+    return [...(options.comparisons ?? [])]
+      .filter((item) => !options.difficulty || item.level === options.difficulty)
+      .sort(
+        (left, right) =>
+          seededRank(left.id, sessionSeed) - seededRank(right.id, sessionSeed),
+      )
+      .slice(0, Math.max(1, options.count))
+      .map((item) => ({
+        ...item.exercise,
+        source: "comparison" as const,
+        sourceId: item.id,
+        language: "mixed" as const,
+        difficulty: item.level,
+        category: "comparison",
+      }));
+  }
   const result: ChoiceQuestion[] = [];
   let wordIndex = 0;
   let grammarIndex = 0;

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   AlertCircle,
   BookOpenCheck,
@@ -21,13 +22,8 @@ import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { dateKey } from "@/lib/learning";
 import { searchGrammar, type GrammarSearchFilters } from "@/lib/search";
-import type {
-  GrammarComparison,
-  GrammarViewMode,
-  LearningStatus,
-} from "@/lib/models";
+import type { GrammarViewMode, LearningStatus } from "@/lib/models";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
-import { ComparisonPractice } from "@/components/grammar/ComparisonPractice";
 import { GrammarPractice } from "@/components/grammar/GrammarPractice";
 import { FilterPanel } from "@/components/filters/FilterPanel";
 
@@ -65,8 +61,6 @@ export function GrammarView() {
   const [viewMode, setViewMode] = useState<GrammarViewMode>(todayPoint?.language ?? "japanese");
   const [selectedId, setSelectedId] = useState("");
   const [practicing, setPracticing] = useState(false);
-  const [comparisonPractice, setComparisonPractice] =
-    useState<GrammarComparison | null>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query);
   const [level, setLevel] = useState("all");
@@ -163,7 +157,6 @@ export function GrammarView() {
     setViewMode(next);
     setSelectedId("");
     setPracticing(false);
-    setComparisonPractice(null);
     setLevel("all");
     setStatus("all");
     setDueOnly(false);
@@ -171,7 +164,7 @@ export function GrammarView() {
 
   const generateAndOpen = async () => {
     const payload = await generateGrammar({
-      count: 1,
+      count: aiSettings.defaultGrammarCount,
       language: viewMode,
       level: level !== "all" ? level : viewMode === "english" ? aiSettings.defaultEnglishLevel : aiSettings.defaultJapaneseLevel,
       topic: query.trim() || undefined,
@@ -185,15 +178,6 @@ export function GrammarView() {
   if (practicing && selected) {
     return <GrammarPractice point={selected} onClose={() => setPracticing(false)} />;
   }
-  if (comparisonPractice) {
-    return (
-      <ComparisonPractice
-        comparison={comparisonPractice}
-        onClose={() => setComparisonPractice(null)}
-      />
-    );
-  }
-
   return (
     <div className="page-stack grammar-page">
       <PageHeader
@@ -207,8 +191,9 @@ export function GrammarView() {
               <button className={viewMode === "english" ? "active" : ""} onClick={() => changeMode("english")}>英语 · {allGrammar.filter((item) => item.language === "english").length}</button>
               <button className={viewMode === "comparison" ? "active" : ""} onClick={() => changeMode("comparison")}>日英对比 · {allComparisons.length}</button>
             </div>
+            {viewMode === "comparison" && <Link className="button button-primary" href="/test?source=comparisons&start=1"><Play size={17} />日英对比混合测试</Link>}
             <Button variant="secondary" onClick={() => void generateAndOpen()} disabled={!aiSettings.enabled || !aiOnline || busyOperation !== null}>
-              {busyOperation === "grammar" ? <LoaderCircle className="spin" size={17} /> : <Sparkles size={17} />}{busyOperation === "grammar" ? "正在生成并去重" : "AI 新增 1 项"}
+              {busyOperation === "grammar" ? <LoaderCircle className="spin" size={17} /> : <Sparkles size={17} />}{busyOperation === "grammar" ? "正在生成并去重" : `AI 新增 ${aiSettings.defaultGrammarCount} 项`}
             </Button>
           </div>
         }
@@ -265,7 +250,7 @@ export function GrammarView() {
                 <p>{item.translationZh}</p>
                 <div className="review-explanation">{item.difference}</div>
                 <ul className="plain-list">{item.pitfalls.map((pitfall) => <li key={pitfall}>{pitfall}</li>)}</ul>
-                <Button variant="secondary" onClick={() => setComparisonPractice(item)}><Play size={17} />练习这组对比</Button>
+                <Link className="button button-secondary" href="/test?source=comparisons&start=1"><Play size={17} />进入混合测试</Link>
               </article>
             ))}
           </section>

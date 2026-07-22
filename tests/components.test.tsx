@@ -199,8 +199,8 @@ describe("phase-two components", () => {
     mocked.ai = aiMock({ generateGrammar: vi.fn().mockResolvedValue({ grammar: [generated] }) });
     mocked.learning = learningMock({ allGrammar: [...GRAMMAR_POINTS, generated] });
     render(<GrammarView />);
-    await userEvent.click(screen.getByRole("button", { name: /AI 新增 1 项/ }));
-    expect(mocked.ai.generateGrammar).toHaveBeenCalledWith(expect.objectContaining({ count: 1, language: "japanese" }));
+    await userEvent.click(screen.getByRole("button", { name: /AI 新增 10 项/ }));
+    expect(mocked.ai.generateGrammar).toHaveBeenCalledWith(expect.objectContaining({ count: 10, language: "japanese" }));
   });
 
   it("completes a one-question test and renders the result breakdown", async () => {

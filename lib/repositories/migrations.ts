@@ -261,7 +261,8 @@ export function migrateTestResult(
       record.sourceFilter === "recent-7" ||
       record.sourceFilter === "mistakes" ||
       record.sourceFilter === "favorites" ||
-      record.sourceFilter === "due"
+      record.sourceFilter === "due" ||
+      record.sourceFilter === "comparisons"
         ? record.sourceFilter
         : "all-learned",
     answers: Array.isArray(record.answers)

@@ -1,5 +1,6 @@
 import type { WordPair } from "@/lib/models";
 import { PHASE_TWO_WORDS } from "./words-phase2";
+import { EXPANDED_WORDS } from "./words-expanded";
 
 const PHASE_ONE_WORDS: WordPair[] = [
   {
@@ -2604,10 +2605,25 @@ const PHASE_ONE_WORDS: WordPair[] = [
   },
 ];
 
-export const WORD_PAIRS: WordPair[] = [
+const HAND_EDITED_WORDS: WordPair[] = [
   ...PHASE_ONE_WORDS.map<WordPair>((word) => ({
     ...word,
     frequency: word.highFrequency ? "高频" : "常用",
   })),
   ...PHASE_TWO_WORDS,
 ];
+
+const usedJapanese = new Set<string>();
+const usedEnglish = new Set<string>();
+
+export const WORD_PAIRS: WordPair[] = [
+  ...HAND_EDITED_WORDS,
+  ...EXPANDED_WORDS,
+].filter((word) => {
+  const japanese = word.japanese.term.trim();
+  const english = word.english.term.trim().toLocaleLowerCase("en-US");
+  if (usedJapanese.has(japanese) || usedEnglish.has(english)) return false;
+  usedJapanese.add(japanese);
+  usedEnglish.add(english);
+  return true;
+}).slice(0, 6_000);

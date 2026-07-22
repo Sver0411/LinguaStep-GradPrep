@@ -1,4 +1,5 @@
 import type { GrammarComparison } from "@/lib/models";
+import { EXPANDED_GRAMMAR_COMPARISONS } from "./grammar-comparisons-expanded";
 
 type ComparisonSpec = [
   id: string,
@@ -31,7 +32,7 @@ const SPECS: ComparisonSpec[] = [
   ["advice","建议","〜たほうがいい","should / had better","日语形式像过去式但表达当前建议；英语 had better 语气通常更强并暗含后果。","早く休んだほうがいい。","You should get some rest early.","你最好早点休息。","否定建议使用「ないほうがいい」。","N3 / CET-4"],
 ];
 
-export const GRAMMAR_COMPARISONS: GrammarComparison[] = SPECS.map(
+const ORIGINAL_GRAMMAR_COMPARISONS: GrammarComparison[] = SPECS.map(
   ([
     id,
     semantic,
@@ -75,3 +76,8 @@ export const GRAMMAR_COMPARISONS: GrammarComparison[] = SPECS.map(
     };
   },
 );
+
+export const GRAMMAR_COMPARISONS: GrammarComparison[] = [
+  ...ORIGINAL_GRAMMAR_COMPARISONS,
+  ...EXPANDED_GRAMMAR_COMPARISONS,
+];

@@ -149,7 +149,7 @@ export const wordGenerationInputSchema = z.object({
 }).strict();
 
 export const grammarGenerationInputSchema = z.object({
-  count: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  count: z.number().int().min(1).max(30),
   language: z.enum(["japanese", "english", "comparison"]),
   level: cleanText(1, 40),
   topic: z.string().trim().max(80).optional(),
@@ -170,7 +170,7 @@ export const aiSourceSummarySchema = z.object({
 export const quizGenerationInputSchema = z.object({
   count: z.number().int().min(1).max(30),
   mode: z.enum(["japanese", "english", "mixed"]),
-  sourceFilter: z.enum(["all-learned", "today", "recent-7", "mistakes", "favorites", "due", "specified"]),
+  sourceFilter: z.enum(["all-learned", "today", "recent-7", "mistakes", "favorites", "due", "comparisons", "specified"]),
   quality: qualitySchema,
   sources: z.array(aiSourceSummarySchema).min(1).max(100),
 }).strict();

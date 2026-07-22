@@ -89,6 +89,7 @@ export function AISettingsPanel() {
           <h3>生成默认值</h3>
           <div className="ai-form-grid compact">
             <label><span>单词数量</span><select value={settings.defaultWordCount} onChange={(event) => updateSettings({ defaultWordCount: Number(event.target.value) as 1 | 5 | 10 })}><option value={1}>1</option><option value={5}>5</option><option value={10}>10</option></select></label>
+            <label><span>语法数量</span><input aria-label="默认语法生成数量" type="number" min={10} max={30} value={settings.defaultGrammarCount} onChange={(event) => updateSettings({ defaultGrammarCount: Math.max(10, Math.min(30, Number(event.target.value) || 10)) })} /></label>
             <label><span>日语等级</span><select value={settings.defaultJapaneseLevel} onChange={(event) => updateSettings({ defaultJapaneseLevel: event.target.value as typeof settings.defaultJapaneseLevel })}><option>N3</option><option>N2</option><option>N1</option></select></label>
             <label><span>英语等级</span><select value={settings.defaultEnglishLevel} onChange={(event) => updateSettings({ defaultEnglishLevel: event.target.value as typeof settings.defaultEnglishLevel })}><option>高中基础</option><option>四级</option><option>六级</option><option>TOEIC 过渡</option></select></label>
             <label><span>默认模型</span><select value={settings.defaultQuality} onChange={(event) => updateSettings({ defaultQuality: event.target.value as "fast" | "quality" })}><option value="fast">Fast · 日常生成</option><option value="quality">Quality · 复杂任务</option></select></label>

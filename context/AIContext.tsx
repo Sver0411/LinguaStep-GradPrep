@@ -398,9 +398,10 @@ export function AIProvider({ children }: { children: ReactNode }) {
       const payloads: AIGenerationPayload[] = [];
       const addedTitles: string[] = [];
       let attempts = 0;
-      while (addedTitles.length < input.count && attempts < 6) {
+      const maxAttempts = Math.max(6, Math.ceil(input.count / 3) * 3);
+      while (addedTitles.length < input.count && attempts < maxAttempts) {
         const remaining = input.count - addedTitles.length;
-        const count = (attempts === 0 ? input.count : Math.min(3, remaining)) as GrammarGenerationInput["count"];
+        const count = Math.min(3, remaining);
         attempts += 1;
         try {
           const payload = await clientRef.current.generateGrammar({
@@ -459,6 +460,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
     const wordProgress = new Map(snapshot.wordProgress.map((item) => [item.wordId, item]));
     const grammarProgress = new Map(snapshot.grammarProgress.map((item) => [item.grammarId, item]));
     const words = allWords.flatMap((word) => {
+      if (input.sourceFilter === "comparisons") return [];
       const progress = wordProgress.get(word.id);
       if (!progress) return [];
       const states = input.mode === "mixed"
@@ -476,6 +478,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
       }];
     });
     const grammar = allGrammar.flatMap((point) => {
+      if (input.sourceFilter === "comparisons") return [];
       if (input.mode !== "mixed" && point.language !== input.mode) return [];
       const progress = grammarProgress.get(point.id);
       if (!progress || !include(point.id, progress.lastStudiedAt, isReviewDue(progress.review, now))) return [];
@@ -489,6 +492,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
       }];
     });
     const comparisons = allComparisons.flatMap((item) =>
+      input.sourceFilter === "comparisons" ||
       (input.sourceFilter === "favorites" && favoriteIds.has(item.id)) ||
       (input.sourceFilter === "mistakes" && mistakeIds.has(item.id)) ||
       (input.sourceFilter === "specified" && specified.has(item.id))

@@ -246,21 +246,26 @@ export function MistakesView() {
               <div className="mistake-main">
                 <div className="mistake-meta"><span>{sourceLabel(mistake, allGrammar)} · {STATE_LABEL[mistake.state]}</span><span><Clock3 size={14} />{formatDate(mistake.lastWrongAt)}</span></div>
                 <h2>{mistake.question.prompt}</h2>
-                <p>正确答案：<strong>{mistake.question.options[mistake.question.correctIndex]}</strong></p>
-                <div className="mistake-explanation">{mistake.question.explanation}</div>
-                <AIExplanationPanel question={mistake.question} selectedIndex={mistake.selectedIndex} />
-                <div className="mistake-stats"><span>错误 <b>{mistake.errorCount}</b> 次</span><span>连续答对 <b>{mistake.correctStreak}</b></span><span>历史记录 <b>{mistake.history.length}</b> 条</span></div>
-                <details className="history-details"><summary>查看错误历史</summary><ul>{[...mistake.history].reverse().slice(0, 8).map((item, index) => <li key={`${item.answeredAt}-${index}`}>{formatDate(item.answeredAt)} · {item.correct ? "答对" : "答错"} · 选择 {String.fromCharCode(65 + item.selectedIndex)}</li>)}</ul></details>
+                <div className="mistake-stats"><span>错误 <b>{mistake.errorCount}</b> 次</span><span>连续答对 <b>{mistake.correctStreak}</b></span></div>
+                <details className="history-details mistake-detail-panel">
+                  <summary>查看答案、解析与管理</summary>
+                  <div className="mistake-detail-content">
+                    <p>正确答案：<strong>{mistake.question.options[mistake.question.correctIndex]}</strong></p>
+                    <div className="mistake-explanation">{mistake.question.explanation}</div>
+                    <AIExplanationPanel question={mistake.question} selectedIndex={mistake.selectedIndex} />
+                    <details className="history-details"><summary>错误历史 · {mistake.history.length} 条</summary><ul>{[...mistake.history].reverse().slice(0, 8).map((item, index) => <li key={`${item.answeredAt}-${index}`}>{formatDate(item.answeredAt)} · {item.correct ? "答对" : "答错"} · 选择 {String.fromCharCode(65 + item.selectedIndex)}</li>)}</ul></details>
+                    <div className="mistake-management-actions">
+                      {mistake.state !== "mastered" && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "mastered")}><CheckCircle2 size={15} />标记掌握</button>}
+                      {!mistake.active && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "active")}><RotateCcw size={15} />重新加入</button>}
+                      {mistake.state !== "archived" && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "archived")}><Archive size={15} />归档</button>}
+                      <button className="text-button danger-text" onClick={() => void removeMistake(mistake.id)}><Trash2 size={15} />移出错题本</button>
+                    </div>
+                  </div>
+                </details>
               </div>
               <div className="mistake-actions-column">
                 <Button variant="secondary" onClick={() => startReview(mistake)}><RotateCcw size={17} />再次练习</Button>
                 <button className={`icon-button${mistake.favorite ? " active" : ""}`} onClick={() => void toggleMistakeFavorite(mistake.id)} aria-label={mistake.favorite ? "取消收藏错题" : "收藏错题"}><Heart size={17} fill={mistake.favorite ? "currentColor" : "none"} /></button>
-                <details className="item-more-actions"><summary>更多操作</summary><div>
-                {mistake.state !== "mastered" && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "mastered")}><CheckCircle2 size={15} />标记掌握</button>}
-                {!mistake.active && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "active")}><RotateCcw size={15} />重新加入</button>}
-                {mistake.state !== "archived" && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "archived")}><Archive size={15} />归档</button>}
-                <button className="text-button danger-text" onClick={() => void removeMistake(mistake.id)}><Trash2 size={15} />移出错题本</button>
-                </div></details>
               </div>
             </article>
           ))}

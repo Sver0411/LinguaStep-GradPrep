@@ -3,14 +3,14 @@ import { WORD_PAIRS } from "../data/words";
 import { GRAMMAR_POINTS } from "../data/grammar";
 import { GRAMMAR_COMPARISONS } from "../data/grammar-comparisons";
 
-describe("phase-two curated vocabulary", () => {
-  it("contains exactly 300 complete and unique word pairs", () => {
-    expect(WORD_PAIRS).toHaveLength(300);
-    expect(new Set(WORD_PAIRS.map((word) => word.id)).size).toBe(300);
-    expect(new Set(WORD_PAIRS.map((word) => word.japanese.term)).size).toBe(300);
+describe("built-in vocabulary", () => {
+  it("contains exactly 6000 complete and unique word pairs", () => {
+    expect(WORD_PAIRS).toHaveLength(6_000);
+    expect(new Set(WORD_PAIRS.map((word) => word.id)).size).toBe(6_000);
+    expect(new Set(WORD_PAIRS.map((word) => word.japanese.term)).size).toBe(6_000);
     expect(
       new Set(WORD_PAIRS.map((word) => word.english.term.toLowerCase())).size,
-    ).toBe(300);
+    ).toBe(6_000);
     WORD_PAIRS.forEach((word) => {
       expect(word.meaningZh.trim()).not.toBe("");
       expect(word.japanese.reading?.trim()).not.toBe("");
@@ -28,7 +28,7 @@ describe("phase-two curated vocabulary", () => {
   });
 
   it("keeps the requested Japanese difficulty distribution for the 200 new pairs", () => {
-    const phaseTwo = WORD_PAIRS.slice(100);
+    const phaseTwo = WORD_PAIRS.slice(100, 300);
     expect(
       phaseTwo.filter((word) => word.japanese.difficulty === "JLPT N3"),
     ).toHaveLength(60);
@@ -41,7 +41,7 @@ describe("phase-two curated vocabulary", () => {
   });
 });
 
-describe("phase-two curated grammar", () => {
+describe("curated grammar", () => {
   it("contains 35 Japanese and 15 English points", () => {
     expect(GRAMMAR_POINTS).toHaveLength(50);
     expect(
@@ -75,14 +75,18 @@ describe("phase-two curated grammar", () => {
     expect(questionIds.size).toBe(250);
   });
 
-  it("contains 15 meaningful comparison groups with exercises", () => {
-    expect(GRAMMAR_COMPARISONS).toHaveLength(15);
-    expect(new Set(GRAMMAR_COMPARISONS.map((item) => item.id)).size).toBe(15);
+  it("contains 137 meaningful comparison groups with exercises", () => {
+    expect(GRAMMAR_COMPARISONS).toHaveLength(137);
+    expect(new Set(GRAMMAR_COMPARISONS.map((item) => item.id)).size).toBe(137);
     GRAMMAR_COMPARISONS.forEach((item) => {
       expect(item.difference.length).toBeGreaterThan(20);
       expect(item.pitfalls.length).toBeGreaterThan(0);
       expect(item.exercise.source).toBe("comparison");
+      expect(item.exercise.sourceId).toBe(item.id);
+      expect(item.exercise.options).toHaveLength(4);
       expect(new Set(item.exercise.options).size).toBe(4);
+      expect(item.exercise.correctIndex).toBeGreaterThanOrEqual(0);
+      expect(item.exercise.correctIndex).toBeLessThan(4);
     });
   });
 });

@@ -20,7 +20,8 @@ export type TestSourceFilter =
   | "recent-7"
   | "mistakes"
   | "favorites"
-  | "due";
+  | "due"
+  | "comparisons";
 export type AIProviderName = "deepseek" | "mock";
 export type AIConnectionMode = "server" | "byok";
 export type AISecretPersistence = "session" | "device";
@@ -299,6 +300,7 @@ export interface AISettings {
   proxyTokenPersistence: AISecretPersistence;
   autoSave: boolean;
   defaultWordCount: 1 | 5 | 10;
+  defaultGrammarCount: number;
   defaultJapaneseLevel: "N3" | "N2" | "N1";
   defaultEnglishLevel: "高中基础" | "四级" | "六级" | "TOEIC 过渡";
   defaultFrequency: "高频" | "常用" | "普通";

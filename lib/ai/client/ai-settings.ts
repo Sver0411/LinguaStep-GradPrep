@@ -23,6 +23,7 @@ export function normalizeAISettings(value: unknown): AISettings {
     proxyTokenPersistence: input.proxyTokenPersistence === "device" ? "device" : "session",
     autoSave: typeof input.autoSave === "boolean" ? input.autoSave : defaults.autoSave,
     defaultWordCount: input.defaultWordCount === 1 || input.defaultWordCount === 10 ? input.defaultWordCount : 5,
+    defaultGrammarCount: clampInteger(input.defaultGrammarCount, defaults.defaultGrammarCount, 10, 30),
     defaultJapaneseLevel: input.defaultJapaneseLevel === "N3" || input.defaultJapaneseLevel === "N1" ? input.defaultJapaneseLevel : "N2",
     defaultEnglishLevel:
       input.defaultEnglishLevel === "高中基础" ||

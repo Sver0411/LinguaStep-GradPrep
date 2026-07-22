@@ -72,7 +72,7 @@ export interface WordGenerationInput {
 }
 
 export interface GrammarGenerationInput {
-  count: 1 | 2 | 3;
+  count: number;
   language: "japanese" | "english" | "comparison";
   level: string;
   topic?: string;

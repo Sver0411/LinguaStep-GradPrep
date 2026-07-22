@@ -2,7 +2,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AIAPIClient } from "../lib/ai/client/ai-api-client";
-import { AISettingsRepository, clearAllAISecrets, getAISecret, maskedSecret, setAISecret } from "../lib/ai/client/ai-settings";
+import { AISettingsRepository, clearAllAISecrets, getAISecret, maskedSecret, normalizeAISettings, setAISecret } from "../lib/ai/client/ai-settings";
 import { DEFAULT_AI_SETTINGS } from "../lib/constants";
 import { IDBFactory } from "fake-indexeddb";
 import { IndexedDbLearningRepository } from "../lib/repositories/indexed-db";
@@ -38,6 +38,13 @@ describe("AI client secret isolation", () => {
     expect(saved).not.toHaveProperty("proxyToken");
     expect(raw).not.toContain("sk-");
     expect(repository.get().maxRetries).toBe(5);
+  });
+
+  it("defaults grammar generation to ten and keeps the setting within 10–30", () => {
+    expect(normalizeAISettings({}).defaultGrammarCount).toBe(10);
+    expect(normalizeAISettings({ defaultGrammarCount: 3 }).defaultGrammarCount).toBe(10);
+    expect(normalizeAISettings({ defaultGrammarCount: 24 }).defaultGrammarCount).toBe(24);
+    expect(normalizeAISettings({ defaultGrammarCount: 99 }).defaultGrammarCount).toBe(30);
   });
 
   it("never writes a configured API key into the IndexedDB learning snapshot", async () => {
