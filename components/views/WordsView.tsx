@@ -17,6 +17,7 @@ import {
   needsWordReview,
 } from "@/lib/learning";
 import { searchWords, type WordSearchFilters } from "@/lib/search";
+import { shuffled } from "@/lib/shuffle";
 import type { StudyMode, WordPair } from "@/lib/models";
 import { Button, PageHeader, ProgressBar } from "@/components/ui";
 import { WordLibrary } from "@/components/words/WordLibrary";
@@ -100,7 +101,20 @@ export function WordsView() {
     () =>
       searchWords(
         allWords,
-        { ...filters, query: pageMode === "library" ? debouncedQuery : "", mode },
+        {
+          ...filters,
+          query: pageMode === "library" ? debouncedQuery : "",
+          mode,
+          status: pageMode === "study" ? "all" : filters.status,
+          japaneseLevel:
+            pageMode === "study" && mode === "english"
+              ? "all"
+              : filters.japaneseLevel,
+          englishLevel:
+            pageMode === "study" && mode === "japanese"
+              ? "all"
+              : filters.englishLevel,
+        },
         {
           progress: snapshot.wordProgress,
           favorites: snapshot.favorites,
@@ -130,13 +144,15 @@ export function WordsView() {
         sourceWords = needsReview;
       } else if (source === "new") {
         const ids = new Set(todayPlan?.newWordIds ?? []);
-        sourceWords = allWords.filter((word) => ids.has(word.id));
+        sourceWords = allWords.filter(
+          (word) => ids.has(word.id) && !getWordModeState(progressMap.get(word.id), selectedMode),
+        );
       } else if (source === "favorites") {
         sourceWords = allWords.filter((word) =>
           snapshot.favorites.includes(`word:${word.id}`),
         );
       } else {
-        sourceWords = [...filteredWords].sort((left, right) => {
+        const orderedWords = [...filteredWords].sort((left, right) => {
           const leftState = getWordModeState(progressMap.get(left.id), selectedMode);
           const rightState = getWordModeState(progressMap.get(right.id), selectedMode);
           if (!leftState && rightState) return -1;
@@ -145,8 +161,18 @@ export function WordsView() {
             rightState?.lastStudiedAt ?? "",
           );
         });
+        const newWords = orderedWords.filter(
+          (word) => !getWordModeState(progressMap.get(word.id), selectedMode),
+        );
+        const studiedWords = orderedWords.filter((word) =>
+          Boolean(getWordModeState(progressMap.get(word.id), selectedMode)),
+        );
+        sourceWords = [...shuffled(newWords), ...shuffled(studiedWords)];
       }
-      const items = sourceWords.slice(0, settings.studyRoundSize);
+      const items = (source === "all" ? sourceWords : shuffled(sourceWords)).slice(
+        0,
+        settings.studyRoundSize,
+      );
       if (items.length === 0) return;
       setMode(selectedMode);
       setSessionItems(items);
@@ -192,6 +218,47 @@ export function WordsView() {
     }
   }, [mode, now, startSession]);
 
+  const startFreshSession = useCallback(
+    (source: SessionSource, selectedMode: StudyMode = mode) => {
+      setSessionItems(null);
+      setFocusMode(false);
+      window.setTimeout(() => startSession(source, selectedMode), 0);
+    },
+    [mode, setFocusMode, startSession],
+  );
+
+  const continuePlan = useCallback(
+    (href: string) => {
+      const target = new URL(href, window.location.origin);
+      const requestedMode = target.searchParams.get("mode");
+      const selectedMode: StudyMode =
+        requestedMode === "japanese" || requestedMode === "english" || requestedMode === "combined"
+          ? requestedMode
+          : mode;
+      const source: SessionSource = target.searchParams.get("review") === "1"
+        ? "review"
+        : target.searchParams.get("plan") === "new"
+          ? "new"
+          : "all";
+      startFreshSession(source, selectedMode);
+    },
+    [mode, startFreshSession],
+  );
+
+  const reviewUnknown = useCallback(
+    (unknownItems: WordPair[]) => {
+      if (unknownItems.length === 0) return;
+      const nextItems = shuffled(unknownItems);
+      setSessionItems(null);
+      setFocusMode(false);
+      window.setTimeout(() => {
+        setSessionItems(nextItems);
+        setFocusMode(true);
+      }, 0);
+    },
+    [setFocusMode],
+  );
+
   useEffect(() => {
     const exitSession = () => {
       setSessionItems(null);
@@ -210,8 +277,9 @@ export function WordsView() {
           setSessionItems(null);
           setFocusMode(false);
         }}
-        onRestart={() => startSession("all")}
-        onReviewWeak={() => startSession("review")}
+        onRestart={() => startFreshSession("all")}
+        onContinuePlan={continuePlan}
+        onReviewUnknown={reviewUnknown}
       />
     );
   }
@@ -233,8 +301,15 @@ export function WordsView() {
     setMode(nextMode);
     setFilters((current) => ({
       ...current,
-      japaneseLevel: nextMode === "english" ? "all" : current.japaneseLevel,
-      englishLevel: nextMode === "japanese" ? "all" : current.englishLevel,
+      japaneseLevel:
+        nextMode === "english" || nextMode === "combined"
+          ? "all"
+          : current.japaneseLevel,
+      englishLevel:
+        nextMode === "japanese" || nextMode === "combined"
+          ? "all"
+          : current.englishLevel,
+      status: "all",
     }));
   };
 
@@ -277,8 +352,7 @@ export function WordsView() {
             </div>
             <div className="filter-grid">
               {mode !== "english" && <label><span>2. 日语难度</span><select value={filters.japaneseLevel} onChange={(event) => setFilters((current) => ({ ...current, japaneseLevel: event.target.value }))}><option value="all">全部</option>{JAPANESE_STUDY_LEVELS.map((level) => <option key={level}>{level}</option>)}</select></label>}
-              {mode !== "japanese" && <label><span>2. 英语难度</span><select value={filters.englishLevel} onChange={(event) => setFilters((current) => ({ ...current, englishLevel: event.target.value }))}><option value="all">全部</option>{ENGLISH_STUDY_LEVELS.map((level) => <option key={level}>{level === "CET-4" ? "四级" : level === "CET-6" ? "六级" : level}</option>)}</select></label>}
-              <label><span>掌握状态</span><select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as WordSearchFilters["status"] }))}><option value="all">全部</option><option value="unlearned">未学习</option><option value="learning">学习中</option><option value="review">待复习</option><option value="mastered">已掌握</option></select></label>
+              {mode !== "japanese" && <label><span>2. 英语难度</span><select value={filters.englishLevel} onChange={(event) => setFilters((current) => ({ ...current, englishLevel: event.target.value }))}><option value="all">全部</option>{ENGLISH_STUDY_LEVELS.map((level) => <option value={level} key={level}>{level === "CET-4" ? "四级" : level === "CET-6" ? "六级" : level}</option>)}</select></label>}
               <label><span>本次数量</span><select value={settings.studyRoundSize} onChange={(event) => updateSettings({ studyRoundSize: Number(event.target.value) })}>{[10, 20, 30].map((count) => <option value={count} key={count}>{count} 个</option>)}{![10, 20, 30].includes(settings.studyRoundSize) && <option value={settings.studyRoundSize}>{settings.studyRoundSize} 个</option>}</select></label>
             </div>
             <div className="study-filter-actions">
@@ -320,7 +394,7 @@ export function WordsView() {
         </div>
         <div className="filter-grid">
           <label><span>日语等级</span><select value={filters.japaneseLevel} onChange={(event) => setFilters((current) => ({ ...current, japaneseLevel: event.target.value }))}><option value="all">全部</option>{JAPANESE_STUDY_LEVELS.map((level) => <option key={level}>{level}</option>)}</select></label>
-          <label><span>英语等级</span><select value={filters.englishLevel} onChange={(event) => setFilters((current) => ({ ...current, englishLevel: event.target.value }))}><option value="all">全部</option>{ENGLISH_STUDY_LEVELS.map((level) => <option key={level}>{level === "CET-4" ? "四级" : level === "CET-6" ? "六级" : level}</option>)}</select></label>
+          <label><span>英语等级</span><select value={filters.englishLevel} onChange={(event) => setFilters((current) => ({ ...current, englishLevel: event.target.value }))}><option value="all">全部</option>{ENGLISH_STUDY_LEVELS.map((level) => <option value={level} key={level}>{level === "CET-4" ? "四级" : level === "CET-6" ? "六级" : level}</option>)}</select></label>
           <label><span>掌握状态</span><select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as WordSearchFilters["status"] }))}><option value="all">全部</option><option value="unlearned">未学习</option><option value="learning">学习中</option><option value="review">待复习</option><option value="mastered">已掌握</option></select></label>
         </div>
         <div className="filter-toggles">

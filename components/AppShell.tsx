@@ -32,7 +32,10 @@ const primaryMobileNavigation = [
   { ...navigation[0], label: "今日" },
   ...navigation.slice(1, 4),
 ] as const;
-const secondaryMobileNavigation = navigation.slice(4);
+const secondaryMobileGroups = [
+  { label: "复习", items: navigation.slice(4, 6) },
+  { label: "工具", items: navigation.slice(6) },
+] as const;
 const desktopGroups = [
   { label: "学习", items: navigation.slice(0, 4) },
   { label: "复习", items: navigation.slice(4, 6) },
@@ -41,6 +44,10 @@ const desktopGroups = [
 
 function isActive(pathname: string, path: string): boolean {
   return path === "/" ? pathname === "/" : pathname.startsWith(path);
+}
+
+function mobilePageLabel(pathname: string): string {
+  return navigation.find((item) => isActive(pathname, item.path))?.label ?? "学习";
 }
 
 export function AppShell({
@@ -54,6 +61,7 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const contentColumnRef = useRef<HTMLDivElement>(null);
   const moreTriggerRef = useRef<HTMLButtonElement>(null);
   const moreCloseRef = useRef<HTMLButtonElement>(null);
 
@@ -78,6 +86,20 @@ export function AppShell({
 
   useEffect(() => {
     if (moreOpen) moreCloseRef.current?.focus();
+  }, [moreOpen]);
+
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const contentColumn = contentColumnRef.current;
+    const previousOverflow = contentColumn?.style.overflow ?? "";
+    if (contentColumn) contentColumn.style.overflow = "hidden";
+    return () => {
+      if (contentColumn) contentColumn.style.overflow = previousOverflow;
+    };
   }, [moreOpen]);
 
   if (focusMode) {
@@ -128,24 +150,30 @@ export function AppShell({
         </nav>
 
         <div className="sidebar-footer">
-          <div className="level-pill">
-            <span>当前目标</span>
-            <strong>日语 N2 · 英语四级</strong>
-          </div>
           <p>日语与英语，一起稳步进阶</p>
         </div>
       </aside>
 
-      <div className="content-column">
-        <header className="mobile-header">
-          <Link className="brand compact" href="/">
-            <span className="brand-mark">L</span>
-            <span>
-              <strong>LinguaStep</strong>
-              <small>日英阶梯</small>
-            </span>
-          </Link>
-        </header>
+      <header className="mobile-header">
+        <Link className="mobile-home-mark" href="/" aria-label="返回今日学习">
+          <span className="brand-mark">L</span>
+        </Link>
+        <div className="mobile-header-copy">
+          <strong aria-live="polite">{mobilePageLabel(pathname)}</strong>
+          <span>LinguaStep</span>
+        </div>
+        <button
+          className="mobile-header-menu"
+          type="button"
+          aria-label="打开更多页面"
+          aria-expanded={moreOpen}
+          onClick={() => setMoreOpen(true)}
+        >
+          <Menu size={20} aria-hidden="true" />
+        </button>
+      </header>
+
+      <div className="content-column" ref={contentColumnRef}>
         <main className="page-content">{children}</main>
       </div>
 
@@ -195,17 +223,30 @@ export function AppShell({
                 <X size={20} />
               </button>
             </div>
-            <div className="mobile-more-list">
-              {secondaryMobileNavigation.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link href={item.path} key={item.path} className="mobile-more-item" onClick={closeMore}>
-                    <span className="mobile-more-icon"><Icon size={20} /></span>
-                    <span>{item.label}</span>
-                    <ChevronRight size={18} className="muted-icon" />
-                  </Link>
-                );
-              })}
+            <div className="mobile-more-groups">
+              {secondaryMobileGroups.map((group) => (
+                <div className="mobile-more-group" key={group.label}>
+                  <span className="mobile-more-group-label">{group.label}</span>
+                  <div className="mobile-more-list">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          href={item.path}
+                          key={item.path}
+                          className={`mobile-more-item${isActive(pathname, item.path) ? " active" : ""}`}
+                          aria-current={isActive(pathname, item.path) ? "page" : undefined}
+                          onClick={closeMore}
+                        >
+                          <span className="mobile-more-icon"><Icon size={20} /></span>
+                          <span>{item.label}</span>
+                          <ChevronRight size={18} className="muted-icon" />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         </div>

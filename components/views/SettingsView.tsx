@@ -104,7 +104,8 @@ function Switch({ value, label, onChange }: { value: boolean; label: string; onC
 }
 
 export function SettingsView() {
-  const { settings, updateSettings, resetData } = useLearning();
+  const { settings, updateSettings, resetData, allWords, allGrammar } = useLearning();
+  const [mobileSection, setMobileSection] = useState<"learning" | "appearance">("learning");
   const [resetScope, setResetScope] = useState<ResetScope | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -181,7 +182,12 @@ export function SettingsView() {
     <div className="page-stack settings-page">
       <PageHeader eyebrow="设置" title="管理默认学习方式" description="这里的选项作为后续学习默认值；今日计划的临时操作集中在首页。" />
 
-      <section className="settings-section card">
+      <div className="mobile-settings-switcher" role="tablist" aria-label="设置分类">
+        <button className={mobileSection === "learning" ? "active" : ""} onClick={() => setMobileSection("learning")} role="tab" aria-selected={mobileSection === "learning"}>学习</button>
+        <button className={mobileSection === "appearance" ? "active" : ""} onClick={() => setMobileSection("appearance")} role="tab" aria-selected={mobileSection === "appearance"}>外观</button>
+      </div>
+
+      <section className={`settings-section card mobile-settings-section${mobileSection === "learning" ? " mobile-open" : ""}`}>
         <div className="settings-section-heading"><span className="settings-icon"><SlidersHorizontal size={20} /></span><div><h2>学习与每日计划</h2><p>控制模式、任务数量和复习优先级</p></div></div>
         <SettingRow title="默认学习模式" description="进入单词学习和生成每日计划时优先使用。"><div className="segmented-control">{modes.map((mode) => <button className={settings.defaultStudyMode === mode.value ? "active" : ""} onClick={() => updateSettings({ defaultStudyMode: mode.value })} key={mode.value}>{mode.label}</button>)}</div></SettingRow>
         <SettingRow title="答案揭示" description="默认分步揭示，减少一次出现过多信息；也可以切换为同时揭示。"><div className="segmented-control"><button className={settings.revealMode === "step-by-step" ? "active" : ""} onClick={() => updateSettings({ revealMode: "step-by-step" })}>分步（首选）</button><button className={settings.revealMode === "together" ? "active" : ""} onClick={() => updateSettings({ revealMode: "together" })}>同时</button></div></SettingRow>
@@ -194,7 +200,7 @@ export function SettingsView() {
         <SettingRow title="测试即时反馈" description="开启后每题立即显示正确答案和解析。"><Switch value={settings.immediateTestFeedback} label="测试即时反馈" onChange={() => updateSettings({ immediateTestFeedback:!settings.immediateTestFeedback })} /></SettingRow>
       </section>
 
-      <section className="settings-section card">
+      <section className={`settings-section card mobile-settings-section${mobileSection === "appearance" ? " mobile-open" : ""}`}>
         <div className="settings-section-heading"><span className="settings-icon"><Sun size={20} /></span><div><h2>外观与可访问性</h2><p>主题、信息密度、字体和动态效果</p></div></div>
         <SettingRow title="学习专注模式" description="开启后，开始单词、语法、测试或错题练习时会暂时隐藏导航；关闭后保留普通页面布局。"><Switch value={settings.focusModeEnabled} label="学习专注模式" onChange={() => updateSettings({ focusModeEnabled:!settings.focusModeEnabled })} /></SettingRow>
         <SettingRow title="主题" description="跟随系统会自动匹配设备外观。"><div className="theme-options">{themes.map((theme) => { const Icon=theme.icon; return <button className={settings.theme === theme.value ? "active" : ""} onClick={() => updateSettings({ theme:theme.value })} key={theme.value}><Icon size={18} /><span>{theme.label}</span>{settings.theme === theme.value && <Check size={16} />}</button>; })}</div></SettingRow>
@@ -214,7 +220,7 @@ export function SettingsView() {
         </div>
       </details>
 
-      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><div><strong>LinguaStep 日英阶梯</strong><p>数据库 v3 · 复习算法 v2 · 6000 组日英词汇 · 137 组语法对比</p><p>扩展词汇数据参考 <a href="https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html" target="_blank" rel="noreferrer">JMdict/EDRDG</a>（CC BY-SA 4.0）与 <a href="https://github.com/skywind3000/ECDICT" target="_blank" rel="noreferrer">ECDICT</a>（MIT）。</p></div><span>版本 {APP_VERSION}</span></section>
+      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><div><strong>LinguaStep 日英阶梯</strong><p>数据库 v3 · 复习算法 v2 · {allWords.length} 组精选考试词汇 · {allGrammar.length} 个语法点 · 137 组语法对比</p><p>当前单词库只启用人工整理或复核的 N3、N2、N1 与四级、六级、TOEIC 常用考试词，不加载未复核的自动扩充词条。</p></div><span>版本 {APP_VERSION}</span></section>
 
       {resetScope && (
         <div className="modal-backdrop" role="presentation" onClick={closeReset}>

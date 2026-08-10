@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  ArrowLeft,
   BookOpenCheck,
   Check,
   Heart,
@@ -30,6 +31,12 @@ const STATUS_LABEL: Record<LearningStatus, string> = {
   mastered: "已掌握",
 };
 
+function grammarLevelBucket(level: string): "N1" | "N2" | "N3" {
+  if (/N1/i.test(level)) return "N1";
+  if (/N2/i.test(level)) return "N2";
+  return "N3";
+}
+
 export function GrammarView() {
   const {
     snapshot,
@@ -49,6 +56,7 @@ export function GrammarView() {
   const todayPoint = allGrammar.find((item) => item.id === todayGrammarId);
   const [viewMode, setViewMode] = useState<GrammarViewMode>(todayPoint?.language ?? "japanese");
   const [selectedId, setSelectedId] = useState("");
+  const [detailOpen, setDetailOpen] = useState(false);
   const [practicing, setPracticing] = useState(false);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query);
@@ -64,7 +72,7 @@ export function GrammarView() {
             {
               query: debouncedQuery,
               language: viewMode,
-              level,
+              level: "all",
               status,
               favorite: false,
               mistake: false,
@@ -76,7 +84,7 @@ export function GrammarView() {
               mistakes: snapshot.mistakes,
               nowTimestamp,
             },
-          ),
+          ).filter((point) => level === "all" || grammarLevelBucket(point.level) === level),
     [
       debouncedQuery,
       allGrammar,
@@ -103,32 +111,27 @@ export function GrammarView() {
           item.englishExample,
         ].some((value) => value.toLocaleLowerCase("zh-CN").includes(normalized))
       ) return false;
-      if (level !== "all" && item.level !== level) return false;
+      if (level !== "all" && grammarLevelBucket(item.level) !== level) return false;
       return true;
     });
   }, [allComparisons, debouncedQuery, level]);
+  const comparisonItems = useMemo(
+    () => detailOpen && selectedId
+      ? filteredComparisons.filter((item) => item.id === selectedId)
+      : filteredComparisons,
+    [detailOpen, filteredComparisons, selectedId],
+  );
   const selected = filtered.find((point) => point.id === selectedId) ?? filtered.find((point) => point.id === todayGrammarId) ?? filtered[0];
   const progressMap = useMemo(
     () => new Map(snapshot.grammarProgress.map((item) => [item.grammarId, item])),
     [snapshot.grammarProgress],
   );
-  const levels = useMemo(
-    () =>
-      viewMode === "comparison"
-        ? [...new Set(allComparisons.map((item) => item.level))]
-        : [
-            ...new Set(
-              allGrammar.filter((point) => point.language === viewMode).map(
-                (point) => point.level,
-              ),
-            ),
-          ],
-    [allComparisons, allGrammar, viewMode],
-  );
+  const levels = ["N1", "N2", "N3"];
 
   const changeMode = (next: GrammarViewMode) => {
     setViewMode(next);
     setSelectedId("");
+    setDetailOpen(false);
     setPracticing(false);
     setLevel("all");
     setStatus("all");
@@ -167,7 +170,7 @@ export function GrammarView() {
         </section>
       )}
 
-      <details className="advanced-panel compact-details">
+      <details className="advanced-panel compact-details" open>
         <summary><span><strong>查找其他语法</strong><small>按关键词、难度和掌握状态筛选</small></span></summary>
       <FilterPanel ariaLabel="语法搜索与筛选">
         <div className="search-field">
@@ -189,14 +192,15 @@ export function GrammarView() {
       </details>
 
       {viewMode === "comparison" ? (
-        filteredComparisons.length === 0 ? (
+        comparisonItems.length === 0 ? (
           <EmptyState title="没有符合条件的语法对比" description="调整关键词或筛选条件后再试。" />
         ) : (
-          <section className="comparison-grid">
-            {filteredComparisons.map((item) => (
-              <article className="comparison-card card" key={item.id}>
+          <section className={`comparison-grid${detailOpen ? " detail-mode" : ""}`}>
+            {detailOpen && <button className="detail-back-button comparison-back-button" onClick={() => setDetailOpen(false)}><ArrowLeft size={16} />返回对比列表</button>}
+            {comparisonItems.map((item) => (
+              <article className={`comparison-card card${detailOpen ? "" : " compact"}`} key={item.id}>
                 <div className="grammar-title-row">
-                  <div><span className="section-kicker">{item.level}</span><h2>{item.semantic}</h2></div>
+                  <button className="comparison-card-heading" onClick={() => { setSelectedId(item.id); setDetailOpen(true); }}><span className="section-kicker">{item.level}</span><h2>{item.semantic}</h2></button>
                   <button className={`favorite-button${isFavorite("comparison", item.id) ? " active" : ""}`} onClick={() => void toggleFavorite("comparison", item.id)} aria-label={isFavorite("comparison", item.id) ? "取消收藏对比" : "收藏对比"}><Heart size={18} fill={isFavorite("comparison", item.id) ? "currentColor" : "none"} /></button>
                 </div>
                 <div className="comparison-language-grid">
@@ -206,6 +210,7 @@ export function GrammarView() {
                 <p>{item.translationZh}</p>
                 <div className="review-explanation">{item.difference}</div>
                 <ul className="plain-list">{item.pitfalls.map((pitfall) => <li key={pitfall}>{pitfall}</li>)}</ul>
+                {!detailOpen && <button className="text-button comparison-open-button" onClick={() => { setSelectedId(item.id); setDetailOpen(true); }}>查看完整对比 <ArrowLeft size={15} className="comparison-open-arrow" /></button>}
               </article>
             ))}
           </section>
@@ -213,16 +218,16 @@ export function GrammarView() {
       ) : filtered.length === 0 ? (
         <EmptyState title="没有符合条件的语法" description="调整关键词或筛选条件后再试。" />
       ) : (
-        <section className="grammar-layout">
+        <section className={`grammar-layout${detailOpen ? " detail-mode" : ""}`}>
           <aside className="grammar-list card" aria-label="语法知识点列表">
             <div className="grammar-list-heading"><span>{viewMode === "japanese" ? "日语语法" : "英语语法"}</span><strong>{filtered.length} 个知识点</strong></div>
             <div className="grammar-list-scroll">
               {filtered.map((point, index) => {
                 const progress = progressMap.get(point.id);
                 return (
-                  <button className={`grammar-list-item${selected?.id === point.id ? " active" : ""}`} onClick={() => setSelectedId(point.id)} key={point.id}>
+                  <button className={`grammar-list-item${selected?.id === point.id ? " active" : ""}`} onClick={() => { setSelectedId(point.id); setDetailOpen(true); }} key={point.id}>
                     <span className="grammar-index">{String(index + 1).padStart(2, "0")}</span>
-                    <span><strong>{point.title}</strong><small>{point.level} · {progress ? STATUS_LABEL[progress.status] : "未学习"}</small></span>
+                    <span><strong>{point.title}</strong><small>{grammarLevelBucket(point.level)} · {progress ? STATUS_LABEL[progress.status] : "未学习"}</small></span>
                     {progress?.status === "mastered" && <Check size={16} />}
                   </button>
                 );
@@ -232,8 +237,9 @@ export function GrammarView() {
 
           {selected && (
             <article className="grammar-detail card">
+              <button className="detail-back-button" onClick={() => setDetailOpen(false)}><ArrowLeft size={16} />返回语法列表</button>
               <div className="grammar-title-row">
-                <div><div className="tag-row"><span>{selected.level}</span><span>{selected.language === "japanese" ? "日语" : "英语"}</span>{progressMap.get(selected.id) && <span>{STATUS_LABEL[progressMap.get(selected.id)!.status]}</span>}</div><h2>{selected.title}</h2></div>
+                <div><div className="tag-row"><span>{grammarLevelBucket(selected.level)}</span><span>{selected.language === "japanese" ? "日语" : "英语"}</span>{progressMap.get(selected.id) && <span>{STATUS_LABEL[progressMap.get(selected.id)!.status]}</span>}</div><h2>{selected.title}</h2></div>
                 <button className={`favorite-button large${isFavorite("grammar", selected.id) ? " active" : ""}`} onClick={() => void toggleFavorite("grammar", selected.id)} aria-label={isFavorite("grammar", selected.id) ? "取消收藏语法" : "收藏语法"}><Heart size={20} fill={isFavorite("grammar", selected.id) ? "currentColor" : "none"} /></button>
               </div>
               <section className="grammar-explanation"><p>{selected.explanation}</p></section>

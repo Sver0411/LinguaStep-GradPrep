@@ -89,9 +89,10 @@ describe("LocalStorageSettingsRepository", () => {
     );
     expect(repository.get().revealMode).toBe("step-by-step");
     expect(JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY) ?? "{}")).toMatchObject({
-      _settingsVersion: 3,
+      _settingsVersion: 4,
       revealMode: "step-by-step",
       focusModeEnabled: false,
+      immediateTestFeedback: true,
     });
 
     repository.update({ revealMode: "together" });
@@ -119,6 +120,34 @@ describe("LocalStorageSettingsRepository", () => {
     ).get();
     expect(settings.revealMode).toBe("together");
     expect(settings.focusModeEnabled).toBe(false);
+    expect(settings.immediateTestFeedback).toBe(true);
+  });
+
+  it("turns immediate test feedback on once for existing version-three settings", () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      SETTINGS_STORAGE_KEY,
+      JSON.stringify({
+        ...DEFAULT_SETTINGS,
+        _settingsVersion: 3,
+        immediateTestFeedback: false,
+      }),
+    );
+    const repository = new LocalStorageSettingsRepository(
+      SETTINGS_STORAGE_KEY,
+      storage,
+    );
+    expect(repository.get().immediateTestFeedback).toBe(true);
+    expect(JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY) ?? "{}")).toMatchObject({
+      _settingsVersion: 4,
+      immediateTestFeedback: true,
+    });
+
+    repository.update({ immediateTestFeedback: false });
+    expect(
+      new LocalStorageSettingsRepository(SETTINGS_STORAGE_KEY, storage).get()
+        .immediateTestFeedback,
+    ).toBe(false);
   });
 
   it("migrates phase-one settings by filling phase-two defaults", () => {

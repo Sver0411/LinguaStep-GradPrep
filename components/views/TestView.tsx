@@ -34,14 +34,43 @@ const LANGUAGE_LABEL: Record<ExamLanguage, string> = {
   english: "英语",
 };
 
-function stableShuffle(items: ExamQuestion[]): ExamQuestion[] {
-  const seed = Math.floor(Date.now() / 60_000);
-  const rank = (id: string) => {
-    let value = seed;
-    for (const character of id) value = Math.imul(value ^ character.charCodeAt(0), 16777619);
-    return value >>> 0;
-  };
-  return [...items].sort((left, right) => rank(left.id) - rank(right.id));
+const QUESTION_COUNT_OPTIONS = [10, 20, 30, 50] as const;
+
+function shuffleItems<T>(items: readonly T[], random = Math.random): T[] {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+export function prepareExamQuestions(
+  pool: readonly ExamQuestion[],
+  count: number,
+  random = Math.random,
+): ExamQuestion[] {
+  const selected = shuffleItems(pool, random).slice(0, count);
+  const offset = Math.floor(random() * 4);
+  const correctPositions = shuffleItems(
+    selected.map((_question, index) => (index + offset) % 4),
+    random,
+  );
+  return selected.map((question, index) => {
+    const correctOption = question.options[question.correctIndex] ?? question.options[0];
+    const distractors = shuffleItems(
+      question.options.filter((_option, optionIndex) => optionIndex !== question.correctIndex),
+      random,
+    );
+    const options = [...distractors];
+    const correctIndex = correctPositions[index] ?? 0;
+    options.splice(correctIndex, 0, correctOption);
+    return {
+      ...question,
+      options: options as [string, string, string, string],
+      correctIndex,
+    };
+  });
 }
 
 function categoryLabel(category: string | undefined): string {
@@ -57,6 +86,10 @@ export function TestView() {
   const [japaneseLevel, setJapaneseLevel] = useState<JapaneseExamLevel>("N3");
   const [englishLevel, setEnglishLevel] = useState<EnglishExamLevel>("CET-4");
   const [section, setSection] = useState<ExamSection>("characters");
+  const [questionCount, setQuestionCount] = useState(
+    () => QUESTION_COUNT_OPTIONS.find((count) => count === settings.dailyTestQuestions) ?? 10,
+  );
+  const [setupStage, setSetupStage] = useState<"language" | "options">("language");
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [index, setIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -78,6 +111,7 @@ export function TestView() {
       ),
     [language, level, section],
   );
+  const effectiveQuestionCount = Math.min(questionCount, selectedPool.length);
   const overallAccuracy = useMemo(() => {
     const values = snapshot.testResults.flatMap((item) => item.answers);
     if (values.length === 0) return 0;
@@ -96,23 +130,14 @@ export function TestView() {
 
   useEffect(() => {
     window.addEventListener("linguastep:exit-session", exitTest);
-    return () => window.removeEventListener("linguastep:exit-session", exitTest);
-  }, [exitTest]);
-
-  useEffect(() => {
-    if (!question || result) return;
-    const handleKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.matches("input, textarea, select, button")) return;
-      const number = Number(event.key);
-      if (number >= 1 && number <= 4) setSelectedIndex(number - 1);
+    return () => {
+      window.removeEventListener("linguastep:exit-session", exitTest);
+      setFocusMode(false);
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [question, result]);
+  }, [exitTest, setFocusMode]);
 
   const startTest = () => {
-    const generated = stableShuffle(selectedPool);
+    const generated = prepareExamQuestions(selectedPool, effectiveQuestionCount);
     if (generated.length === 0) return;
     setQuestions(generated);
     setIndex(0);
@@ -123,7 +148,7 @@ export function TestView() {
     setFocusMode(true);
   };
 
-  const next = async () => {
+  const next = useCallback(async () => {
     if (!question || selectedIndex === null || submittingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
@@ -152,7 +177,25 @@ export function TestView() {
       submittingRef.current = false;
       setSubmitting(false);
     }
-  };
+  }, [answers, completeTest, index, language, question, questions.length, selectedIndex, setFocusMode, startedAt]);
+
+  useEffect(() => {
+    if (!question || result) return;
+    const handleKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input, textarea, select")) return;
+      if (event.code === "Space" && selectedIndex !== null) {
+        event.preventDefault();
+        void next();
+        return;
+      }
+      if (target?.matches("button")) return;
+      const number = Number(event.key);
+      if (number >= 1 && number <= 4) setSelectedIndex(number - 1);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [next, question, result, selectedIndex]);
 
   if (result) {
     const percent = Math.round(result.correctCount / Math.max(1, result.answers.length) * 100);
@@ -204,7 +247,7 @@ export function TestView() {
             })}
           </div>
           {showFeedback && <div className={`answer-explanation ${correct ? "correct" : "wrong"}`}><strong>{correct ? "回答正确" : "再留意一下"}</strong><p>{question.explanation}</p></div>}
-          <div className="question-footer"><span>按 1–4 快速选择</span><Button onClick={() => void next()} disabled={selectedIndex === null || submitting}>{index >= questions.length - 1 ? "提交测试" : "下一题"}<ArrowRight size={18} /></Button></div>
+          <div className="question-footer"><span>按 1–4 选择 · Space 下一题</span><Button aria-keyshortcuts="Space" onClick={() => void next()} disabled={selectedIndex === null || submitting}>{index >= questions.length - 1 ? "提交测试" : "下一题"}<ArrowRight size={18} /></Button></div>
         </article>
       </section>
     );
@@ -212,21 +255,35 @@ export function TestView() {
 
   return (
     <div className="page-stack test-page exam-home-page">
-      <PageHeader eyebrow="真题练习" title="选择考试语言与难度" description="日语使用本地红蓝宝书文字、文法题，并补充同级阅读；英语提供考试型综合练习。" />
+      <PageHeader eyebrow="真题练习" title={setupStage === "language" ? "先选择练习语言" : `设置${LANGUAGE_LABEL[language]}练习`} description="把语言选择、难度和题型拆成两步，减少同一页面的选项堆叠。" />
       <section className="exam-setup-layout">
         <article className="card exam-config-card">
           <div className="exam-step-heading"><span>1</span><div><strong>选择语言</strong><small>日语或英语</small></div></div>
           <div className="exam-language-picker">
             {(["japanese", "english"] as ExamLanguage[]).map((item) => <button type="button" className={language === item ? "active" : ""} onClick={() => setLanguage(item)} key={item}><Languages size={23} /><span><strong>{LANGUAGE_LABEL[item]}</strong><small>{item === "japanese" ? "JLPT N3 / N2 / N1" : "四级 / 六级 / TOEIC"}</small></span></button>)}
           </div>
-          <div className="exam-step-heading"><span>2</span><div><strong>选择难度</strong><small>{language === "japanese" ? "仅提供 N3 至 N1" : "选择考试目标"}</small></div></div>
-          <div className="segmented-control exam-level-picker">
-            {language === "japanese"
-              ? JAPANESE_EXAM_LEVELS.map((item) => <button type="button" className={japaneseLevel === item ? "active" : ""} onClick={() => setJapaneseLevel(item)} key={item}>{item}</button>)
-              : ENGLISH_EXAM_LEVELS.map((item) => <button type="button" className={englishLevel === item ? "active" : ""} onClick={() => setEnglishLevel(item)} key={item}>{item === "CET-4" ? "四级" : item === "CET-6" ? "六级" : item}</button>)}
-          </div>
-          {language === "japanese" && <><div className="exam-step-heading"><span>3</span><div><strong>选择题型</strong><small>文字包含汉字读音与词汇运用</small></div></div><div className="exam-section-picker">{(["characters", "grammar", "reading"] as ExamSection[]).map((item) => { const Icon = item === "reading" ? FileText : item === "grammar" ? BookOpenCheck : Languages; const count = EXAM_QUESTIONS.filter((question) => question.examLanguage === "japanese" && question.examLevel === japaneseLevel && question.examSection === item).length; return <button type="button" className={section === item ? "active" : ""} onClick={() => setSection(item)} key={item}><Icon size={20} /><span><strong>{EXAM_SECTION_LABELS[item]}</strong><small>{count} 题</small></span></button>; })}</div></>}
-          <div className="exam-start-row"><div><span>本组内容</span><strong>{language === "japanese" ? `${japaneseLevel} · ${EXAM_SECTION_LABELS[section]}` : `${englishLevel} · 综合`}</strong><small>共 {selectedPool.length} 题</small></div><Button className="button-large" onClick={startTest} disabled={selectedPool.length === 0}><Play size={18} fill="currentColor" />开始测试</Button></div>
+          {setupStage === "language" ? (
+            <div className="exam-next-step"><p>下一步会选择考试等级；日语还可以继续选择文字、文法或阅读。</p><Button onClick={() => setSetupStage("options")}>下一步：选择难度<ArrowRight size={18} /></Button></div>
+          ) : (
+            <>
+              <button className="detail-back-button exam-back-button" onClick={() => setSetupStage("language")}><ArrowLeft size={16} />返回选择语言</button>
+              <div className="exam-step-heading"><span>2</span><div><strong>选择难度</strong><small>{language === "japanese" ? "仅提供 N3 至 N1" : "选择考试目标"}</small></div></div>
+              <div className="segmented-control exam-level-picker">
+                {language === "japanese"
+                  ? JAPANESE_EXAM_LEVELS.map((item) => <button type="button" className={japaneseLevel === item ? "active" : ""} onClick={() => setJapaneseLevel(item)} key={item}>{item}</button>)
+                  : ENGLISH_EXAM_LEVELS.map((item) => <button type="button" className={englishLevel === item ? "active" : ""} onClick={() => setEnglishLevel(item)} key={item}>{item === "CET-4" ? "四级" : item === "CET-6" ? "六级" : item}</button>)}
+              </div>
+              {language === "japanese" && <><div className="exam-step-heading"><span>3</span><div><strong>选择题型</strong><small>文字包含汉字读音与词汇运用</small></div></div><div className="exam-section-picker">{(["characters", "grammar", "reading"] as ExamSection[]).map((item) => { const Icon = item === "reading" ? FileText : item === "grammar" ? BookOpenCheck : Languages; const count = EXAM_QUESTIONS.filter((question) => question.examLanguage === "japanese" && question.examLevel === japaneseLevel && question.examSection === item).length; return <button type="button" className={section === item ? "active" : ""} onClick={() => setSection(item)} key={item}><Icon size={20} /><span><strong>{EXAM_SECTION_LABELS[item]}</strong><small>{count} 题</small></span></button>; })}</div></>}
+              <div className="exam-step-heading"><span>{language === "japanese" ? 4 : 3}</span><div><strong>选择本次题量</strong><small>每次开始都会从题库重新随机抽取</small></div></div>
+              <div className="question-count-control exam-question-count">
+                <span>本次题数</span>
+                <div className="segmented-control" aria-label="本次题数">
+                  {QUESTION_COUNT_OPTIONS.map((count) => <button type="button" className={questionCount === count ? "active" : ""} aria-pressed={questionCount === count} onClick={() => setQuestionCount(count)} key={count}>{count} 题</button>)}
+                </div>
+              </div>
+              <div className="exam-start-row"><div><span>本组内容</span><strong>{language === "japanese" ? `${japaneseLevel} · ${EXAM_SECTION_LABELS[section]}` : `${englishLevel} · 综合`}</strong><small>随机抽取 {effectiveQuestionCount} 题 · 题库共 {selectedPool.length} 题</small></div><Button className="button-large" onClick={startTest} disabled={selectedPool.length === 0}><Play size={18} fill="currentColor" />开始测试</Button></div>
+            </>
+          )}
         </article>
         <aside className="exam-info-column">
           <article className="card mini-stat-card"><span>日语题库</span><strong>{EXAM_QUESTIONS.filter((item) => item.examLanguage === "japanese").length}<small>题</small></strong><p>红蓝宝书文字、文法 + 原创阅读</p></article>
@@ -236,4 +293,4 @@ export function TestView() {
       </section>
     </div>
   );
-}
+  }

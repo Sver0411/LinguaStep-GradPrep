@@ -51,7 +51,6 @@ import {
   type SettingsRepository,
 } from "@/lib/repositories";
 import { migrateLearningSnapshot } from "@/lib/repositories/migrations";
-import { normalizeWordStudyLevels } from "@/lib/word-levels";
 import {
   appendAIArtifacts,
   type AIArtifactBatch,
@@ -329,6 +328,46 @@ function removeAIContentFromSnapshot(
   };
 }
 
+function restrictSnapshotToActiveVocabulary(
+  snapshot: LearningSnapshot,
+  today = dateKey(new Date()),
+): LearningSnapshot {
+  const activeWordIds = new Set(WORD_PAIRS.map((word) => word.id));
+  const wordProgress = snapshot.wordProgress.filter((item) =>
+    activeWordIds.has(item.wordId),
+  );
+  const favorites = snapshot.favorites.filter(
+    (item) => !item.startsWith("word:") || activeWordIds.has(item.slice(5)),
+  );
+  const mistakes = snapshot.mistakes.filter(
+    (item) =>
+      item.contentRef.source !== "word" ||
+      item.contentRef.sourceId.startsWith("exam-") ||
+      activeWordIds.has(item.contentRef.sourceId),
+  );
+  const mistakeIds = new Set(mistakes.map((item) => item.id));
+  const dailyPlans = snapshot.dailyPlans
+    .filter((plan) => {
+      if (plan.date !== today) return true;
+      return [...plan.newWordIds, ...plan.reviewWordIds, ...plan.overdueWordIds]
+        .every((id) => activeWordIds.has(id));
+    })
+    .map((plan) => ({
+      ...plan,
+      newWordIds: plan.newWordIds.filter((id) => activeWordIds.has(id)),
+      reviewWordIds: plan.reviewWordIds.filter((id) => activeWordIds.has(id)),
+      overdueWordIds: plan.overdueWordIds.filter((id) => activeWordIds.has(id)),
+      mistakeIds: plan.mistakeIds.filter((id) => mistakeIds.has(id)),
+    }));
+  return {
+    ...snapshot,
+    wordProgress,
+    favorites,
+    mistakes,
+    dailyPlans,
+  };
+}
+
 async function withDataLock<T>(task: () => Promise<T>): Promise<T> {
   if (typeof navigator !== "undefined" && navigator.locks) {
     return navigator.locks.request(DATA_LOCK_NAME, () => task());
@@ -365,7 +404,7 @@ function createPlan(
     date: dateKey(now),
     now: now.toISOString(),
     settings,
-    words: [...WORD_PAIRS, ...snapshot.aiWords.map(normalizeWordStudyLevels)],
+    words: WORD_PAIRS,
     grammar: [...GRAMMAR_POINTS, ...snapshot.aiGrammar],
     wordProgress: snapshot.wordProgress,
     grammarProgress: snapshot.grammarProgress,
@@ -396,7 +435,9 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         event.data.type === "snapshot" &&
         isLearningSnapshot(event.data.snapshot)
       ) {
-        const migrated = migrateLearningSnapshot(event.data.snapshot);
+        const migrated = restrictSnapshotToActiveVocabulary(
+          migrateLearningSnapshot(event.data.snapshot),
+        );
         snapshotRef.current = migrated;
         setSnapshot(migrated);
         if (repositoryRef.current instanceof MemoryLearningRepository) {
@@ -422,12 +463,13 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       try {
         if (!isIndexedDbSupported()) throw new Error("IndexedDB unavailable");
         repository = new IndexedDbLearningRepository();
-        let stored = migrateLearningSnapshot(await repository.getSnapshot());
+        const migrated = migrateLearningSnapshot(await repository.getSnapshot());
+        let stored = restrictSnapshotToActiveVocabulary(migrated);
         const today = dateKey(new Date());
         if (!stored.dailyPlans.some((plan) => plan.date === today)) {
           stored = { ...stored, dailyPlans: [...stored.dailyPlans, createPlan(stored, storedSettings)] };
-          await repository.saveSnapshot(stored);
         }
+        if (!equalValue(migrated, stored)) await repository.saveSnapshot(stored);
         if (cancelled) return;
         repositoryRef.current = repository;
         snapshotRef.current = stored;
@@ -456,7 +498,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
 
   const persistSnapshot = useCallback(async (next: LearningSnapshot) => {
     const previous = snapshotRef.current;
-    let saved = migrateLearningSnapshot(next);
+    let saved = restrictSnapshotToActiveVocabulary(migrateLearningSnapshot(next));
     try {
       const repository = repositoryRef.current;
       if (repository) {
@@ -928,7 +970,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     () => ({
       snapshot,
       settings,
-      allWords: [...WORD_PAIRS, ...snapshot.aiWords.map(normalizeWordStudyLevels)],
+      allWords: WORD_PAIRS,
       allGrammar: [...GRAMMAR_POINTS, ...snapshot.aiGrammar],
       allComparisons: [...GRAMMAR_COMPARISONS, ...snapshot.aiComparisons],
       ready,

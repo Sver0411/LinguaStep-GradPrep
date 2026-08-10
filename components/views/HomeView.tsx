@@ -37,6 +37,18 @@ export function HomeView() {
         testCompleted: 0,
       };
   const mistakeCount = snapshot.mistakes.filter((item) => item.active).length;
+  const todayWords = todayRecord?.wordsStudied ?? 0;
+  const todayGrammar = todayRecord?.grammarStudied ?? 0;
+  const todayQuestions = todayRecord?.questionsAnswered ?? 0;
+  const sevenDayStart = new Date();
+  sevenDayStart.setDate(sevenDayStart.getDate() - 6);
+  const activeDaysThisWeek = snapshot.dailyRecords.filter((record) =>
+    record.date >= dateKey(sevenDayStart) &&
+    record.wordsStudied + record.grammarStudied + record.questionsAnswered > 0,
+  ).length;
+  const todayAccuracy = todayQuestions > 0
+    ? Math.round(((todayRecord?.correctAnswers ?? 0) / todayQuestions) * 100)
+    : null;
   const metrics = [
     { label: "今日进度", value: Math.round(planProgress.percent), suffix: "%", icon: Check, tone: "blue" },
     { label: "已逾期复习", value: todayPlan?.overdueWordIds.length ?? 0, suffix: "个", icon: Clock3, tone: "purple" },
@@ -53,6 +65,38 @@ export function HomeView() {
         description={todayComplete ? "做得很好。你可以自由学习，或让记忆在下一次到期前休息。" : "计划每天只生成一次；刷新页面不会重复添加任务。"}
         actions={<details className="header-more"><summary>更多</summary><button className="text-button" onClick={() => void rebuildTodayPlan()}><RefreshCw size={17} />按当前设置重算计划</button></details>}
       />
+
+      <section className={`mobile-home-hero${todayComplete ? " complete" : ""}`}>
+        <div className="mobile-home-progress-row">
+          <span>{todayComplete ? "今日已完成" : "今日计划"}</span>
+          <strong>{Math.round(planProgress.percent)}%</strong>
+        </div>
+        <ProgressBar value={planProgress.percent} label="今日学习进度" />
+        <div className="mobile-home-copy">
+          <span className="section-kicker">NEXT STEP</span>
+          <h1>{todayComplete ? "今天做得很好" : nextAction.label}</h1>
+          <p>{nextAction.description}</p>
+        </div>
+        <Link className="button button-primary button-large mobile-primary-action" href={nextAction.href}>
+          <Play size={18} fill="currentColor" />
+          {todayComplete ? "继续自由学习" : "继续学习"}
+          <ArrowRight size={18} />
+        </Link>
+        <div className="mobile-home-metrics" aria-label="今日概览">
+          <div><Clock3 size={17} /><span>逾期</span><strong>{todayPlan?.overdueWordIds.length ?? 0}</strong></div>
+          <div><CircleAlert size={17} /><span>错题</span><strong>{mistakeCount}</strong></div>
+          <div><Check size={17} /><span>完成</span><strong>{planProgress.completed}</strong></div>
+        </div>
+        <div className="mobile-home-record" aria-label="今日学习记录">
+          <span>今日记录</span>
+          <strong>{todayWords} 个单词 · {todayGrammar} 个语法 · {todayQuestions} 道练习</strong>
+        </div>
+      </section>
+
+      <section className="mobile-home-insight" aria-label="近期学习状态">
+        <div><span>近 7 天节奏</span><strong>{activeDaysThisWeek} 天有学习</strong></div>
+        <div><span>今日答题</span><strong>{todayAccuracy === null ? "还未练习" : `${todayAccuracy}% 正确`}</strong></div>
+      </section>
 
       <section className="metric-grid" aria-label="今日概览">
         {metrics.map((metric) => {

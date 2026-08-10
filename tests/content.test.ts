@@ -3,15 +3,17 @@ import { WORD_PAIRS } from "../data/words";
 import { GRAMMAR_POINTS } from "../data/grammar";
 import { GRAMMAR_COMPARISONS } from "../data/grammar-comparisons";
 import { EXAM_QUESTIONS } from "../data/exam-questions";
+import { EXAM_REFERENCE_WORDS } from "../data/words-exam-reference";
 
 describe("built-in vocabulary", () => {
-  it("contains exactly 6000 complete and unique word pairs", () => {
-    expect(WORD_PAIRS).toHaveLength(6_000);
-    expect(new Set(WORD_PAIRS.map((word) => word.id)).size).toBe(6_000);
-    expect(new Set(WORD_PAIRS.map((word) => word.japanese.term)).size).toBe(6_000);
+  it("contains the expanded, reviewed and unique exam word bank", () => {
+    expect(EXAM_REFERENCE_WORDS.length).toBeGreaterThanOrEqual(400);
+    expect(WORD_PAIRS).toHaveLength(2559);
+    expect(new Set(WORD_PAIRS.map((word) => word.id)).size).toBe(WORD_PAIRS.length);
+    expect(new Set(WORD_PAIRS.map((word) => word.japanese.term)).size).toBe(WORD_PAIRS.length);
     expect(
       new Set(WORD_PAIRS.map((word) => word.english.term.toLowerCase())).size,
-    ).toBe(6_000);
+    ).toBe(WORD_PAIRS.length);
     WORD_PAIRS.forEach((word) => {
       expect(word.meaningZh.trim()).not.toBe("");
       expect(word.japanese.reading?.trim()).not.toBe("");
@@ -31,7 +33,11 @@ describe("built-in vocabulary", () => {
       );
       expect(["高频", "常用", "普通", "低频"]).toContain(word.frequency);
       expect(word.source).toBe("curated");
+      expect(word.tags ?? []).not.toContain("扩展词库");
     });
+    for (const level of ["JLPT N1", "JLPT N2", "JLPT N3"] as const) {
+      expect(WORD_PAIRS.filter((word) => word.japanese.difficulty === level).length).toBeGreaterThanOrEqual(800);
+    }
   });
 
   it("keeps the requested Japanese difficulty distribution for the 200 new pairs", () => {
@@ -60,7 +66,7 @@ describe("built-in vocabulary", () => {
     const verbs = WORD_PAIRS.filter((word) =>
       word.japanese.partOfSpeech.includes("动词"),
     );
-    expect(verbs.length).toBeGreaterThan(1_000);
+    expect(verbs.length).toBeGreaterThan(80);
     expect(
       verbs.filter((word) => word.note.includes("词条按サ变词干")).length,
     ).toBe(60);
@@ -77,18 +83,25 @@ describe("built-in vocabulary", () => {
     expect(participate?.japanese.term).toBe("参加");
     expect(participate?.japanese.reading).toBe("さんか");
   });
+
+  it("keeps OCR-verified red and green book source labels", () => {
+    expect(WORD_PAIRS.find((word) => word.japanese.term === "ストレス")?.tags)
+      .toContain("红宝书");
+    expect(WORD_PAIRS.find((word) => word.japanese.term === "見出し")?.tags)
+      .toContain("绿宝书");
+  });
 });
 
 describe("curated grammar", () => {
-  it("contains 35 Japanese and 15 English points", () => {
-    expect(GRAMMAR_POINTS).toHaveLength(50);
+  it("contains 65 Japanese and 15 English points", () => {
+    expect(GRAMMAR_POINTS).toHaveLength(80);
     expect(
       GRAMMAR_POINTS.filter((point) => point.language === "japanese"),
-    ).toHaveLength(35);
+    ).toHaveLength(65);
     expect(
       GRAMMAR_POINTS.filter((point) => point.language === "english"),
     ).toHaveLength(15);
-    expect(new Set(GRAMMAR_POINTS.map((point) => point.id)).size).toBe(50);
+    expect(new Set(GRAMMAR_POINTS.map((point) => point.id)).size).toBe(80);
   });
 
   it("provides five valid four-option exercises for every point", () => {
@@ -110,7 +123,14 @@ describe("curated grammar", () => {
         questionIds.add(question.id);
       });
     });
-    expect(questionIds.size).toBe(250);
+    expect(questionIds.size).toBe(400);
+  });
+
+  it("includes the newly reviewed blue-book N3 grammar set", () => {
+    expect(GRAMMAR_POINTS.find((point) => point.id === "jp-aida")?.title)
+      .toContain("〜間／間に");
+    expect(GRAMMAR_POINTS.find((point) => point.id === "jp-wokomete")?.source)
+      .toBe("curated");
   });
 
   it("contains 137 meaningful comparison groups with exercises", () => {

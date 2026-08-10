@@ -1,7 +1,7 @@
 import type { WordPair } from "@/lib/models";
 import { normalizeWordStudyLevels } from "@/lib/word-levels";
 import { PHASE_TWO_WORDS } from "./words-phase2";
-import { EXPANDED_WORDS } from "./words-expanded";
+import { EXAM_REFERENCE_WORDS } from "./words-exam-reference";
 
 const PHASE_ONE_WORDS: WordPair[] = [
   {
@@ -2653,7 +2653,7 @@ const usedEnglish = new Set<string>();
 
 export const WORD_PAIRS: WordPair[] = [
   ...HAND_EDITED_WORDS,
-  ...EXPANDED_WORDS,
+  ...EXAM_REFERENCE_WORDS,
 ].map(normalizeJapaneseVerbHeadword).map(normalizeWordStudyLevels).filter((word) => {
   const japanese = word.japanese.term.trim();
   const english = word.english.term.trim().toLocaleLowerCase("en-US");
@@ -2661,4 +2661,4 @@ export const WORD_PAIRS: WordPair[] = [
   usedJapanese.add(japanese);
   usedEnglish.add(english);
   return true;
-}).slice(0, 6_000);
+});

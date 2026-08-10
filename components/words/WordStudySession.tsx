@@ -26,13 +26,15 @@ export function WordStudySession({
   mode,
   onFinish,
   onRestart,
-  onReviewWeak,
+  onContinuePlan,
+  onReviewUnknown,
 }: {
   items: WordPair[];
   mode: StudyMode;
   onFinish: () => void;
   onRestart: () => void;
-  onReviewWeak: () => void;
+  onContinuePlan: (href: string) => void;
+  onReviewUnknown: (items: WordPair[]) => void;
 }) {
   const {
     snapshot,
@@ -123,6 +125,10 @@ export function WordStudySession({
   );
 
   useEffect(() => {
+    return () => setFocusMode(false);
+  }, [setFocusMode]);
+
+  useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, button")) return;
@@ -158,6 +164,7 @@ export function WordStudySession({
   const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
 
   if (finished) {
+    const unknownItems = items.filter((item) => ratings[item.id] === "unknown");
     return (
       <section className="session-summary card">
         <span className="summary-icon"><Sparkles size={28} /></span>
@@ -172,19 +179,15 @@ export function WordStudySession({
         </div>
         <ProgressBar value={masteryPercent} label="基础掌握比例" />
         <div className="summary-actions">
-          <Link className="button button-primary" href={nextAction.href}><ArrowRight size={18} />{nextAction.label}</Link>
-          {(counts.fuzzy > 0 || counts.unknown > 0) && (
-            <Button variant="secondary" onClick={onReviewWeak}>
-              <RotateCcw size={18} />复习错词
+          {nextAction.href.startsWith("/words")
+            ? <Button onClick={() => onContinuePlan(nextAction.href)}><ArrowRight size={18} />{nextAction.label}</Button>
+            : <Link className="button button-primary" href={nextAction.href}><ArrowRight size={18} />{nextAction.label}</Link>}
+          {unknownItems.length > 0 && (
+            <Button variant="secondary" onClick={() => onReviewUnknown(unknownItems)}>
+              <RotateCcw size={18} />重练生词
             </Button>
           )}
-          <Button variant="secondary" onClick={() => {
-            setIndex(0);
-            setRevealStage(0);
-            setRatings({});
-            setFinished(false);
-            onRestart();
-          }}><RotateCcw size={18} />再学一轮</Button>
+          <Button variant="secondary" onClick={onRestart}><RotateCcw size={18} />再学一轮</Button>
           <Button variant="secondary" onClick={onFinish}>返回单词页</Button>
         </div>
       </section>
@@ -194,7 +197,7 @@ export function WordStudySession({
   if (!current) return null;
 
   return (
-    <section className="study-session" aria-live="polite">
+    <section className={`study-session${answerVisible ? " rating-visible" : ""}`} aria-live="polite">
       <div className="session-topline">
         <span>{mode === "combined" ? "日英对照" : mode === "japanese" ? "日语" : "英语"}学习</span>
         <div className="session-top-actions"><strong>{index + 1} / {items.length}</strong><button className="text-button" onClick={onFinish}><ArrowLeft size={16} />退出学习</button></div>

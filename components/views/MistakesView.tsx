@@ -138,7 +138,10 @@ export function MistakesView() {
       setFocusMode(false);
     };
     window.addEventListener("linguastep:exit-session", exitSession);
-    return () => window.removeEventListener("linguastep:exit-session", exitSession);
+    return () => {
+      window.removeEventListener("linguastep:exit-session", exitSession);
+      setFocusMode(false);
+    };
   }, [setFocusMode]);
 
   const startReview = useCallback((mistake: MistakeRecord) => {

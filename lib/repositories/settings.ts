@@ -2,7 +2,7 @@ import { DEFAULT_SETTINGS } from "../constants";
 import type { AppSettings } from "../models";
 
 export const SETTINGS_STORAGE_KEY = "lingua-step:settings";
-const SETTINGS_SCHEMA_VERSION = 3;
+const SETTINGS_SCHEMA_VERSION = 4;
 
 export interface SettingsRepository {
   get(): AppSettings;
@@ -159,6 +159,7 @@ export class LocalStorageSettingsRepository implements SettingsRepository {
             ...parsed,
             ...(storedVersion < 2 ? { revealMode: DEFAULT_SETTINGS.revealMode } : {}),
             ...(storedVersion < 3 ? { focusModeEnabled: DEFAULT_SETTINGS.focusModeEnabled } : {}),
+            ...(storedVersion < 4 ? { immediateTestFeedback: DEFAULT_SETTINGS.immediateTestFeedback } : {}),
           }
         : parsed;
       this.memorySettings = normalizeSettings(migrationInput);
