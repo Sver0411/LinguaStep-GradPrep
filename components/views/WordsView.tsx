@@ -22,7 +22,13 @@ import type { StudyMode, WordPair } from "@/lib/models";
 import { Button, PageHeader, ProgressBar } from "@/components/ui";
 import { WordLibrary } from "@/components/words/WordLibrary";
 import { WordStudySession } from "@/components/words/WordStudySession";
+import { BookWordLibrary } from "@/components/words/BookWordLibrary";
 import { FilterPanel } from "@/components/filters/FilterPanel";
+import {
+  BOOK_VOCAB_SECTIONS,
+  BOOK_VOCAB_WORDS,
+} from "@/data/book-vocab-data";
+import type { BookVocabSection } from "@/lib/book-vocab-types";
 import {
   ENGLISH_STUDY_LEVELS,
   JAPANESE_STUDY_LEVELS,
@@ -62,6 +68,7 @@ export function WordsView() {
   });
   const autoStarted = useRef(false);
   const debouncedQuery = useDebouncedValue(query);
+  const [vocabSource, setVocabSource] = useState<string>("core");
   const progressMap = useMemo(
     () => new Map(snapshot.wordProgress.map((item) => [item.wordId, item])),
     [snapshot.wordProgress],
@@ -134,6 +141,18 @@ export function WordsView() {
       snapshot.wordProgress,
     ],
   );
+  const bookWords = useMemo(() => {
+    if (vocabSource === "core") return [];
+    const normalized = debouncedQuery.trim().toLocaleLowerCase("zh-CN");
+    return BOOK_VOCAB_WORDS.filter((word) => word.section === vocabSource).filter(
+      (word) =>
+        !normalized ||
+        [word.term, word.reading, word.meaningZh]
+          .join(" ")
+          .toLocaleLowerCase("zh-CN")
+          .includes(normalized),
+    );
+  }, [debouncedQuery, vocabSource]);
   const startSession = useCallback(
     (source: SessionSource = "all", selectedMode: StudyMode = mode) => {
       const todayPlan = snapshot.dailyPlans.find(
@@ -389,27 +408,50 @@ export function WordsView() {
             id="word-search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="搜索中文、日语、假名、罗马音、英语、例句或搭配"
+            placeholder={vocabSource === "core" ? "搜索中文、日语、假名、罗马音、英语、例句或搭配" : "搜索词书词汇、读音或释义"}
           />
         </div>
-        <div className="filter-grid">
+        {BOOK_VOCAB_WORDS.length > 0 && (
+          <div className="filter-grid">
+            <label>
+              <span>来源分区</span>
+              <select value={vocabSource} onChange={(event) => setVocabSource(event.target.value)}>
+                <option value="core">核心词库（可背词）</option>
+                {BOOK_VOCAB_SECTIONS.map((source) => (
+                  <option value={source.id} key={source.id}>{source.label}（查阅）</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
+        {vocabSource === "core" && <div className="filter-grid">
           <label><span>日语等级</span><select value={filters.japaneseLevel} onChange={(event) => setFilters((current) => ({ ...current, japaneseLevel: event.target.value }))}><option value="all">全部</option>{JAPANESE_STUDY_LEVELS.map((level) => <option key={level}>{level}</option>)}</select></label>
           <label><span>英语等级</span><select value={filters.englishLevel} onChange={(event) => setFilters((current) => ({ ...current, englishLevel: event.target.value }))}><option value="all">全部</option>{ENGLISH_STUDY_LEVELS.map((level) => <option value={level} key={level}>{level === "CET-4" ? "四级" : level === "CET-6" ? "六级" : level}</option>)}</select></label>
           <label><span>掌握状态</span><select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as WordSearchFilters["status"] }))}><option value="all">全部</option><option value="unlearned">未学习</option><option value="learning">学习中</option><option value="review">待复习</option><option value="mastered">已掌握</option></select></label>
-        </div>
+        </div>}
         <div className="filter-toggles">
           <button className="text-button" onClick={clearFilters}><RotateCcw size={15} />清空筛选</button>
-          <strong>{filteredWords.length} 个结果</strong>
+          <strong>{vocabSource === "core" ? `${filteredWords.length} 个结果` : `${bookWords.length} 个结果`}</strong>
         </div>
       </FilterPanel>
 
+      {vocabSource !== "core" ? (
+        <BookWordLibrary
+          words={bookWords}
+          bookLabel={BOOK_VOCAB_SECTIONS.find((source) => source.id === vocabSource)?.label ?? "词书"}
+          isFavorite={(id) => isFavorite("word", id)}
+          onToggleFavorite={(id) => void toggleFavorite("word", id)}
+        />
+      ) : (
       <WordLibrary
         words={filteredWords}
         density={settings.displayDensity}
         mode={mode}
+        resetKey={`${pageMode}|${debouncedQuery}|${mode}|${filters.japaneseLevel}|${filters.englishLevel}|${filters.status}`}
         isFavorite={(id) => isFavorite("word", id)}
         onToggleFavorite={(id) => void toggleFavorite("word", id)}
       />
+      )}
       </>}
     </div>
   );

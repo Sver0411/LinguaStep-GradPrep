@@ -14,6 +14,7 @@ import {
   NotebookPen,
   Settings,
   X,
+  BookOpenCheck,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -24,6 +25,7 @@ const navigation = [
   { path: "/test", label: "测试", icon: CircleHelp },
   { path: "/mistakes", label: "错题本", icon: BookMarked },
   { path: "/favorites", label: "收藏", icon: Heart },
+  { path: "/reference", label: "资料", icon: BookOpenCheck },
   { path: "/stats", label: "学习统计", icon: BarChart3 },
   { path: "/settings", label: "设置", icon: Settings },
 ] as const;

@@ -1,6 +1,7 @@
 import type { ChoiceQuestion } from "@/lib/models";
 import { GRAMMAR_POINTS } from "@/data/grammar";
 import { WORD_PAIRS } from "@/data/words";
+import { BOOK_N1_QUESTIONS, BOOK_N2_QUESTIONS, BOOK_N3_QUESTIONS } from "@/data/book-n1-questions";
 
 export type ExamLanguage = "japanese" | "english";
 export type JapaneseExamLevel = "N3" | "N2" | "N1";
@@ -219,16 +220,71 @@ const ENGLISH_EXTRA_QUESTIONS: ExamQuestion[] = [
   englishQuestion("extra-read-04", "TOEIC", "reading", "When does the new schedule begin?", ["This Friday", "Next Monday", "Next month", "At the weekend"], 1, "The notice begins with “Beginning next Monday.”"),
 ];
 
+/**
+ * Real N1 drill questions extracted from the user's 红蓝宝书1000题 N1 PDF.
+ * These are genuine past-paper style items with publisher answers, so they sit
+ * in the base bank and reduce how many synthetic fillers the generators need.
+ */
+const PDF_BOOK_QUESTIONS: ExamQuestion[] = [
+  ...BOOK_N1_QUESTIONS.map((question) =>
+    japaneseQuestion(
+      `book-n1-${question.no}`,
+      question.level,
+      question.section,
+      question.prompt,
+      question.options,
+      question.correctIndex,
+      question.explanation,
+      undefined,
+      "红蓝宝书1000题 N1（本地 PDF）",
+    ),
+  ),
+  ...BOOK_N3_QUESTIONS.map((question) =>
+    japaneseQuestion(
+      `book-n3-${question.no}`,
+      question.level,
+      question.section,
+      question.prompt,
+      question.options,
+      question.correctIndex,
+      question.explanation,
+      undefined,
+      "红蓝宝书1000题 N3（本地 PDF 扫描 OCR）",
+    ),
+  ),
+  ...BOOK_N2_QUESTIONS.map((question) =>
+    japaneseQuestion(
+      `book-n2-${question.no}`,
+      question.level,
+      question.section,
+      question.prompt,
+      question.options,
+      question.correctIndex,
+      question.explanation,
+      undefined,
+      "红蓝宝书1000题 N2（本地 PDF 扫描 OCR）",
+    ),
+  ),
+];
+
 const BASE_EXAM_QUESTIONS: ExamQuestion[] = [
   ...JAPANESE_BOOK_QUESTIONS,
   ...JAPANESE_READING_QUESTIONS,
   ...ENGLISH_QUESTIONS,
   ...JAPANESE_EXTRA_QUESTIONS,
   ...ENGLISH_EXTRA_QUESTIONS,
+  ...PDF_BOOK_QUESTIONS,
 ];
 
 const JAPANESE_LEVEL_ORDER: JapaneseExamLevel[] = ["N3", "N2", "N1"];
 const ENGLISH_LEVEL_ORDER: EnglishExamLevel[] = ["CET-4", "CET-6", "TOEIC"];
+/**
+ * Upper bound for a single level/section bucket. The generators below never
+ * cycle a pool to reach it: if a bucket cannot be filled with genuinely
+ * distinct questions it simply stays smaller. Padding by replaying the same
+ * prompt under a different prefix made "120 题" meaningless — a 30-question
+ * round would show the same reading passage several times.
+ */
 const EXAM_SECTION_TARGET = 120;
 
 function fourUniqueOptions(correct: string, candidates: string[]): [string, string, string, string] {
@@ -259,16 +315,24 @@ function generateCharacterSupplements(language: ExamLanguage): ExamQuestion[] {
         question.examSection === "characters" &&
         question.examLevel === level,
     ).length;
-    const needed = Math.max(0, EXAM_SECTION_TARGET - existingCount);
     const pool = WORD_PAIRS.filter((word) => wordLevel(word, language) === level);
+    const needed = Math.min(
+      Math.max(0, EXAM_SECTION_TARGET - existingCount),
+      pool.length,
+    );
     for (let index = 0; index < needed; index += 1) {
-      const word = pool[index % pool.length];
+      const word = pool[index];
+      const others = pool.filter((candidate) => candidate.id !== word.id);
+      // Rotate deterministically through the whole remaining pool instead of
+      // slicing a fixed window, which ran past the end on smaller levels and
+      // produced "选项 2/3" filler distractors.
+      const offset = others.length > 0 ? index % others.length : 0;
+      const distractorAt = (step: number) =>
+        others[(offset + step) % others.length];
       serial += 1;
       if (language === "japanese") {
       const correct = word.japanese.reading ?? word.japanese.term;
-      const distractors = pool
-        .filter((candidate) => candidate.id !== word.id)
-        .slice(index % 5, (index % 5) + 3)
+      const distractors = [distractorAt(0), distractorAt(1), distractorAt(2)]
         .map((candidate) => candidate.japanese.reading ?? candidate.japanese.term);
       result.push(japaneseQuestion(
         `generated-characters-${serial}`,
@@ -283,9 +347,7 @@ function generateCharacterSupplements(language: ExamLanguage): ExamQuestion[] {
       ));
     } else {
       const correct = word.meaningZh;
-      const distractors = pool
-        .filter((candidate) => candidate.id !== word.id)
-        .slice(index % 5, (index % 5) + 3)
+      const distractors = [distractorAt(0), distractorAt(1), distractorAt(2)]
         .map((candidate) => candidate.meaningZh);
       result.push(englishQuestion(
         `generated-characters-${serial}`,
@@ -304,9 +366,22 @@ function generateCharacterSupplements(language: ExamLanguage): ExamQuestion[] {
   return result;
 }
 
+function grammarExamLevel(
+  point: (typeof GRAMMAR_POINTS)[number],
+  language: ExamLanguage,
+): JapaneseExamLevel | EnglishExamLevel {
+  if (language === "japanese") {
+    if (point.level.includes("N1")) return "N1";
+    if (point.level.includes("N2")) return "N2";
+    return "N3";
+  }
+  if (point.level.includes("TOEIC")) return "TOEIC";
+  if (point.level.includes("CET-6")) return "CET-6";
+  return "CET-4";
+}
+
 function generateGrammarSupplements(language: ExamLanguage): ExamQuestion[] {
   const levels = language === "japanese" ? JAPANESE_LEVEL_ORDER : ENGLISH_LEVEL_ORDER;
-  const pool = GRAMMAR_POINTS.filter((point) => point.language === language);
   const result: ExamQuestion[] = [];
   let serial = 0;
   levels.forEach((level) => {
@@ -316,10 +391,18 @@ function generateGrammarSupplements(language: ExamLanguage): ExamQuestion[] {
         question.examSection === "grammar" &&
         question.examLevel === level,
     ).length;
-    const needed = Math.max(0, EXAM_SECTION_TARGET - existingCount);
+    // Only grammar points that actually belong to this level, and only one
+    // question per (point, exercise) pair, so no bucket reuses another level's
+    // material and nothing is emitted twice.
+    const combos = GRAMMAR_POINTS.filter(
+      (point) => point.language === language && grammarExamLevel(point, language) === level,
+    ).flatMap((point) => point.exercises.map((exercise) => ({ point, exercise })));
+    const needed = Math.min(
+      Math.max(0, EXAM_SECTION_TARGET - existingCount),
+      combos.length,
+    );
     for (let index = 0; index < needed; index += 1) {
-      const point = pool[index % pool.length];
-      const exercise = point.exercises[index % point.exercises.length];
+      const { exercise } = combos[index];
       serial += 1;
       const id = `generated-grammar-${serial}`;
       if (language === "japanese") {
@@ -332,72 +415,18 @@ function generateGrammarSupplements(language: ExamLanguage): ExamQuestion[] {
   return result;
 }
 
-const READING_VARIANTS = [
-  "根据材料，下列哪一项正确？",
-  "结合材料，最适合的说法是哪一项？",
-  "关于材料内容，下列判断哪一项准确？",
-  "从材料可以得出什么结论？",
-];
-
-function generateReadingSupplements(language: ExamLanguage): ExamQuestion[] {
-  const levels = language === "japanese" ? JAPANESE_LEVEL_ORDER : ENGLISH_LEVEL_ORDER;
-  const result: ExamQuestion[] = [];
-  let serial = 0;
-  levels.forEach((level) => {
-    const existingCount = BASE_EXAM_QUESTIONS.filter(
-      (question) =>
-        question.examLanguage === language &&
-        question.examSection === "reading" &&
-        question.examLevel === level,
-    ).length;
-    const needed = Math.max(0, EXAM_SECTION_TARGET - existingCount);
-    const pool = BASE_EXAM_QUESTIONS.filter(
-      (question) =>
-        question.examLanguage === language &&
-        question.examSection === "reading" &&
-        question.examLevel === level,
-    );
-    for (let index = 0; index < needed; index += 1) {
-      const original = pool[index % pool.length];
-      const prompt = `${READING_VARIANTS[index % READING_VARIANTS.length]} ${original.prompt}`;
-      serial += 1;
-      if (language === "japanese") {
-      result.push(japaneseQuestion(
-        `generated-reading-${serial}`,
-        level as JapaneseExamLevel,
-        "reading",
-        prompt,
-        original.options,
-        original.correctIndex,
-        original.explanation,
-        original.context ?? pool.find((item) => item.context)?.context,
-        "同等级原创阅读补充题",
-      ));
-    } else {
-      result.push(englishQuestion(
-        `generated-reading-${serial}`,
-        level as EnglishExamLevel,
-        "reading",
-        prompt,
-        original.options,
-        original.correctIndex,
-        original.explanation,
-        original.context ?? pool.find((item) => item.context)?.context,
-        "LinguaStep 原创阅读补充题",
-      ));
-      }
-    }
-  });
-  return result;
-}
-
+/**
+ * Reading questions are intentionally *not* supplemented. Each level ships a
+ * handful of hand-written passages; the previous generator replayed them up to
+ * 14 times with a shuffled prefix to reach the 120 target, so a 30-question
+ * round could repeat the same passage four times. Reading stays at its real
+ * size until more passages are written.
+ */
 const SUPPLEMENTAL_EXAM_QUESTIONS = [
   ...generateCharacterSupplements("japanese"),
   ...generateCharacterSupplements("english"),
   ...generateGrammarSupplements("japanese"),
   ...generateGrammarSupplements("english"),
-  ...generateReadingSupplements("japanese"),
-  ...generateReadingSupplements("english"),
 ];
 
 export const EXAM_QUESTIONS: ExamQuestion[] = [

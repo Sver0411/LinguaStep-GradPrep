@@ -117,6 +117,10 @@ function normalizeSettings(
       typeof value.immediateTestFeedback === "boolean"
         ? value.immediateTestFeedback
         : fallback.immediateTestFeedback,
+    autoSpeak:
+      typeof value.autoSpeak === "boolean"
+        ? value.autoSpeak
+        : fallback.autoSpeak,
     animations:
       typeof value.animations === "boolean"
         ? value.animations

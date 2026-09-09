@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
-import { isAnswerCorrect } from "@/lib/learning";
+import { dateKey, isAnswerCorrect } from "@/lib/learning";
+import { getNextLearningAction } from "@/lib/learning-flow";
 import type { MistakeRecord, MistakeState, QuestionSource } from "@/lib/models";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { FilterPanel } from "@/components/filters/FilterPanel";
@@ -83,6 +84,7 @@ export function MistakesView() {
   const [sortBy, setSortBy] = useState<"recent" | "errors" | "streak">("recent");
   const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [reviewing, setReviewing] = useState<MistakeRecord | null>(null);
+  const [reviewDone, setReviewDone] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [reviewResult, setReviewResult] = useState<MistakeRecord | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -146,6 +148,7 @@ export function MistakesView() {
 
   const startReview = useCallback((mistake: MistakeRecord) => {
     setReviewing(mistake);
+    setReviewDone(false);
     setSelectedIndex(null);
     setReviewResult(null);
     setFocusMode(true);
@@ -159,16 +162,22 @@ export function MistakesView() {
     return () => window.clearTimeout(timer);
   }, [activeQueue, reviewing, startReview]);
 
+  /**
+   * Only advance to a *different* mistake. Falling back to the same record left
+   * a single still-active mistake looping forever because it never reaches the
+   * mastery streak in one round.
+   */
   const continueReview = () => {
     if (!reviewing) return;
-    const latestCurrent = snapshot.mistakes.find((item) => item.id === reviewing.id);
-    const nextMistake = activeQueue.find((item) => item.id !== reviewing.id) ?? (latestCurrent?.active ? latestCurrent : undefined);
-    if (nextMistake) startReview(nextMistake);
-    else {
-      setReviewing(null);
-      setReviewResult(null);
-      setFocusMode(false);
+    const nextMistake = activeQueue.find((item) => item.id !== reviewing.id);
+    if (nextMistake) {
+      startReview(nextMistake);
+      return;
     }
+    setReviewing(null);
+    setReviewResult(null);
+    setReviewDone(true);
+    setFocusMode(false);
   };
 
   const submitReview = async () => {
@@ -220,6 +229,37 @@ export function MistakesView() {
             {!reviewResult ? <Button onClick={() => void submitReview()} disabled={selectedIndex === null || submitting}>提交答案</Button> : <Button onClick={continueReview}>{activeQueue.some((item) => item.id !== reviewing.id) ? "下一道错题" : "完成本轮巩固"}<ArrowRight size={18} /></Button>}
           </div>
         </article>
+      </section>
+    );
+  }
+
+  if (reviewDone) {
+    const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
+    const remaining = activeQueue.length;
+    return (
+      <section className="session-summary card">
+        <span className="summary-icon"><CheckCircle2 size={28} /></span>
+        <span className="section-kicker">ROUND COMPLETE</span>
+        <h1>本轮错题巩固完成</h1>
+        <p>
+          {remaining > 0
+            ? `还有 ${remaining} 道错题仍处于活跃状态，连续答对后会自动移出。`
+            : "活跃错题已全部过了一遍，答对的会逐步退出活跃列表。"}
+        </p>
+        <div className="summary-actions">
+          {nextAction.step === "mistakes" || nextAction.step === "complete" ? (
+            <Link className="button button-primary" href="/">
+              <ArrowRight size={18} />回到今日首页
+            </Link>
+          ) : (
+            <Link className="button button-primary" href={nextAction.href}>
+              <ArrowRight size={18} />{nextAction.label}
+            </Link>
+          )}
+          <Button variant="secondary" onClick={() => setReviewDone(false)}>
+            <RotateCcw size={18} />返回错题列表
+          </Button>
+        </div>
       </section>
     );
   }

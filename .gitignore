@@ -42,3 +42,8 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# workbuddy workspace notes
+/.workbuddy
+
+tsconfig.*.json

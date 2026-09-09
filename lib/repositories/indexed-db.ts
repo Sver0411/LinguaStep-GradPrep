@@ -15,7 +15,7 @@ import type {
   WordProgress,
   WordPair,
 } from "../models";
-import type { LearningRepository } from "./types";
+import type { LearningRepository, SnapshotPatch } from "./types";
 import {
   migrateDailyPlan,
   migrateDailyRecord,
@@ -517,6 +517,36 @@ export class IndexedDbLearningRepository implements LearningRepository {
       snapshot.aiExplanations.forEach((item) => aiExplanationStore.put(item));
       snapshot.aiCollections.forEach((item) => aiCollectionStore.put(item));
       snapshot.aiContentReports.forEach((item) => aiReportStore.put(item));
+    });
+  }
+
+  async saveSnapshotPatch(patch: SnapshotPatch): Promise<void> {
+    const entries = (
+      Object.entries(patch) as Array<
+        [keyof typeof STORES, readonly unknown[] | undefined]
+      >
+    ).filter((entry): entry is [keyof typeof STORES, readonly unknown[]] =>
+      Array.isArray(entry[1]),
+    );
+    if (entries.length === 0) return;
+
+    const storeNames = entries
+      .map(([key]) => STORES[key])
+      .filter((name): name is StoreName => Boolean(name));
+
+    await this.write(storeNames, (transaction) => {
+      entries.forEach(([key, values]) => {
+        const store = transaction.objectStore(STORES[key]);
+        store.clear();
+        if (key === "favorites") {
+          [...new Set(values as readonly string[])].forEach(
+            (contentId, position) =>
+              store.put({ contentId, position } satisfies FavoriteRecord),
+          );
+          return;
+        }
+        values.forEach((value) => store.put(value as object));
+      });
     });
   }
 

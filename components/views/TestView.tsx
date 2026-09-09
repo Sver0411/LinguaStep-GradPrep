@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useLearning } from "@/context/LearningContext";
 import {
   ENGLISH_EXAM_LEVELS,
@@ -25,7 +26,8 @@ import {
   type ExamSection,
   type JapaneseExamLevel,
 } from "@/data/exam-questions";
-import { isAnswerCorrect } from "@/lib/learning";
+import { dateKey, isAnswerCorrect } from "@/lib/learning";
+import { getNextLearningAction } from "@/lib/learning-flow";
 import type { TestAnswer, TestResult } from "@/lib/models";
 import { Button, PageHeader, ProgressBar } from "@/components/ui";
 
@@ -97,6 +99,7 @@ export function TestView() {
   const [result, setResult] = useState<TestResult | null>(null);
   const [startedAt, setStartedAt] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [confirmExit, setConfirmExit] = useState(false);
   const submittingRef = useRef(false);
   const question = questions[index];
   const level = language === "japanese" ? japaneseLevel : englishLevel;
@@ -125,16 +128,29 @@ export function TestView() {
     setAnswers([]);
     setResult(null);
     setStartedAt("");
+    setConfirmExit(false);
     setFocusMode(false);
   }, [setFocusMode]);
 
+  /**
+   * Leaving midway discards every answer in the current round, so ask first
+   * instead of silently throwing away work the user already did.
+   */
+  const requestExit = useCallback(() => {
+    if (answers.length > 0 && !result) {
+      setConfirmExit(true);
+      return;
+    }
+    exitTest();
+  }, [answers.length, exitTest, result]);
+
   useEffect(() => {
-    window.addEventListener("linguastep:exit-session", exitTest);
+    window.addEventListener("linguastep:exit-session", requestExit);
     return () => {
-      window.removeEventListener("linguastep:exit-session", exitTest);
+      window.removeEventListener("linguastep:exit-session", requestExit);
       setFocusMode(false);
     };
-  }, [exitTest, setFocusMode]);
+  }, [requestExit, setFocusMode]);
 
   const startTest = () => {
     const generated = prepareExamQuestions(selectedPool, effectiveQuestionCount);
@@ -199,13 +215,35 @@ export function TestView() {
 
   if (result) {
     const percent = Math.round(result.correctCount / Math.max(1, result.answers.length) * 100);
+    const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
+    const wrongCount = result.answers.length - result.correctCount;
     return (
       <div className="page-stack exam-results-page">
         <section className="result-hero card">
           <span className={`result-ring ${percent >= 80 ? "good" : percent >= 60 ? "medium" : "needs-work"}`}><strong>{percent}</strong><small>分</small></span>
-          <div><span className="section-kicker">PRACTICE COMPLETE</span><h1>{LANGUAGE_LABEL[language]} {level} 练习完成</h1><p>正确 {result.correctCount} 题，错误 {result.answers.length - result.correctCount} 题。</p><p className="keyboard-note"><Timer size={15} />用时 {Math.floor(result.durationSeconds / 60)} 分 {result.durationSeconds % 60} 秒</p></div>
-          <div className="result-actions"><Button onClick={exitTest}><ArrowLeft size={18} />返回测试首页</Button><Button variant="secondary" onClick={startTest}><RotateCcw size={18} />再做一组</Button></div>
+          <div><span className="section-kicker">PRACTICE COMPLETE</span><h1>{LANGUAGE_LABEL[language]} {level} 练习完成</h1><p>正确 {result.correctCount} 题，错误 {wrongCount} 题。</p><p className="keyboard-note"><Timer size={15} />用时 {Math.floor(result.durationSeconds / 60)} 分 {result.durationSeconds % 60} 秒</p></div>
+          <div className="result-actions">
+            {nextAction.step === "complete" && (
+              <Link className="button button-primary" href="/"><ArrowRight size={18} />回到今日首页</Link>
+            )}
+            {nextAction.step === "test" && (
+              <Button onClick={startTest}><RotateCcw size={18} />再练一组，补齐今日题量</Button>
+            )}
+            {nextAction.step !== "complete" && nextAction.step !== "test" && (
+              <Link className="button button-primary" href={nextAction.href}><ArrowRight size={18} />{nextAction.label}</Link>
+            )}
+            {nextAction.step !== "test" && (
+              <Button variant="secondary" onClick={startTest}><RotateCcw size={18} />再做一组</Button>
+            )}
+            <Button variant="secondary" onClick={exitTest}><ArrowLeft size={18} />返回测试首页</Button>
+          </div>
         </section>
+        {wrongCount > 0 && nextAction.step === "mistakes" && (
+          <section className="card next-learning-card">
+            <div><span className="section-kicker">NEXT STEP</span><h2>本轮错了 {wrongCount} 题</h2><p>错题已自动进入错题本，接着巩固可以立刻巩固印象。</p></div>
+            <Link className="button button-primary" href="/mistakes?review=1"><ArrowRight size={18} />开始巩固错题</Link>
+          </section>
+        )}
         <section className="breakdown-grid" aria-label="分类正确率">
           {(["characters", "grammar", "reading"] as ExamSection[]).map((item) => {
             const values = result.answers.filter((answer) => answer.question.category === item);
@@ -232,8 +270,17 @@ export function TestView() {
     const correct = selectedIndex !== null && isAnswerCorrect(question, selectedIndex);
     return (
       <section className="quiz-session exam-session">
-        <div className="session-topline"><span>{LANGUAGE_LABEL[language]} {level} · {language === "japanese" ? EXAM_SECTION_LABELS[section] : "综合练习"}</span><div className="session-top-actions"><strong>{index + 1} / {questions.length}</strong><button className="text-button" onClick={exitTest}><ArrowLeft size={16} />退出测试</button></div></div>
+        <div className="session-topline"><span>{LANGUAGE_LABEL[language]} {level} · {language === "japanese" ? EXAM_SECTION_LABELS[section] : "综合练习"}</span><div className="session-top-actions"><strong>{index + 1} / {questions.length}</strong><button className="text-button" onClick={requestExit}><ArrowLeft size={16} />退出测试</button></div></div>
         <div className="session-progress"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
+        {confirmExit && (
+          <div className="card exit-confirm-card" role="alertdialog" aria-label="确认退出测试">
+            <div><strong>退出会丢弃本轮已答的 {answers.length} 题</strong><p>这些答案不会计入统计，也不会进入错题本。</p></div>
+            <div className="exit-confirm-actions">
+              <Button variant="secondary" onClick={() => setConfirmExit(false)}>继续答题</Button>
+              <Button variant="danger" onClick={exitTest}>确认退出</Button>
+            </div>
+          </div>
+        )}
         <article className="question-card card">
           <div className="question-meta"><span className="question-type">{EXAM_SECTION_LABELS[question.examSection]}</span><span>{question.examLevel}</span></div>
           {question.context && <div className="exam-passage"><span><BookOpenCheck size={17} />阅读材料</span><p>{question.context}</p></div>}
@@ -281,7 +328,7 @@ export function TestView() {
                   {QUESTION_COUNT_OPTIONS.map((count) => <button type="button" className={questionCount === count ? "active" : ""} aria-pressed={questionCount === count} onClick={() => setQuestionCount(count)} key={count}>{count} 题</button>)}
                 </div>
               </div>
-              <div className="exam-start-row"><div><span>本组内容</span><strong>{language === "japanese" ? `${japaneseLevel} · ${EXAM_SECTION_LABELS[section]}` : `${englishLevel} · 综合`}</strong><small>随机抽取 {effectiveQuestionCount} 题 · 题库共 {selectedPool.length} 题</small></div><Button className="button-large" onClick={startTest} disabled={selectedPool.length === 0}><Play size={18} fill="currentColor" />开始测试</Button></div>
+              <div className="exam-start-row"><div><span>本组内容</span><strong>{language === "japanese" ? `${japaneseLevel} · ${EXAM_SECTION_LABELS[section]}` : `${englishLevel} · 综合`}</strong><small>随机抽取 {effectiveQuestionCount} 题 · 题库共 {selectedPool.length} 题{effectiveQuestionCount < questionCount ? "（本档题量不足，已按题库上限出题）" : ""}</small></div><Button className="button-large" onClick={startTest} disabled={selectedPool.length === 0}><Play size={18} fill="currentColor" />开始测试</Button></div>
             </>
           )}
         </article>

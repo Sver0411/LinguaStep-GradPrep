@@ -15,6 +15,8 @@ import { useLearning } from "@/context/LearningContext";
 import { dateKey } from "@/lib/learning";
 import { getNextLearningAction } from "@/lib/learning-flow";
 import type { MasteryRating, StudyMode, WordPair } from "@/lib/models";
+import { speak } from "@/lib/speech";
+import { SpeakButton } from "@/components/SpeakButton";
 import { Button, ProgressBar } from "@/components/ui";
 
 type RatingCounts = Record<MasteryRating, number>;
@@ -128,6 +130,26 @@ export function WordStudySession({
     return () => setFocusMode(false);
   }, [setFocusMode]);
 
+  /**
+   * Optional read-aloud after the answer appears. In 日英对照 mode the two
+   * languages are queued with a gap because starting a second utterance
+   * cancels the first one.
+   */
+  useEffect(() => {
+    if (!settings.autoSpeak || !answerVisible || !current) return;
+    const timers: number[] = [];
+    if (mode !== "english") speak(current.japanese.term, "ja-JP");
+    if (mode !== "japanese") {
+      timers.push(
+        window.setTimeout(
+          () => speak(current.english.term, "en-US"),
+          mode === "combined" ? 1400 : 0,
+        ),
+      );
+    }
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [answerVisible, current, mode, settings.autoSpeak]);
+
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -231,12 +253,13 @@ export function WordStudySession({
             <div className="answer-heading">
               <span className="language-label jp">日</span>
               <span>{current.japanese.partOfSpeech} · {current.japanese.difficulty}</span>
+              <SpeakButton text={current.japanese.term} language="ja-JP" label="朗读日语" />
             </div>
             <strong>{current.japanese.term}</strong>
             <span className="reading">{current.japanese.reading} · {current.japanese.romanization}</span>
             {settings.displayDensity === "full" && (
               <div className="example-block">
-                <p>{current.japanese.example}</p>
+                <p>{current.japanese.example}<SpeakButton text={current.japanese.example} language="ja-JP" label="朗读日语例句" size={15} /></p>
                 <span>{current.japanese.exampleZh}</span>
                 <small>搭配：{current.japanese.collocations.join(" · ")}</small>
               </div>
@@ -255,12 +278,13 @@ export function WordStudySession({
             <div className="answer-heading">
               <span className="language-label en">英</span>
               <span>{current.english.partOfSpeech} · {current.english.difficulty}</span>
+              <SpeakButton text={current.english.term} language="en-US" label="朗读英语" />
             </div>
             <strong>{current.english.term}</strong>
             <span className="reading">{current.english.phonetic}</span>
             {settings.displayDensity === "full" && (
               <div className="example-block">
-                <p>{current.english.example}</p>
+                <p>{current.english.example}<SpeakButton text={current.english.example} language="en-US" label="朗读英语例句" size={15} /></p>
                 <span>{current.english.exampleZh}</span>
                 <small>搭配：{current.english.collocations.join(" · ")}</small>
               </div>

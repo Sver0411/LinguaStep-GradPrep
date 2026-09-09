@@ -6,7 +6,7 @@
 
 LinguaStep is a Chinese-interface web app for personal Japanese and English study. It is designed for long-term goals including Japanese JLPT N3/N2/N1 and English CET-4/CET-6/TOEIC. It brings bilingual word cards, grammar, review plans, exam-style practice, mistakes, favorites, and statistics into one learning loop.
 
-The current version is **v0.7.4**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
+The current version is **v0.12.0**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
 
 Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 
@@ -88,7 +88,9 @@ Review state includes first/most-recent study times, next review time, review co
 
 - Choose Japanese or English first, then choose a level. Japanese additionally offers character/vocabulary, grammar, and reading sections.
 - Japanese N3/N2/N1 character, vocabulary, and grammar questions are based on a local *Red/Blue Book 1000 Questions N5–N1* reference and supplemented with built-in level-based questions. Reading questions are original exam-style passages for each level and are clearly labeled in the UI.
-- At every level, Japanese and English each have **120 questions per section** for character/vocabulary, grammar, and reading; the totals are not simply padded to 120.
+- Real drill questions from the local 红蓝宝书1000题 PDFs are now in the bank — **378 items in total**: 245 N1 (pypdf layout parsing cross-checked with Vision OCR), 68 N2 and 65 N3 (scanned books OCRed in full; only completely recovered answer rows were kept), all with the publisher's answers and deduplicated.
+- Question bank sizes are reported honestly: each level/section holds what the real content adds up to. Character questions are derived from the graded vocabulary, grammar questions only use grammar points that belong to that level, and reading keeps its hand-written passages.
+- The bank is never padded by repetition: the same prompt cannot appear twice inside one level/section, and grammar material is not reused across levels. When a bucket is smaller than the requested round size the UI says so and uses the available maximum.
 - English offers three original exam-style sets: CET-4, CET-6, and TOEIC, mixing vocabulary, grammar, and reading.
 - Each level has an independent question bank. Questions are shuffled and do not depend on learned words or repeat multiple translation directions for one word in the same round.
 - Before starting, choose 10, 20, 30, or 50 questions. Starting or choosing “Another set” randomly samples again from the complete bank for the selected level and section.
@@ -135,6 +137,12 @@ The AI entry point has been removed from frontend navigation, the home page, wor
 - v0.7.2 separated mobile navigation from page scrolling, fixed word-rating controls in the thumb zone, cleared focus mode when leaving a study session, and added recent 7-day rhythm and today's answer status to Home.
 - v0.7.3 fixed the continue and retry buttons on the word-summary page; “Retry new words” now uses only words marked unknown in the current round, with extra mobile safe space for the fixed rating area.
 - v0.7.4 fixed the concentration of correct-answer positions by randomizing and balancing A/B/C/D each round, and added Space to continue or submit after selecting an answer.
+- v0.7.5 connected the daily flow after tests and mistake reviews; removed padded question duplicates and shows real counts; writes learning data incrementally; added text-to-speech pronunciation and JSON backup export/import.
+- v0.8.0 merged the reference module from the standalone mobile project: a new "Reference" section with the kana chart (now with romaji and audio) and seven daily-Japanese lookup groups, reachable from the desktop sidebar and the mobile "More" drawer.
+- v0.9.0 switched the whole phone experience to the standalone mobile project's four-tab UI (Home/Practice/Reference/Profile), sharing the main app's IndexedDB data; illustrations compressed to 240KB; desktop unchanged.
+- v0.10.0 imported the local 红蓝宝书1000题 N1 PDF: 245 real N1 questions with publisher answers and Chinese explanations, validated by pypdf + Vision OCR cross-checking and deduplicated against the existing bank.
+- v0.11.0 OCRed the scanned 红蓝宝书1000题 N2/N3 in full and added 133 real questions (68 N2 + 65 N3); only completely recovered answer rows were kept to protect correctness. All three levels now carry local PDF drill questions — 378 in total.
+- v0.12.0 added a "high-frequency words" library section (1989 words across N3/N2/N1/Basic) built mainly from open Wikdict definitions plus filtered local book-scan OCR entries, each tagged with provenance; book words are lookup-only and stay out of the SRS flow.
 
 ## Recommended workflow
 
@@ -354,6 +362,12 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.7.2 | Complete | Fixed mobile navigation drift and focus-mode residue; kept rating buttons in the thumb zone and added a concise recent-study status to Home |
 | v0.7.3 | Complete | Fixed the word-summary continue/retry flow, limited retries to new words from the current round, and prevented notes from being covered by the mobile rating area |
 | v0.7.4 | Complete | Randomized and balanced correct-answer positions each round and added the Space shortcut for the next question/submission |
+| v0.7.5 | Complete | Connected the daily flow after tests and mistake reviews, removed padded question duplicates, switched to incremental data writes, and added speech pronunciation plus backup export/import |
+| v0.8.0 | Complete | Merged the reference module from the standalone mobile project, adding a "Reference" section with the kana chart (romaji plus audio) and seven daily-Japanese lookup groups on both desktop and mobile |
+| v0.9.0 | Complete | Switched the phone experience to the standalone mobile project's four-tab UI sharing the main app's IndexedDB data; illustrations compressed to 240KB; desktop unchanged |
+| v0.10.0 | Complete | Imported the local 红蓝宝书1000题 N1 PDF: 245 real N1 questions with publisher answers and Chinese explanations, validated by pypdf + Vision OCR cross-checking and deduplicated |
+| v0.11.0 | Complete | OCRed the scanned N2/N3 books in full and added 133 real questions (68 N2 + 65 N3); 378 PDF drill questions now cover all three levels |
+| v0.12.0 | Complete | Added "high-frequency word" sections to the library (N3/N2/N1/Basic, 1989 words) from open dictionary data and filtered book-scan OCR, with speech/favourites/search |
 | Future | Uncommitted | Accounts and cloud sync, import/export, pronunciation, speech recognition, free-text correction, PWA, and full FSRS |
 
 ## Current boundaries

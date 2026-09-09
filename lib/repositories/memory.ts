@@ -8,7 +8,7 @@ import type {
   TestResult,
   WordProgress,
 } from "../models";
-import type { LearningRepository } from "./types";
+import type { LearningRepository, SnapshotPatch } from "./types";
 
 function clone<T>(value: T): T {
   if (typeof structuredClone === "function") {
@@ -53,6 +53,17 @@ export class MemoryLearningRepository implements LearningRepository {
 
   async saveSnapshot(snapshot: LearningSnapshot): Promise<void> {
     this.snapshot = clone(snapshot);
+  }
+
+  async saveSnapshotPatch(patch: SnapshotPatch): Promise<void> {
+    const next: LearningSnapshot = { ...this.snapshot };
+    const writable = next as unknown as Record<string, unknown>;
+    (Object.keys(patch) as Array<keyof LearningSnapshot>).forEach((key) => {
+      const value = patch[key];
+      if (value === undefined) return;
+      writable[key] = clone(value);
+    });
+    this.snapshot = next;
   }
 
   async upsertWordProgress(progress: WordProgress): Promise<void> {

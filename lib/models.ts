@@ -288,6 +288,8 @@ export interface AppSettings {
   weekendAdjustment: WeekendAdjustment;
   masteryStreak: number;
   immediateTestFeedback: boolean;
+  /** Reads the word aloud with the browser speech engine after the reveal. */
+  autoSpeak: boolean;
   animations: boolean;
   reduceMotion: boolean;
   fontSize: FontSize;

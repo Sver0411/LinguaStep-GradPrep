@@ -31,6 +31,13 @@ const STATUS_LABEL: Record<LearningStatus, string> = {
   mastered: "已掌握",
 };
 
+/**
+ * 137 comparison cards each carry examples, differences and pitfalls; rendering
+ * them all at once means thousands of DOM nodes and a very long first paint on
+ * a phone. Reveal them in batches instead.
+ */
+const COMPARISON_PAGE_SIZE = 24;
+
 function grammarLevelBucket(level: string): "N1" | "N2" | "N3" {
   if (/N1/i.test(level)) return "N1";
   if (/N2/i.test(level)) return "N2";
@@ -121,6 +128,10 @@ export function GrammarView() {
       : filteredComparisons,
     [detailOpen, filteredComparisons, selectedId],
   );
+  const [visibleCount, setVisibleCount] = useState(COMPARISON_PAGE_SIZE);
+  const visibleComparisons = detailOpen
+    ? comparisonItems
+    : comparisonItems.slice(0, visibleCount);
   const selected = filtered.find((point) => point.id === selectedId) ?? filtered.find((point) => point.id === todayGrammarId) ?? filtered[0];
   const progressMap = useMemo(
     () => new Map(snapshot.grammarProgress.map((item) => [item.grammarId, item])),
@@ -142,6 +153,12 @@ export function GrammarView() {
     window.addEventListener("linguastep:exit-session", exitSession);
     return () => window.removeEventListener("linguastep:exit-session", exitSession);
   }, []);
+
+  // A new search or filter means the user is looking at a different list;
+  // keeping the old batch size would drop them mid-list or hide results.
+  useEffect(() => {
+    setVisibleCount(COMPARISON_PAGE_SIZE);
+  }, [debouncedQuery, level, viewMode]);
 
   if (practicing && selected) {
     return <GrammarPractice point={selected} onClose={() => setPracticing(false)} />;
@@ -197,7 +214,7 @@ export function GrammarView() {
         ) : (
           <section className={`comparison-grid${detailOpen ? " detail-mode" : ""}`}>
             {detailOpen && <button className="detail-back-button comparison-back-button" onClick={() => setDetailOpen(false)}><ArrowLeft size={16} />返回对比列表</button>}
-            {comparisonItems.map((item) => (
+            {visibleComparisons.map((item) => (
               <article className={`comparison-card card${detailOpen ? "" : " compact"}`} key={item.id}>
                 <div className="grammar-title-row">
                   <button className="comparison-card-heading" onClick={() => { setSelectedId(item.id); setDetailOpen(true); }}><span className="section-kicker">{item.level}</span><h2>{item.semantic}</h2></button>
@@ -213,6 +230,11 @@ export function GrammarView() {
                 {!detailOpen && <button className="text-button comparison-open-button" onClick={() => { setSelectedId(item.id); setDetailOpen(true); }}>查看完整对比 <ArrowLeft size={15} className="comparison-open-arrow" /></button>}
               </article>
             ))}
+            {!detailOpen && visibleCount < comparisonItems.length && (
+              <button className="load-more-button" onClick={() => setVisibleCount((count) => count + COMPARISON_PAGE_SIZE)}>
+                显示更多对比（已显示 {visibleCount} / {comparisonItems.length}）
+              </button>
+            )}
           </section>
         )
       ) : filtered.length === 0 ? (

@@ -13,7 +13,7 @@ import {
 import { GRAMMAR_POINTS } from "@/data/grammar";
 import { GRAMMAR_COMPARISONS } from "@/data/grammar-comparisons";
 import { WORD_PAIRS } from "@/data/words";
-import { DEFAULT_SETTINGS, EMPTY_SNAPSHOT } from "@/lib/constants";
+import { APP_NAME, APP_VERSION, DEFAULT_SETTINGS, EMPTY_SNAPSHOT } from "@/lib/constants";
 import { generateDailyPlan } from "@/lib/daily-plan";
 import {
   dateKey,
@@ -67,6 +67,19 @@ export type ResetScope =
 type FavoriteKind = "word" | "grammar" | "comparison";
 export type AIClearScope = "history" | "explanations" | "content" | "all";
 
+export interface BackupPayload {
+  app: string;
+  version: string;
+  exportedAt: string;
+  settings: AppSettings;
+  snapshot: LearningSnapshot;
+}
+
+export interface BackupImportResult {
+  ok: boolean;
+  message: string;
+}
+
 const DATA_LOCK_NAME = "lingua-step:data-write";
 const SYNC_CHANNEL_NAME = "lingua-step:data-sync";
 
@@ -117,6 +130,8 @@ interface LearningContextValue {
   removeAIGeneration: (generationId: string, removeContent?: boolean) => Promise<void>;
   clearAIData: (scope: AIClearScope) => Promise<void>;
   resetData: (scope: ResetScope) => Promise<void>;
+  exportBackup: () => string;
+  importBackup: (raw: string) => Promise<BackupImportResult>;
 }
 
 const LearningContext = createContext<LearningContextValue | null>(null);
@@ -368,6 +383,57 @@ function restrictSnapshotToActiveVocabulary(
   };
 }
 
+type SnapshotCollection = keyof LearningSnapshot;
+
+const SNAPSHOT_COLLECTION_KEYS = [
+  "wordProgress",
+  "grammarProgress",
+  "mistakes",
+  "favorites",
+  "testResults",
+  "dailyRecords",
+  "dailyPlans",
+  "aiWords",
+  "aiGrammar",
+  "aiComparisons",
+  "aiGenerations",
+  "aiUsage",
+  "aiExplanations",
+  "aiCollections",
+  "aiContentReports",
+] as const satisfies readonly SnapshotCollection[];
+
+/**
+ * mergeKeyedChanges reuses the element references of anything it did not
+ * change, so a reference walk tells us exactly which IndexedDB stores have to
+ * be rewritten. Rating one card only touches wordProgress and dailyRecords;
+ * rewriting all fifteen stores on every keystroke made the session slower the
+ * more the user had learned.
+ */
+function changedCollections(
+  latest: LearningSnapshot,
+  merged: LearningSnapshot,
+): SnapshotCollection[] {
+  return SNAPSHOT_COLLECTION_KEYS.filter((key) => {
+    const before = latest[key] as readonly unknown[];
+    const after = merged[key] as readonly unknown[];
+    if (before === after) return false;
+    if (before.length !== after.length) return true;
+    return before.some((item, index) => item !== after[index]);
+  }) as SnapshotCollection[];
+}
+
+function pickCollections(
+  snapshot: LearningSnapshot,
+  keys: readonly SnapshotCollection[],
+): Partial<LearningSnapshot> {
+  const patch: Partial<LearningSnapshot> = {};
+  keys.forEach((key) => {
+    (patch as Record<string, unknown>)[key] = snapshot[key];
+  });
+  return patch;
+}
+
 async function withDataLock<T>(task: () => Promise<T>): Promise<T> {
   if (typeof navigator !== "undefined" && navigator.locks) {
     return navigator.locks.request(DATA_LOCK_NAME, () => task());
@@ -505,7 +571,13 @@ export function LearningProvider({ children }: { children: ReactNode }) {
         saved = await withDataLock(async () => {
           const latest = migrateLearningSnapshot(await repository.getSnapshot());
           const merged = mergeSnapshotChange(latest, previous, saved);
-          await repository.saveSnapshot(merged);
+          const changed = changedCollections(latest, merged);
+          if (changed.length === 0) return merged;
+          if (changed.length >= SNAPSHOT_COLLECTION_KEYS.length) {
+            await repository.saveSnapshot(merged);
+          } else {
+            await repository.saveSnapshotPatch(pickCollections(merged, changed));
+          }
           return merged;
         });
       }
@@ -966,6 +1038,67 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  /**
+   * Restoring a backup must replace, not merge: the user is asking to go back
+   * to a known state, so persistSnapshot's merge semantics would resurrect
+   * records the backup deliberately no longer contains.
+   */
+  const restoreSnapshot = useCallback(async (next: LearningSnapshot) => {
+    const saved = restrictSnapshotToActiveVocabulary(
+      migrateLearningSnapshot(next),
+    );
+    try {
+      const repository = repositoryRef.current;
+      if (repository) {
+        await withDataLock(async () => {
+          await repository.saveSnapshot(saved);
+        });
+      }
+    } catch {
+      repositoryRef.current = new MemoryLearningRepository(saved);
+      setStorageDegraded(true);
+    }
+    snapshotRef.current = saved;
+    setSnapshot(saved);
+    syncChannelRef.current?.postMessage({ type: "snapshot", snapshot: saved });
+  }, []);
+
+  const exportBackup = useCallback(() => {
+    const payload: BackupPayload = {
+      app: APP_NAME,
+      version: APP_VERSION,
+      exportedAt: new Date().toISOString(),
+      settings: settingsRef.current,
+      snapshot: snapshotRef.current,
+    };
+    return JSON.stringify(payload, null, 2);
+  }, []);
+
+  const importBackup = useCallback(async (raw: string): Promise<BackupImportResult> => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return { ok: false, message: "文件不是有效的 JSON。" };
+    }
+    if (
+      !isRecord(parsed) ||
+      !isLearningSnapshot(parsed.snapshot) ||
+      !isRecord(parsed.settings)
+    ) {
+      return { ok: false, message: "文件结构不符合 LinguaStep 备份格式。" };
+    }
+    const settings = { ...DEFAULT_SETTINGS, ...(parsed.settings as Partial<AppSettings>) };
+    settingsRef.current = settings;
+    settingsRepositoryRef.current?.save(settings);
+    setSettings(settings);
+    await restoreSnapshot(parsed.snapshot as LearningSnapshot);
+    return {
+      ok: true,
+      message: "备份已恢复，学习进度和设置已替换为文件中的内容。",
+    };
+  }, [restoreSnapshot]);
+
   const value = useMemo<LearningContextValue>(
     () => ({
       snapshot,
@@ -995,6 +1128,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       removeAIGeneration,
       clearAIData,
       resetData,
+      exportBackup,
+      importBackup,
     }),
     [
       snapshot,
@@ -1020,6 +1155,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       removeAIGeneration,
       clearAIData,
       resetData,
+      exportBackup,
+      importBackup,
     ],
   );
 

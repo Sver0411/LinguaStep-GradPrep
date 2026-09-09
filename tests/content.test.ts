@@ -150,9 +150,16 @@ describe("curated grammar", () => {
 });
 
 describe("exam question bank", () => {
-  it("contains 2160 complete and unique exam-style questions", () => {
-    expect(EXAM_QUESTIONS).toHaveLength(2160);
-    expect(new Set(EXAM_QUESTIONS.map((question) => question.id)).size).toBe(2160);
+  /**
+   * Bucket sizes are whatever the real hand-written and vocabulary-derived
+   * content adds up to, so the tests assert the properties that matter instead
+   * of a padded total: unique ids, full coverage, and no bucket built by
+   * replaying the same prompt.
+   */
+  it("keeps every exam question complete and uniquely identified", () => {
+    expect(new Set(EXAM_QUESTIONS.map((question) => question.id)).size).toBe(
+      EXAM_QUESTIONS.length,
+    );
     EXAM_QUESTIONS.forEach((question) => {
       expect(question.prompt.trim()).not.toBe("");
       expect(question.options).toHaveLength(4);
@@ -164,52 +171,73 @@ describe("exam question bank", () => {
     });
   });
 
-  it("provides 360 Japanese questions for every section", () => {
-    (["characters", "grammar", "reading"] as const).forEach((section) => {
-      expect(
-        EXAM_QUESTIONS.filter(
-          (question) =>
-            question.examLanguage === "japanese" && question.examSection === section,
-        ),
-      ).toHaveLength(360);
-    });
-  });
+  const LEVELS = {
+    japanese: ["N3", "N2", "N1"],
+    english: ["CET-4", "CET-6", "TOEIC"],
+  } as const;
+  const SECTIONS = ["characters", "grammar", "reading"] as const;
+  type ExamLanguageKey = "japanese" | "english";
 
-  it("keeps Japanese supplements distributed across N3, N2 and N1", () => {
-    (["N3", "N2", "N1"] as const).forEach((level) => {
-      (["characters", "grammar", "reading"] as const).forEach((section) => {
-        expect(
-          EXAM_QUESTIONS.filter(
-            (question) =>
-              question.examLanguage === "japanese" &&
-              question.examLevel === level &&
-              question.examSection === section,
-          ),
-        ).toHaveLength(120);
+  function bucket(
+    language: ExamLanguageKey,
+    level: string,
+    section: (typeof SECTIONS)[number],
+  ) {
+    return EXAM_QUESTIONS.filter(
+      (question) =>
+        question.examLanguage === language &&
+        question.examLevel === level &&
+        question.examSection === section,
+    );
+  }
+
+  it("covers every language, level and section", () => {
+    (["japanese", "english"] as const).forEach((language) => {
+      LEVELS[language].forEach((level) => {
+        SECTIONS.forEach((section) => {
+          expect(bucket(language, level, section).length).toBeGreaterThan(0);
+        });
       });
     });
   });
 
-  it("provides 360 English questions for every section", () => {
-    (["characters", "grammar", "reading"] as const).forEach((section) => {
-      expect(
-        EXAM_QUESTIONS.filter(
-          (question) =>
-            question.examLanguage === "english" && question.examSection === section,
-        ),
-      ).toHaveLength(360);
+  it("never fills a bucket by replaying the same prompt", () => {
+    (["japanese", "english"] as const).forEach((language) => {
+      LEVELS[language].forEach((level) => {
+        (["characters", "reading"] as const).forEach((section) => {
+          const prompts = bucket(language, level, section).map(
+            (question) => question.prompt,
+          );
+          expect(new Set(prompts).size).toBe(prompts.length);
+        });
+      });
     });
   });
 
-  it("keeps English supplements distributed across every exam level", () => {
-    (["CET-4", "CET-6", "TOEIC"] as const).forEach((level) => {
-      expect(
-        EXAM_QUESTIONS.filter(
-          (question) =>
-            question.examLanguage === "english" &&
-            question.examLevel === level,
+  it("does not reuse grammar material across exam levels", () => {
+    (["japanese", "english"] as const).forEach((language) => {
+      const promptsByLevel = LEVELS[language].map((level) =>
+        new Set(
+          bucket(language, level, "grammar").map((question) => question.prompt),
         ),
-      ).toHaveLength(360);
+      );
+      for (let left = 0; left < promptsByLevel.length; left += 1) {
+        for (let right = left + 1; right < promptsByLevel.length; right += 1) {
+          let shared = 0;
+          promptsByLevel[left].forEach((prompt) => {
+            if (promptsByLevel[right].has(prompt)) shared += 1;
+          });
+          expect(shared).toBe(0);
+        }
+      }
     });
+  });
+
+  it("keeps the reading bank at its hand-written size", () => {
+    EXAM_QUESTIONS.filter((question) => question.examSection === "reading").forEach(
+      (question) => {
+        expect(question.id.startsWith("generated-reading-")).toBe(false);
+      },
+    );
   });
 });

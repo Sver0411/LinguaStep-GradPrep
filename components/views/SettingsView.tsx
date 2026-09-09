@@ -3,12 +3,14 @@
 import {
   Check,
   Database,
+  Download,
   Info,
   Laptop,
   Moon,
   RotateCcw,
   SlidersHorizontal,
   Sun,
+  Upload,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -104,7 +106,7 @@ function Switch({ value, label, onChange }: { value: boolean; label: string; onC
 }
 
 export function SettingsView() {
-  const { settings, updateSettings, resetData, allWords, allGrammar } = useLearning();
+  const { settings, updateSettings, resetData, allWords, allGrammar, exportBackup, importBackup } = useLearning();
   const [mobileSection, setMobileSection] = useState<"learning" | "appearance">("learning");
   const [resetScope, setResetScope] = useState<ResetScope | null>(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -112,6 +114,49 @@ export function SettingsView() {
   const confirmCheckboxRef = useRef<HTMLInputElement>(null);
   const resetTriggerRef = useRef<HTMLElement | null>(null);
   const modalRef = useRef<HTMLElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingImport, setPendingImport] = useState<{ name: string; raw: string } | null>(null);
+  const [importConfirmed, setImportConfirmed] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const downloadBackup = () => {
+    const blob = new Blob([exportBackup()], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `linguastep-backup-${stamp}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportFile = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const raw = await file.text();
+      setImportMessage(null);
+      setImportConfirmed(false);
+      setPendingImport({ name: file.name, raw });
+    } catch {
+      setImportMessage({ ok: false, text: "无法读取该文件。" });
+    }
+  };
+
+  const runImport = async () => {
+    if (!pendingImport || !importConfirmed) return;
+    setImporting(true);
+    try {
+      const result = await importBackup(pendingImport.raw);
+      setImportMessage({ ok: result.ok, text: result.message });
+      setPendingImport(null);
+      setImportConfirmed(false);
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const closeReset = () => {
     setResetScope(null);
@@ -198,6 +243,7 @@ export function SettingsView() {
         <SettingRow title="每日测试题数" description="首页计划和测试页默认值。"><NumberControl value={settings.dailyTestQuestions} options={[10,20,30]} min={1} max={100} label="每日测试题数" onChange={(value) => updateSettings({ dailyTestQuestions:value })} /></SettingRow>
         <SettingRow title="语法练习题数" description="每个语法点最多提供 5 道配套题。"><NumberControl value={settings.grammarExerciseCount} options={[3,5]} min={1} max={5} label="语法练习题数" onChange={(value) => updateSettings({ grammarExerciseCount:value })} /></SettingRow>
         <SettingRow title="测试即时反馈" description="开启后每题立即显示正确答案和解析。"><Switch value={settings.immediateTestFeedback} label="测试即时反馈" onChange={() => updateSettings({ immediateTestFeedback:!settings.immediateTestFeedback })} /></SettingRow>
+        <SettingRow title="揭示后自动朗读" description="使用设备自带的语音引擎朗读单词；卡片上始终提供手动朗读按钮。"><Switch value={settings.autoSpeak} label="揭示后自动朗读" onChange={() => updateSettings({ autoSpeak:!settings.autoSpeak })} /></SettingRow>
       </section>
 
       <section className={`settings-section card mobile-settings-section${mobileSection === "appearance" ? " mobile-open" : ""}`}>
@@ -206,6 +252,26 @@ export function SettingsView() {
         <SettingRow title="主题" description="跟随系统会自动匹配设备外观。"><div className="theme-options">{themes.map((theme) => { const Icon=theme.icon; return <button className={settings.theme === theme.value ? "active" : ""} onClick={() => updateSettings({ theme:theme.value })} key={theme.value}><Icon size={18} /><span>{theme.label}</span>{settings.theme === theme.value && <Check size={16} />}</button>; })}</div></SettingRow>
         <SettingRow title="单词显示" description="完整版显示例句、翻译、搭配、等级和说明。"><div className="segmented-control"><button className={settings.displayDensity === "compact" ? "active" : ""} onClick={() => updateSettings({ displayDensity:"compact" })}>简洁版</button><button className={settings.displayDensity === "full" ? "active" : ""} onClick={() => updateSettings({ displayDensity:"full" })}>完整版</button></div></SettingRow>
         <SettingRow title="字体大小" description="较大字体会提高正文和表单的基础字号。"><div className="segmented-control">{([{ value:"standard", label:"标准" }, { value:"large", label:"较大" }] as Array<{ value:FontSize; label:string }>).map((item) => <button className={settings.fontSize === item.value ? "active" : ""} onClick={() => updateSettings({ fontSize:item.value })} key={item.value}>{item.label}</button>)}</div></SettingRow>
+      </section>
+
+      <section className="settings-section card backup-section">
+        <div className="settings-section-heading"><span className="settings-icon"><Database size={20} /></span><div><h2>备份与恢复</h2><p>学习记录只保存在这台浏览器里，换设备或清缓存前请先导出</p></div></div>
+        <div className="backup-actions">
+          <button onClick={downloadBackup}><Download size={18} /><span><strong>导出备份</strong><small>下载包含全部进度、错题、收藏和设置的 JSON 文件</small></span></button>
+          <button onClick={() => fileInputRef.current?.click()}><Upload size={18} /><span><strong>导入备份</strong><small>用备份文件替换当前设备上的全部数据</small></span></button>
+          <input ref={fileInputRef} type="file" accept="application/json,.json" className="sr-only" aria-label="选择备份文件" onChange={(event) => { void handleImportFile(event.target.files?.[0]); event.target.value = ""; }} />
+        </div>
+        {pendingImport && (
+          <div className="backup-confirm card" role="alertdialog" aria-label="确认导入备份">
+            <div><strong>{pendingImport.name}</strong><p>导入会用备份文件里的内容替换当前的全部学习进度和设置，此操作无法撤销。</p></div>
+            <label className="confirm-check"><input type="checkbox" checked={importConfirmed} onChange={(event) => setImportConfirmed(event.target.checked)} /><span>我已了解影响，并确认继续</span></label>
+            <div className="backup-confirm-actions">
+              <Button variant="secondary" onClick={() => { setPendingImport(null); setImportConfirmed(false); }}>取消</Button>
+              <Button variant="danger" disabled={!importConfirmed || importing} onClick={() => void runImport()}>{importing ? "正在恢复…" : "确认恢复"}</Button>
+            </div>
+          </div>
+        )}
+        {importMessage && <p className={`backup-message${importMessage.ok ? " ok" : ""}`} role="status">{importMessage.text}</p>}
       </section>
 
       <details className="settings-section card settings-danger-zone compact-details">
