@@ -439,8 +439,8 @@ export function WordsView() {
         <BookWordLibrary
           words={bookWords}
           bookLabel={BOOK_VOCAB_SECTIONS.find((source) => source.id === vocabSource)?.label ?? "词书"}
-          isFavorite={(id) => isFavorite("word", id)}
-          onToggleFavorite={(id) => void toggleFavorite("word", id)}
+          isFavorite={(id) => isFavorite("vocab", id)}
+          onToggleFavorite={(id) => void toggleFavorite("vocab", id)}
         />
       ) : (
       <WordLibrary

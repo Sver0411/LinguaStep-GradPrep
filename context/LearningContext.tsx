@@ -64,7 +64,7 @@ export type ResetScope =
   | "mistakes"
   | "favorites"
   | "all";
-type FavoriteKind = "word" | "grammar" | "comparison";
+type FavoriteKind = "word" | "grammar" | "comparison" | "vocab";
 export type AIClearScope = "history" | "explanations" | "content" | "all";
 
 export interface BackupPayload {

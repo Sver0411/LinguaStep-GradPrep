@@ -6,7 +6,7 @@
 
 LinguaStep is a Chinese-interface web app for personal Japanese and English study. It is designed for long-term goals including Japanese JLPT N3/N2/N1 and English CET-4/CET-6/TOEIC. It brings bilingual word cards, grammar, review plans, exam-style practice, mistakes, favorites, and statistics into one learning loop.
 
-The current version is **v0.12.0**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
+The current version is **v0.12.1**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
 
 Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 
@@ -143,6 +143,7 @@ The AI entry point has been removed from frontend navigation, the home page, wor
 - v0.10.0 imported the local 红蓝宝书1000题 N1 PDF: 245 real N1 questions with publisher answers and Chinese explanations, validated by pypdf + Vision OCR cross-checking and deduplicated against the existing bank.
 - v0.11.0 OCRed the scanned 红蓝宝书1000题 N2/N3 in full and added 133 real questions (68 N2 + 65 N3); only completely recovered answer rows were kept to protect correctness. All three levels now carry local PDF drill questions — 378 in total.
 - v0.12.0 added a "high-frequency words" library section (1989 words across N3/N2/N1/Basic) built mainly from open Wikdict definitions plus filtered local book-scan OCR entries, each tagged with provenance; book words are lookup-only and stay out of the SRS flow.
+- v0.12.1 walked the whole app as a user and fixed three issues: (1) book-vocab favourites were silently deleted by the snapshot cleanup — they now use a dedicated `vocab` favourite kind and appear on the favourites page; (2) the mobile word library was hard-capped at 36 entries with no way to browse further — it now supports load-more paging; (3) the mobile library gained the source-section picker and book cards with speech and favourites.
 
 ## Recommended workflow
 
@@ -368,6 +369,7 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.10.0 | Complete | Imported the local 红蓝宝书1000题 N1 PDF: 245 real N1 questions with publisher answers and Chinese explanations, validated by pypdf + Vision OCR cross-checking and deduplicated |
 | v0.11.0 | Complete | OCRed the scanned N2/N3 books in full and added 133 real questions (68 N2 + 65 N3); 378 PDF drill questions now cover all three levels |
 | v0.12.0 | Complete | Added "high-frequency word" sections to the library (N3/N2/N1/Basic, 1989 words) from open dictionary data and filtered book-scan OCR, with speech/favourites/search |
+| v0.12.1 | Complete | Full walkthrough fixes: book-vocab favourites were silently dropped by the snapshot cleanup (now a dedicated vocab favourite kind shown on the favourites page); the mobile word library showed only 36 entries with no way to load more (now paged); the mobile library gained a source-section picker with book cards |
 | Future | Uncommitted | Accounts and cloud sync, import/export, pronunciation, speech recognition, free-text correction, PWA, and full FSRS |
 
 ## Current boundaries

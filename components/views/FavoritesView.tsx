@@ -13,6 +13,7 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/LearningContext";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { BOOK_VOCAB_WORDS } from "@/data/book-vocab-data";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { FilterPanel } from "@/components/filters/FilterPanel";
 
@@ -90,8 +91,24 @@ export function FavoritesView() {
       }),
     [allComparisons, difficulty, language, normalized, snapshot.favorites],
   );
+  const favoriteVocab = useMemo(
+    () =>
+      BOOK_VOCAB_WORDS.filter((word) => {
+        if (!snapshot.favorites.includes(`vocab:${word.id}`)) return false;
+        if (language === "english" || language === "comparison") return false;
+        if (
+          normalized &&
+          ![word.term, word.reading, word.meaningZh].some((value) =>
+            (value ?? "").toLocaleLowerCase("zh-CN").includes(normalized),
+          )
+        )
+          return false;
+        return true;
+      }),
+    [language, normalized, snapshot.favorites],
+  );
   const total =
-    favoriteWords.length + favoriteGrammar.length + favoriteComparisons.length;
+    favoriteWords.length + favoriteGrammar.length + favoriteComparisons.length + favoriteVocab.length;
   const levels = useMemo(
     () => [
       ...new Set([
@@ -176,6 +193,26 @@ export function FavoritesView() {
                       <span className="favorite-type-icon grammar"><NotebookPen size={20} /></span>
                       <div><div className="tag-row"><span>{point.level}</span><span>{point.language === "japanese" ? "日语" : "英语"}</span></div><h2>{point.title}</h2><p>{point.explanation}</p><strong className="structure-preview">{point.structure}</strong></div>
                       <button className="favorite-button active" onClick={() => void toggleFavorite("grammar", point.id)} aria-label={`取消收藏${point.title}`}><Heart size={18} fill="currentColor" /></button>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+          {favoriteVocab.length > 0 && (
+            <section>
+              <div className="section-title-row"><div><span className="section-kicker">BOOK VOCAB</span><h2>收藏词书词汇</h2></div><span className="count-label">{favoriteVocab.length} 条</span></div>
+              <div className="favorite-word-grid">
+                {favoriteVocab.map((word) => {
+                  const key = `vocab:${word.id}`;
+                  return (
+                    <article className={`favorite-card card${selected.includes(key) ? " selected-card" : ""}`} key={word.id}>
+                      <label className="select-item"><input type="checkbox" checked={selected.includes(key)} onChange={() => toggleSelected(key)} /><span className="sr-only">选择{word.meaningZh}</span></label>
+                      <span className="favorite-type-icon word"><BookOpenText size={19} /></span>
+                      <button className="favorite-button active" onClick={() => void toggleFavorite("vocab", word.id)} aria-label={`取消收藏${word.meaningZh}`}><Heart size={18} fill="currentColor" /></button>
+                      <span className="word-meaning">{word.meaningZh}</span>
+                      <div className="favorite-pair"><p><span className="language-label jp">日</span><strong>{word.term}</strong><small>{word.reading}</small></p></div>
+                      <p className="favorite-note">{word.pos ? `${word.pos} · ${word.source}` : word.source}</p>
                     </article>
                   );
                 })}

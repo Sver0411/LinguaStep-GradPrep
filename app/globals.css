@@ -4352,6 +4352,45 @@ input[type="number"] {
 
 @media (max-width: 680px) {
   .book-vocab-grid { grid-template-columns: 1fr; }
+
+  /* mobile word-library sections (m3) */
+  .m3-section-select { display: grid; gap: 6px; }
+  .m3-section-select > span { color: #718781; font-size: 11px; font-weight: 700; }
+  .m3-section-select select {
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid #dcebe7;
+    border-radius: 14px;
+    background: #fff;
+    color: #173632;
+    font: inherit;
+  }
+  .m3-book-vocab-list { display: grid; gap: 10px; }
+  .m3-book-vocab-card {
+    display: grid;
+    gap: 6px;
+    padding: 13px 14px;
+    border: 1px solid #e1eeeb;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 9px 21px rgb(25 79 71 / 5%);
+  }
+  .m3-book-vocab-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .m3-book-vocab-head b { display: block; color: #173632; font-size: 17px; font-weight: 500; }
+  .m3-book-vocab-head small { display: block; margin-top: 1px; color: #718781; font-size: 12px; }
+  .m3-book-vocab-actions { display: flex; align-items: center; gap: 6px; }
+  .m3-book-vocab-actions .favorite-button { position: static; margin: 0; }
+  .m3-book-vocab-card > p { margin: 0; color: #24423d; font-size: 13px; }
+  .m3-book-vocab-card > small { color: #8da19c; font-size: 11px; }
+  .m3-load-more {
+    min-height: 46px;
+    border: 1px solid #dcebe7;
+    border-radius: 16px;
+    background: #fff;
+    color: #087d73;
+    font: inherit;
+    font-weight: 700;
+  }
 }
 
 @media (max-width: 680px) {
