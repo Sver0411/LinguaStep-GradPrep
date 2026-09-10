@@ -6,7 +6,7 @@
 
 LinguaStep is a Chinese-interface web app for personal Japanese and English study. It is designed for long-term goals including Japanese JLPT N3/N2/N1 and English CET-4/CET-6/TOEIC. It brings bilingual word cards, grammar, review plans, exam-style practice, mistakes, favorites, and statistics into one learning loop.
 
-The current version is **v0.14.0**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
+The current version is **v0.14.1**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
 
 Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 
@@ -97,6 +97,16 @@ Review state includes first/most-recent study times, next review time, review co
 | Vocabulary | 225 | 301 | 410 |
 | Grammar | 260 | 243 | 253 |
 | Reading | 8 (original) | 8 (original) | 8 (original) |
+
+The English bank was expanded the same way:
+
+| Level | Questions |
+|---|---|
+| CET-4 | 416 |
+| CET-6 | 416 |
+| TOEIC | 16 |
+
+English items come from the public "Chinese middle school English exam questions" dataset (Hugging Face, CC BY 4.0) — all four-option multiple choice with answer keys. Grade 7-8 map to CET-4 and grade 9 to CET-6. There is no comparable open TOEIC source, so TOEIC keeps its hand-written items.
 
 - Sources: past-paper questions extracted from the local 红蓝宝书1000题 PDFs (publisher answer keys) plus the public JLPT exercise bank at japanesetest4you.com (grammar and vocabulary drills with their own answer keys). Practice items carry their own source label so they can be told apart from past papers.
 - The auto-generated filler, which reused one sentence template per section, has been removed entirely.
@@ -385,6 +395,7 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.12.1 | Complete | Full walkthrough fixes: book-vocab favourites were silently dropped by the snapshot cleanup (now a dedicated vocab favourite kind shown on the favourites page); the mobile word library showed only 36 entries with no way to load more (now paged); the mobile library gained a source-section picker with book cards || v0.12.1 | Complete | Full walkthrough fixes: book-vocab favourites were silently dropped by the snapshot cleanup (now a dedicated vocab favourite kind shown on the favourites page); the mobile word library showed only 36 entries with no way to load more (now paged); the mobile library gained a source-section picker with book cards |
 | v0.13.0 | Complete | Four fixes after a product review: (1) question-section labelling rewritten (grammar items had been mis-filed as vocabulary, leaving grammar rounds 99% filler); (2) bank stats now split real vs generated; (3) first-run home screen now guides new users; (4) home screen shows a study-streak metric |
 | v0.14.0 | Complete | Removed all generated template questions; imported 1266 answer-keyed grammar and vocabulary items from the public JLPT exercise bank, growing grammar rounds from 14-37 to 243-260 questions. The Japanese bank now holds 1716 genuine questions |
+| v0.14.1 | Complete | English bank expanded: 800 answer-keyed multiple-choice items imported from an open middle-school English exam dataset; CET-4 and CET-6 now hold 416 questions each (previously 8) |
 | Future | Uncommitted | Accounts and cloud sync, import/export, pronunciation, speech recognition, free-text correction, PWA, and full FSRS |
 
 ## Current boundaries

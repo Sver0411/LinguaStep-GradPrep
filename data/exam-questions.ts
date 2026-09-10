@@ -3,6 +3,7 @@ import { GRAMMAR_POINTS } from "@/data/grammar";
 import { WORD_PAIRS } from "@/data/words";
 import { BOOK_N1_QUESTIONS, BOOK_N2_QUESTIONS, BOOK_N3_QUESTIONS } from "@/data/book-n1-questions";
 import { EXTERNAL_QUESTIONS } from "@/data/exam-practice";
+import { EXTERNAL_ENGLISH_QUESTIONS } from "@/data/exam-practice-en";
 
 export type ExamLanguage = "japanese" | "english";
 export type JapaneseExamLevel = "N3" | "N2" | "N1";
@@ -288,6 +289,20 @@ const PRACTICE_QUESTIONS: ExamQuestion[] = EXTERNAL_QUESTIONS.map((question, ind
   ),
 );
 
+const PRACTICE_EN_QUESTIONS: ExamQuestion[] = EXTERNAL_ENGLISH_QUESTIONS.map((question, index) =>
+  englishQuestion(
+    `ext-en-${index}`,
+    question.level,
+    question.section,
+    question.prompt,
+    question.options,
+    question.correctIndex,
+    question.explanation || `正确答案：${question.options[question.correctIndex]}`,
+    undefined,
+    "英语练习题（中学英语真题库）",
+  ),
+);
+
 const BASE_EXAM_QUESTIONS: ExamQuestion[] = [
   ...JAPANESE_BOOK_QUESTIONS,
   ...JAPANESE_READING_QUESTIONS,
@@ -296,6 +311,7 @@ const BASE_EXAM_QUESTIONS: ExamQuestion[] = [
   ...ENGLISH_EXTRA_QUESTIONS,
   ...PDF_BOOK_QUESTIONS,
   ...PRACTICE_QUESTIONS,
+  ...PRACTICE_EN_QUESTIONS,
 ];
 
 const JAPANESE_LEVEL_ORDER: JapaneseExamLevel[] = ["N3", "N2", "N1"];
