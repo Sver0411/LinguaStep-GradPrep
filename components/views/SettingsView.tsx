@@ -23,6 +23,7 @@ import type {
 } from "@/lib/models";
 import { useLearning, type ResetScope } from "@/context/LearningContext";
 import { Button, PageHeader } from "@/components/ui";
+import { ENGLISH_STUDY_LEVELS, JAPANESE_STUDY_LEVELS } from "@/lib/word-levels";
 
 const resetCopy: Record<
   ResetScope,
@@ -237,6 +238,18 @@ export function SettingsView() {
         <SettingRow title="默认学习模式" description="进入单词学习和生成每日计划时优先使用。"><div className="segmented-control">{modes.map((mode) => <button className={settings.defaultStudyMode === mode.value ? "active" : ""} onClick={() => updateSettings({ defaultStudyMode: mode.value })} key={mode.value}>{mode.label}</button>)}</div></SettingRow>
         <SettingRow title="答案揭示" description="默认分步揭示，减少一次出现过多信息；也可以切换为同时揭示。"><div className="segmented-control"><button className={settings.revealMode === "step-by-step" ? "active" : ""} onClick={() => updateSettings({ revealMode: "step-by-step" })}>分步（首选）</button><button className={settings.revealMode === "together" ? "active" : ""} onClick={() => updateSettings({ revealMode: "together" })}>同时</button></div></SettingRow>
         <SettingRow title="分步揭示顺序" description="随机顺序按词条稳定分配，避免同一张卡刷新后跳变。"><div className="segmented-control">{([{ value:"japanese-first", label:"日语优先" }, { value:"english-first", label:"英语优先" }, { value:"random", label:"随机" }] as Array<{ value: RevealOrder; label: string }>).map((item) => <button className={settings.revealOrder === item.value ? "active" : ""} onClick={() => updateSettings({ revealOrder: item.value })} key={item.value}>{item.label}</button>)}</div></SettingRow>
+        <SettingRow title="日语学习范围" description="决定日语单词里包含哪些等级；设一次长期生效，学习页不再每次询问。">
+          <select value={settings.studyJapaneseLevel} onChange={(event) => updateSettings({ studyJapaneseLevel: event.target.value })}>
+            <option value="all">全部等级</option>
+            {JAPANESE_STUDY_LEVELS.map((level) => <option key={level}>{level}</option>)}
+          </select>
+        </SettingRow>
+        <SettingRow title="英语学习范围" description="同上，作用于英语单词。">
+          <select value={settings.studyEnglishLevel} onChange={(event) => updateSettings({ studyEnglishLevel: event.target.value })}>
+            <option value="all">全部等级</option>
+            {ENGLISH_STUDY_LEVELS.map((level) => <option value={level} key={level}>{level === "CET-4" ? "CET-4" : level === "CET-6" ? "CET-6" : level}</option>)}
+          </select>
+        </SettingRow>
         <SettingRow title="每日新单词" description="支持 10、20、30 或自定义。"><NumberControl value={settings.dailyNewWords} options={[10,20,30]} min={1} max={100} label="每日新单词" onChange={(value) => updateSettings({ dailyNewWords:value })} /></SettingRow>
         <SettingRow title="每轮学习数量" description="自由学习和计划学习都会使用这个轮次大小。"><NumberControl value={settings.studyRoundSize} options={[10,20,30]} min={1} max={100} label="每轮单词" onChange={(value) => updateSettings({ studyRoundSize:value })} /></SettingRow>
         <SettingRow title="每日语法数量" description="自动计划优先选择尚未学习的语法。"><NumberControl value={settings.dailyGrammarCount} options={[1,2,3]} min={1} max={10} label="每日语法" onChange={(value) => updateSettings({ dailyGrammarCount:value })} /></SettingRow>

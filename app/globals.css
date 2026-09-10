@@ -1485,7 +1485,14 @@ input[type="number"] {
   background: linear-gradient(110deg, var(--english-soft), var(--panel));
 }
 
+.answer-panel .reading {
+  display: block;
+  margin-top: 4px;
+}
+
 .answer-heading {
+  font-size: 12px;
+  color: var(--muted);
   display: flex;
   align-items: center;
   gap: 9px;
@@ -6381,3 +6388,40 @@ input[type="number"] {
   @keyframes m3-spin { to { transform: rotate(360deg); } }
   .m2-kana-detail-grid span small { font-size: 10px; color: #718781; }
 }
+
+.deck-primary-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.deck-primary-row .deck-actions .button {
+  min-height: 48px;
+  padding-inline: 28px;
+  font-size: 15px;
+}
+
+.deck-hint { color: var(--muted); font-size: 13px; }
+
+.study-filter-details {
+  margin-top: 12px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg, 12px);
+  padding: 12px 16px;
+}
+
+.study-filter-details > summary {
+  cursor: pointer;
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.study-filter-details > summary small {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.study-filter-details .study-filter-block { margin-top: 12px; }

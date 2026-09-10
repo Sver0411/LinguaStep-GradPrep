@@ -72,7 +72,9 @@ export const EXPANDED_WORDS: WordPair[] = (compactRows as CompactWord[]).map(
         exampleZh: exampleJp || `“${english}”的例句待补充。`,
         collocations: [english],
       },
-      note: `日语「${japanese}」与英语 ${english} 在“${meaningZh}”这一义项上对应；具体搭配和语域可能不同。`,
+      // No note for imported entries: the previous placeholder sentence
+      // repeated the same wording for every word and only added noise.
+      note: "",
       highFrequency: rank === "高频",
       frequency: rank,
       tags: ["扩展词库", "JMdict", "ECDICT"],

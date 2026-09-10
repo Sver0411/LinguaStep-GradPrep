@@ -277,6 +277,12 @@ export interface AppSettings {
   revealMode: RevealMode;
   revealOrder: RevealOrder;
   defaultStudyMode: StudyMode;
+  /**
+   * The levels the learner actually wants. Set once in settings so the study
+   * screen never has to ask again; "all" keeps everything in scope.
+   */
+  studyJapaneseLevel: string;
+  studyEnglishLevel: string;
   dailyNewWords: number;
   dailyReviewLimit: number;
   dailyGrammarCount: number;

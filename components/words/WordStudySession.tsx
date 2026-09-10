@@ -277,7 +277,6 @@ export function WordStudySession({
           <Heart size={20} fill={isFavorite("word", current.id) ? "currentColor" : "none"} />
         </button>
         <div className="prompt-side">
-          <span className="card-side-label">中文提示</span>
           <h1>{current.meaningZh}</h1>
           <p>想一想：{mode === "combined" ? "日语和英语分别" : mode === "japanese" ? "日语" : "英语"}怎么表达？</p>
         </div>
@@ -298,7 +297,9 @@ export function WordStudySession({
               <SpeakButton text={current.japanese.term} language="ja-JP" label="朗读日语" />
             </div>
             <strong>{current.japanese.term}</strong>
-            <span className="reading">{current.japanese.reading} · {current.japanese.romanization}</span>
+            {current.japanese.reading !== current.japanese.term && (
+              <span className="reading">{current.japanese.reading}</span>
+            )}
             {settings.displayDensity === "full" && (
               <div className="example-block">
                 <p>{current.japanese.example}<SpeakButton text={current.japanese.example} language="ja-JP" label="朗读日语例句" size={15} /></p>
@@ -354,10 +355,6 @@ export function WordStudySession({
         </div>
       )}
 
-      <div className="session-navigation">
-        <button onClick={() => move(-1)} disabled={index === 0 || busy} type="button"><ArrowLeft size={17} />上一张</button>
-        <button onClick={() => move(1)} disabled={index >= items.length - 1 || busy} type="button">下一张<ArrowRight size={17} /></button>
-      </div>
     </section>
   );
 }

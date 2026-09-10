@@ -819,7 +819,9 @@ export const EXAM_REFERENCE_WORDS: WordPair[] = EXPANDED_WORDS
         exampleZh: `“${englishTerm}”可表达“${meaningZh}”。`,
         collocations: [englishTerm],
       },
-      note: `日语「${word.japanese.term}」与英语 ${englishTerm} 在“${meaningZh}”这一核心义项上对应。`,
+      // Imported entries carry no editorial note; the previous sentence was
+      // the same boilerplate on every card and only added noise.
+      note: "",
       tags: [
         "考试核心词",
         ...(redBookTerms.has(word.japanese.term) ? ["红宝书"] : []),

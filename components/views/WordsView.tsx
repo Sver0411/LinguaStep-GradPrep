@@ -58,14 +58,22 @@ export function WordsView() {
   const [sessionItems, setSessionItems] = useState<WordPair[] | null>(null);
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Omit<WordSearchFilters, "query" | "mode">>({
-    japaneseLevel: "all",
-    englishLevel: "all",
+    japaneseLevel: settings.studyJapaneseLevel,
+    englishLevel: settings.studyEnglishLevel,
     frequency: "all",
     status: "all",
     favorite: false,
     mistake: false,
     due: false,
   });
+  // The study scope is a setting, not a per-session choice — keep the two in step.
+  useEffect(() => {
+    setFilters((current) => ({
+      ...current,
+      japaneseLevel: settings.studyJapaneseLevel,
+      englishLevel: settings.studyEnglishLevel,
+    }));
+  }, [settings.studyJapaneseLevel, settings.studyEnglishLevel]);
   const autoStarted = useRef(false);
   const debouncedQuery = useDebouncedValue(query);
   const [vocabSource, setVocabSource] = useState<string>("core");
@@ -153,6 +161,8 @@ export function WordsView() {
           .includes(normalized),
     );
   }, [debouncedQuery, vocabSource]);
+  const todayPlan = snapshot.dailyPlans.find((plan) => plan.date === dateKey(new Date()));
+  const planWordCount = todayPlan?.newWordIds.length ?? 0;
   const startSession = useCallback(
     (source: SessionSource = "all", selectedMode: StudyMode = mode) => {
       const todayPlan = snapshot.dailyPlans.find(
@@ -360,30 +370,20 @@ export function WordsView() {
             value={(masteredCount / Math.max(1, allWords.length)) * 100}
             label={`${MODE_LABELS[mode]}掌握进度`}
           />
-          <div className="study-filter-block" aria-label="本轮学习筛选">
-            <div className="study-filter-heading">
-              <div><strong>选择本轮内容</strong><span>先选语言，再选择对应等级和数量。</span></div>
-              <strong className="study-filter-count">{filteredWords.length} 组可学习</strong>
-            </div>
-            <div className="study-mode-picker">
-              <span>1. 学习语言</span>
-              <div className="segmented-control">{(Object.keys(MODE_LABELS) as StudyMode[]).map((item) => <button type="button" className={mode === item ? "active" : ""} onClick={() => changeStudyMode(item)} key={item}>{MODE_LABELS[item]}</button>)}</div>
-            </div>
-            <div className="filter-grid">
-              {mode !== "english" && <label><span>2. 日语难度</span><select value={filters.japaneseLevel} onChange={(event) => setFilters((current) => ({ ...current, japaneseLevel: event.target.value }))}><option value="all">全部</option>{JAPANESE_STUDY_LEVELS.map((level) => <option key={level}>{level}</option>)}</select></label>}
-              {mode !== "japanese" && <label><span>2. 英语难度</span><select value={filters.englishLevel} onChange={(event) => setFilters((current) => ({ ...current, englishLevel: event.target.value }))}><option value="all">全部</option>{ENGLISH_STUDY_LEVELS.map((level) => <option value={level} key={level}>{level === "CET-4" ? "四级" : level === "CET-6" ? "六级" : level}</option>)}</select></label>}
-              <label><span>本次数量</span><select value={settings.studyRoundSize} onChange={(event) => updateSettings({ studyRoundSize: Number(event.target.value) })}>{[10, 20, 30].map((count) => <option value={count} key={count}>{count} 个</option>)}{![10, 20, 30].includes(settings.studyRoundSize) && <option value={settings.studyRoundSize}>{settings.studyRoundSize} 个</option>}</select></label>
-            </div>
-            <div className="study-filter-actions">
-              <button className="text-button" onClick={clearFilters}><RotateCcw size={15} />清空筛选</button>
-            </div>
-          </div>
-          <div className="deck-controls">
+          <div className="deck-controls deck-primary-row">
             <div className="deck-actions">
-              <Button onClick={() => startSession("all")} disabled={filteredWords.length === 0}>
-                <Play size={18} fill="currentColor" />开始学习
+              <Button className="button-large" onClick={() => startSession(planWordCount > 0 ? "new" : "all")} disabled={filteredWords.length === 0}>
+                <Play size={18} fill="currentColor" />
+                {planWordCount > 0 ? `开始今日单词（${planWordCount} 个）` : "开始学习"}
               </Button>
             </div>
+            <span className="deck-hint">
+              {MODE_LABELS[mode]} · {filteredWords.length} 组可学习 · 范围在「设置」中调整
+            </span>
+          </div>
+
+          <div className="study-mode-picker inline-picker">
+            <div className="segmented-control">{(Object.keys(MODE_LABELS) as StudyMode[]).map((item) => <button type="button" className={mode === item ? "active" : ""} onClick={() => changeStudyMode(item)} key={item}>{MODE_LABELS[item]}</button>)}</div>
           </div>
         </article>
 

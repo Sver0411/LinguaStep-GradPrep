@@ -2,7 +2,7 @@ import { DEFAULT_SETTINGS } from "../constants";
 import type { AppSettings } from "../models";
 
 export const SETTINGS_STORAGE_KEY = "lingua-step:settings";
-const SETTINGS_SCHEMA_VERSION = 4;
+const SETTINGS_SCHEMA_VERSION = 5;
 
 export interface SettingsRepository {
   get(): AppSettings;
@@ -69,6 +69,15 @@ function normalizeSettings(
       ? value.fontSize
       : fallback.fontSize;
 
+  const studyJapaneseLevel =
+    typeof value.studyJapaneseLevel === "string"
+      ? value.studyJapaneseLevel
+      : fallback.studyJapaneseLevel;
+  const studyEnglishLevel =
+    typeof value.studyEnglishLevel === "string"
+      ? value.studyEnglishLevel
+      : fallback.studyEnglishLevel;
+
   return {
     theme,
     focusModeEnabled:
@@ -79,6 +88,8 @@ function normalizeSettings(
     revealMode,
     revealOrder,
     defaultStudyMode,
+    studyJapaneseLevel,
+    studyEnglishLevel,
     dailyNewWords: positiveInteger(
       value.dailyNewWords,
       fallback.dailyNewWords,

@@ -570,7 +570,9 @@ function MobileWordStudy({ params }: { params: NavParams }) {
           <div className="m3-study-lang jp">
             <span className="m3-lang-tag">日</span>
             <strong>{word.japanese.term}<SpeakButton text={word.japanese.term} language="ja-JP" label="朗读日语" size={18} /></strong>
-            <span className="m3-study-reading">{word.japanese.reading}{word.japanese.romanization ? ` · ${word.japanese.romanization}` : ""}</span>
+            {word.japanese.reading !== word.japanese.term && (
+              <span className="m3-study-reading">{word.japanese.reading}</span>
+            )}
             {word.japanese.example && (
               <p>{word.japanese.example}<SpeakButton text={word.japanese.example} language="ja-JP" label="朗读日语例句" size={15} /></p>
             )}
