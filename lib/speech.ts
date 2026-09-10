@@ -1,13 +1,14 @@
 /**
  * Pronunciation for Japanese and English words.
  *
- * Two sources, in order:
- *  1. Youdao's public dictionary voice endpoint, which returns a real MP3
- *     recording per word. It is free and needs no key, and its Japanese
- *     voice is far more reliable than whatever speech engine happens to be
- *     installed on the machine.
- *  2. The browser's Web Speech API as an offline fallback, so pronunciation
- *     still works without a network connection when a system voice exists.
+ * Source order:
+ *  1. Youdao's public dictionary voice endpoint. It returns a real recording
+ *     (160 kbps) rather than a synthesiser, which is why the reading sounds
+ *     like a person. Free, no key.
+ *  2. Baidu's translate voice endpoint — also reachable from mainland China
+ *     when Youdao is blocked or rate limited.
+ *  3. The browser's Web Speech API, which needs no network at all but sounds
+ *     synthetic and depends on an installed system voice.
  *
  * The app still ships no audio files of its own.
  */
@@ -16,11 +17,18 @@ export type SpeechLanguage = "ja-JP" | "en-US";
 
 let currentAudio: HTMLAudioElement | null = null;
 
-function dictionaryUrl(text: string, language: SpeechLanguage): string {
+function sources(text: string, language: SpeechLanguage): string[] {
   const query = encodeURIComponent(text);
-  return language === "ja-JP"
-    ? `https://dict.youdao.com/dictvoice?audio=${query}&le=jap`
-    : `https://dict.youdao.com/dictvoice?audio=${query}&type=2`;
+  if (language === "ja-JP") {
+    return [
+      `https://dict.youdao.com/dictvoice?audio=${query}&le=jap`,
+      `https://fanyi.baidu.com/gettts?lan=jap&text=${query}&spd=3&source=web`,
+    ];
+  }
+  return [
+    `https://dict.youdao.com/dictvoice?audio=${query}&type=2`,
+    `https://fanyi.baidu.com/gettts?lan=en&text=${query}&spd=3&source=web`,
+  ];
 }
 
 export function isSpeechSupported(): boolean {
@@ -73,6 +81,25 @@ function speakOffline(text: string, language: SpeechLanguage): void {
   synth.speak(utterance);
 }
 
+function playFrom(urls: string[], index: number, text: string, language: SpeechLanguage): void {
+  if (index >= urls.length) {
+    // Every network source failed — the system voice is the last resort.
+    speakOffline(text, language);
+    return;
+  }
+  const audio = new Audio(urls[index]);
+  audio.preload = "auto";
+  currentAudio = audio;
+  const play = audio.play();
+  if (play && typeof play.catch === "function") {
+    play.catch(() => {
+      if (currentAudio !== audio) return; // superseded by a newer click
+      currentAudio = null;
+      playFrom(urls, index + 1, text, language);
+    });
+  }
+}
+
 export function speak(text: string, language: SpeechLanguage): void {
   const trimmed = text.trim();
   if (!trimmed || typeof window === "undefined") return;
@@ -84,18 +111,7 @@ export function speak(text: string, language: SpeechLanguage): void {
       currentAudio = null;
     }
     if (window.speechSynthesis) window.speechSynthesis.cancel();
-    const audio = new Audio(dictionaryUrl(trimmed, language));
-    audio.preload = "auto";
-    currentAudio = audio;
-    const play = audio.play();
-    if (play && typeof play.catch === "function") {
-      play.catch(() => {
-        // Network blocked, endpoint unavailable, or autoplay refused — fall
-        // back to the system voice instead of failing silently.
-        if (currentAudio === audio) currentAudio = null;
-        speakOffline(trimmed, language);
-      });
-    }
+    playFrom(sources(trimmed, language), 0, trimmed, language);
     return;
   }
 
