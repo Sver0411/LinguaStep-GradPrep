@@ -6,7 +6,7 @@
 
 LinguaStep is a Chinese-interface web app for personal Japanese and English study. It is designed for long-term goals including Japanese JLPT N3/N2/N1 and English CET-4/CET-6/TOEIC. It brings bilingual word cards, grammar, review plans, exam-style practice, mistakes, favorites, and statistics into one learning loop.
 
-The current version is **v0.15.2**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
+The current version is **v0.15.3**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
 
 Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 
@@ -407,6 +407,7 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.15.0 | Complete | Study mechanics brought in line with mainstream apps: (1) same-session looping — an "unknown" word returns at the end of the round and a "fuzzy" one a few cards later; (2) the phone gained the "retry unknown words" action; (3) the daily new-word budget shrinks with the review backlog; (4) a "known for good" button in the top-right corner |
 | v0.15.1 | Complete | Starting a round is now a single click: level and round size moved into settings (one-time setup) and the study screen keeps only the action plus a language switch. The card also dropped romanisation, generated boilerplate notes and the prev/next footer |
 | v0.15.2 | Complete | Explanations added: publisher commentary extracted from the 1000题 answer pages (856 / 931 / 938 entries per level), giving 354 of 378 past-paper questions a translation plus vocabulary/grammar notes |
+| v0.15.3 | Complete | Every question now carries a hand-written Chinese explanation: all 1266 JLPT practice items (including the correct word order for the ★ ordering questions) and all 378 1000題 past-paper questions, replacing the OCR-mangled publisher notes. 1644/1644 questions explained, zero OCR noise |
 | Future | Uncommitted | Accounts and cloud sync, import/export, pronunciation, speech recognition, free-text correction, PWA, and full FSRS |
 
 ## Current boundaries

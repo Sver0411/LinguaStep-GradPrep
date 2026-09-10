@@ -1,6 +1,6 @@
 {
   "name": "lingua-step",
-  "version": "0.15.2",
+  "version": "0.15.3",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
