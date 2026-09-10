@@ -64,6 +64,12 @@ export function BookWordLibrary({
                   </div>
                 </div>
                 <p className="book-vocab-meaning">{word.meaningZh}</p>
+                {word.english && (
+                  <p className="book-vocab-english">
+                    <span className="language-label en">英</span>
+                    {word.english}
+                  </p>
+                )}
                 {word.pos && <span className="book-vocab-pos">{word.pos}</span>}
                 {word.exampleJp && (
                   <div className="book-vocab-example">

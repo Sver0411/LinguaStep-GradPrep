@@ -10,6 +10,8 @@ export interface BookVocabWord {
   term: string;
   reading: string;
   meaningZh: string;
+  /** English counterpart, resolved from JMdict so the pair really matches. */
+  english: string;
   pos: string;
   /** Human-readable provenance, shown on the card. */
   source: string;

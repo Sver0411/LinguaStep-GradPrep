@@ -4325,6 +4325,24 @@ input[type="number"] {
   color: var(--text);
 }
 
+.book-vocab-english {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-strong);
+}
+
+.book-vocab-english .language-label.en {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--english-soft, rgba(55, 138, 221, 0.12));
+  color: var(--english, #185fa5);
+  font-size: 10px;
+  font-weight: 500;
+}
+
 .book-vocab-pos {
   justify-self: start;
   padding: 2px 8px;
