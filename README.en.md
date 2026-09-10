@@ -6,7 +6,7 @@
 
 LinguaStep is a Chinese-interface web app for personal Japanese and English study. It is designed for long-term goals including Japanese JLPT N3/N2/N1 and English CET-4/CET-6/TOEIC. It brings bilingual word cards, grammar, review plans, exam-style practice, mistakes, favorites, and statistics into one learning loop.
 
-The current version is **v0.14.2**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
+The current version is **v0.14.3**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
 
 Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 
@@ -397,6 +397,7 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.14.0 | Complete | Removed all generated template questions; imported 1266 answer-keyed grammar and vocabulary items from the public JLPT exercise bank, growing grammar rounds from 14-37 to 243-260 questions. The Japanese bank now holds 1716 genuine questions |
 | v0.14.1 | Complete | English bank expanded: 800 answer-keyed multiple-choice items imported from an open middle-school English exam dataset; CET-4 and CET-6 now hold 416 questions each (previously 8) |
 | v0.14.2 | Complete | Japanese-English pairing completed: all 1989 high-frequency entries now carry an English counterpart from JMdict and the book cards show all three languages; the core bank was verified against JMdict and 19 wrong pairs were fixed |
+| v0.14.3 | Complete | Example sentences: real JMdict / Tanaka corpus pairs replaced the templated sentences in the core bank (4410 entries) and 1943 Japanese-English example pairs were added to the high-frequency words |
 | Future | Uncommitted | Accounts and cloud sync, import/export, pronunciation, speech recognition, free-text correction, PWA, and full FSRS |
 
 ## Current boundaries

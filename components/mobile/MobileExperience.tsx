@@ -426,6 +426,8 @@ function MobileWordLibrary() {
               </div>
               <p>{word.meaningZh}</p>
               {word.english && <p className="m3-book-vocab-english"><span>英</span> {word.english}</p>}
+              {word.exampleJp && <p className="m3-book-vocab-example">{word.exampleJp}</p>}
+              {word.exampleEn && <p className="m3-book-vocab-example en">{word.exampleEn}</p>}
               <small>{word.pos ? `${word.pos} · ${word.source}` : word.source}</small>
             </article>
           ))}

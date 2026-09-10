@@ -4399,6 +4399,8 @@ input[type="number"] {
   .m3-book-vocab-actions { display: flex; align-items: center; gap: 6px; }
   .m3-book-vocab-actions .favorite-button { position: static; margin: 0; }
   .m3-book-vocab-card > p { margin: 0; color: #24423d; font-size: 13px; }
+  .m3-book-vocab-example { padding-top: 6px; border-top: 0.5px solid #e1eeeb; font-size: 12px; color: #3d5c56; }
+  .m3-book-vocab-example.en { color: #7c918c; padding-top: 0; border-top: 0; }
   .m3-book-vocab-card > small { color: #8da19c; font-size: 11px; }
   .m3-load-more {
     min-height: 46px;

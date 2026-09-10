@@ -74,7 +74,7 @@ export function BookWordLibrary({
                 {word.exampleJp && (
                   <div className="book-vocab-example">
                     <p>{word.exampleJp}</p>
-                    {word.exampleZh && <p className="translation">{word.exampleZh}</p>}
+                    {word.exampleEn && <p className="translation">{word.exampleEn}</p>}
                   </div>
                 )}
               </article>

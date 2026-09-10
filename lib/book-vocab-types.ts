@@ -17,8 +17,10 @@ export interface BookVocabWord {
   source: string;
   /** Section id from BOOK_VOCAB_SECTIONS in data/book-vocab-data.ts */
   section: string;
+  /** Example sentence from the JMdict example corpus (Japanese). */
   exampleJp?: string;
-  exampleZh?: string;
+  /** English translation of that sentence. */
+  exampleEn?: string;
 }
 
 export interface BookVocabSection {
