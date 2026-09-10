@@ -4582,6 +4582,8 @@ input[type="number"] {
   .m2-entry-list b { color: #173632; font-size: 16px; }
   .m2-entry-list span { color: #718781; font-size: 13px; text-align: right; }
   .m2-kana-detail-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
+  .m2-kana-detail-grid span[role="button"] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .m2-kana-detail-grid span[role="button"]:active { transform: scale(0.94); background: #e8f5f2; }
   .m2-kana-detail-grid span { display: grid; min-height: 58px; place-items: center; border: 1px solid #dedbf5; border-radius: 17px; background: #f7f6ff; color: #534b92; font-size: 25px; font-weight: 750; }
   .m2-kana-detail-groups { display: grid; gap: 21px; margin-top: 6px; }
   .m2-kana-detail-groups section > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
