@@ -7,13 +7,14 @@ import {
   Check,
   CircleAlert,
   Clock3,
+  Flame,
   Layers3,
   ListTodo,
   NotebookPen,
   Play,
   RefreshCw,
 } from "lucide-react";
-import { dateKey } from "@/lib/learning";
+import { dateKey, calculateStreak } from "@/lib/learning";
 import { calculateDailyPlanProgress } from "@/lib/daily-plan";
 import { getNextLearningAction } from "@/lib/learning-flow";
 import { useLearning } from "@/context/LearningContext";
@@ -49,8 +50,20 @@ export function HomeView() {
   const todayAccuracy = todayQuestions > 0
     ? Math.round(((todayRecord?.correctAnswers ?? 0) / todayQuestions) * 100)
     : null;
+  const streak = calculateStreak(
+    snapshot.dailyRecords
+      .filter((record) => record.wordsStudied + record.grammarStudied + record.questionsAnswered > 0)
+      .map((record) => record.date),
+    dateKey(new Date()),
+  );
+  const isFreshLearner =
+    streak === 0 &&
+    snapshot.wordProgress.length === 0 &&
+    snapshot.grammarProgress.length === 0 &&
+    snapshot.testResults.length === 0;
   const metrics = [
     { label: "今日进度", value: Math.round(planProgress.percent), suffix: "%", icon: Check, tone: "blue" },
+    { label: "连续学习", value: streak, suffix: "天", icon: Flame, tone: "amber" },
     { label: "已逾期复习", value: todayPlan?.overdueWordIds.length ?? 0, suffix: "个", icon: Clock3, tone: "purple" },
     { label: "活跃错题", value: mistakeCount, suffix: "道", icon: CircleAlert, tone: "amber" },
   ];
@@ -61,8 +74,20 @@ export function HomeView() {
     <div className="page-stack home-page">
       <PageHeader
         eyebrow="今日学习"
-        title={todayComplete ? "今天的学习已经完成" : "按到期优先级稳步推进"}
-        description={todayComplete ? "做得很好。你可以自由学习，或让记忆在下一次到期前休息。" : "计划每天只生成一次；刷新页面不会重复添加任务。"}
+        title={
+          isFreshLearner
+            ? "从今天的第一组开始"
+            : todayComplete
+              ? "今天的学习已经完成"
+              : "按到期优先级稳步推进"
+        }
+        description={
+          isFreshLearner
+            ? "每天的量已经排好了：先过一遍新词，再学一条语法，最后做几道题，大约 15 分钟。点下面的按钮直接开始。"
+            : todayComplete
+              ? "做得很好。你可以自由学习，或让记忆在下一次到期前休息。"
+              : "计划每天只生成一次；刷新页面不会重复添加任务。"
+        }
         actions={<details className="header-more"><summary>更多</summary><button className="text-button" onClick={() => void rebuildTodayPlan()}><RefreshCw size={17} />按当前设置重算计划</button></details>}
       />
 
@@ -79,7 +104,7 @@ export function HomeView() {
         </div>
         <Link className="button button-primary button-large mobile-primary-action" href={nextAction.href}>
           <Play size={18} fill="currentColor" />
-          {todayComplete ? "继续自由学习" : "继续学习"}
+          {isFreshLearner ? "开始今天的第一组" : todayComplete ? "继续自由学习" : "继续学习"}
           <ArrowRight size={18} />
         </Link>
         <div className="mobile-home-metrics" aria-label="今日概览">

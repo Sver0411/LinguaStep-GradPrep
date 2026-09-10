@@ -20,6 +20,7 @@ import {
   EXAM_QUESTIONS,
   EXAM_SECTION_LABELS,
   JAPANESE_EXAM_LEVELS,
+  examBankStats,
   type EnglishExamLevel,
   type ExamLanguage,
   type ExamQuestion,
@@ -114,6 +115,13 @@ export function TestView() {
       ),
     [language, level, section],
   );
+
+  const japaneseBank = useMemo(() => examBankStats("japanese"), []);
+  const englishBank = useMemo(() => examBankStats("english"), []);
+  const poolStats = useMemo(() => {
+    const real = selectedPool.filter((item) => !item.id.includes("generated")).length;
+    return { real, practice: selectedPool.length - real, total: selectedPool.length };
+  }, [selectedPool]);
   const effectiveQuestionCount = Math.min(questionCount, selectedPool.length);
   const overallAccuracy = useMemo(() => {
     const values = snapshot.testResults.flatMap((item) => item.answers);
@@ -328,13 +336,13 @@ export function TestView() {
                   {QUESTION_COUNT_OPTIONS.map((count) => <button type="button" className={questionCount === count ? "active" : ""} aria-pressed={questionCount === count} onClick={() => setQuestionCount(count)} key={count}>{count} 题</button>)}
                 </div>
               </div>
-              <div className="exam-start-row"><div><span>本组内容</span><strong>{language === "japanese" ? `${japaneseLevel} · ${EXAM_SECTION_LABELS[section]}` : `${englishLevel} · 综合`}</strong><small>随机抽取 {effectiveQuestionCount} 题 · 题库共 {selectedPool.length} 题{effectiveQuestionCount < questionCount ? "（本档题量不足，已按题库上限出题）" : ""}</small></div><Button className="button-large" onClick={startTest} disabled={selectedPool.length === 0}><Play size={18} fill="currentColor" />开始测试</Button></div>
+              <div className="exam-start-row"><div><span>本组内容</span><strong>{language === "japanese" ? `${japaneseLevel} · ${EXAM_SECTION_LABELS[section]}` : `${englishLevel} · 综合`}</strong><small>随机抽取 {effectiveQuestionCount} 题 · 本档共 {poolStats.total} 题（真题 {poolStats.real} · 复习题 {poolStats.practice}）{effectiveQuestionCount < questionCount ? "（本档题量不足，已按上限出题）" : ""}</small></div><Button className="button-large" onClick={startTest} disabled={selectedPool.length === 0}><Play size={18} fill="currentColor" />开始测试</Button></div>
             </>
           )}
         </article>
         <aside className="exam-info-column">
-          <article className="card mini-stat-card"><span>日语题库</span><strong>{EXAM_QUESTIONS.filter((item) => item.examLanguage === "japanese").length}<small>题</small></strong><p>红蓝宝书文字、文法 + 原创阅读</p></article>
-          <article className="card mini-stat-card"><span>英语题库</span><strong>{EXAM_QUESTIONS.filter((item) => item.examLanguage === "english").length}<small>题</small></strong><p>四级、六级、TOEIC 综合练习</p></article>
+          <article className="card mini-stat-card"><span>日语题库</span><strong>{japaneseBank.real}<small>道题</small></strong><p>含 {japaneseBank.practice} 道自动生成复习题</p></article>
+          <article className="card mini-stat-card"><span>英语题库</span><strong>{englishBank.real}<small>道题</small></strong><p>含 {englishBank.practice} 道自动生成复习题</p></article>
           <article className="card mini-stat-card"><span>历史正确率</span><strong>{overallAccuracy}<small>%</small></strong><ProgressBar value={overallAccuracy} label="历史测试正确率" /></article>
         </aside>
       </section>

@@ -279,13 +279,14 @@ const BASE_EXAM_QUESTIONS: ExamQuestion[] = [
 const JAPANESE_LEVEL_ORDER: JapaneseExamLevel[] = ["N3", "N2", "N1"];
 const ENGLISH_LEVEL_ORDER: EnglishExamLevel[] = ["CET-4", "CET-6", "TOEIC"];
 /**
- * Upper bound for a single level/section bucket. The generators below never
- * cycle a pool to reach it: if a bucket cannot be filled with genuinely
- * distinct questions it simply stays smaller. Padding by replaying the same
- * prompt under a different prefix made "120 题" meaningless — a 30-question
- * round would show the same reading passage several times.
+ * How many synthetic questions a section is filled up to when the real
+ * question bank is thinner than that. Real questions always win and a bucket
+ * may grow past this number freely — we only top up thin sections to a
+ * comfortable round size. Padding every bucket to a fixed target made
+ * "120 题" meaningless: a 30-question round would show the same generated
+ * prompt several times while real questions sat unused.
  */
-const EXAM_SECTION_TARGET = 120;
+const EXAM_SECTION_MIN_FILL = 40;
 
 function fourUniqueOptions(correct: string, candidates: string[]): [string, string, string, string] {
   const values = [correct, ...candidates.filter((candidate) => candidate !== correct)];
@@ -317,7 +318,7 @@ function generateCharacterSupplements(language: ExamLanguage): ExamQuestion[] {
     ).length;
     const pool = WORD_PAIRS.filter((word) => wordLevel(word, language) === level);
     const needed = Math.min(
-      Math.max(0, EXAM_SECTION_TARGET - existingCount),
+      Math.max(0, EXAM_SECTION_MIN_FILL - existingCount),
       pool.length,
     );
     for (let index = 0; index < needed; index += 1) {
@@ -398,7 +399,7 @@ function generateGrammarSupplements(language: ExamLanguage): ExamQuestion[] {
       (point) => point.language === language && grammarExamLevel(point, language) === level,
     ).flatMap((point) => point.exercises.map((exercise) => ({ point, exercise })));
     const needed = Math.min(
-      Math.max(0, EXAM_SECTION_TARGET - existingCount),
+      Math.max(0, EXAM_SECTION_MIN_FILL - existingCount),
       combos.length,
     );
     for (let index = 0; index < needed; index += 1) {
@@ -433,6 +434,43 @@ export const EXAM_QUESTIONS: ExamQuestion[] = [
   ...BASE_EXAM_QUESTIONS,
   ...SUPPLEMENTAL_EXAM_QUESTIONS,
 ];
+
+/**
+ * Honest bank composition. Real material covers questions shipped from the
+ * user's local PDFs ("book-") and hand-written reading passages ("read-");
+ * everything else comes from the generators. The UI shows both numbers
+ * instead of one inflated total, so imported material is visible.
+ */
+function isGeneratedQuestion(question: ExamQuestion): boolean {
+  // Generator ids look like exam-jp-n3-generated-characters-12; hand-written
+  // ids (extra-char-01, lang-01, read-01, book-n1-3) never contain this token.
+  return question.id.includes("generated");
+}
+
+export interface ExamBankStat {
+  real: number;
+  practice: number;
+  total: number;
+}
+
+export function examBankStats(language: ExamLanguage): ExamBankStat {
+  const rows = EXAM_QUESTIONS.filter((question) => question.examLanguage === language);
+  const practice = rows.filter(isGeneratedQuestion).length;
+  return { real: rows.length - practice, practice, total: rows.length };
+}
+
+export function examBankStatsByLevel(
+  language: ExamLanguage,
+): Array<ExamBankStat & { level: JapaneseExamLevel | EnglishExamLevel }> {
+  const levels = language === "japanese" ? JAPANESE_LEVEL_ORDER : ENGLISH_LEVEL_ORDER;
+  return levels.map((level) => {
+    const rows = EXAM_QUESTIONS.filter(
+      (question) => question.examLanguage === language && question.examLevel === level,
+    );
+    const practice = rows.filter(isGeneratedQuestion).length;
+    return { level, real: rows.length - practice, practice, total: rows.length };
+  });
+}
 
 export const JAPANESE_EXAM_LEVELS: JapaneseExamLevel[] = ["N3", "N2", "N1"];
 export const ENGLISH_EXAM_LEVELS: EnglishExamLevel[] = ["CET-4", "CET-6", "TOEIC"];
