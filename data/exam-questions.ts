@@ -423,12 +423,14 @@ function generateGrammarSupplements(language: ExamLanguage): ExamQuestion[] {
  * round could repeat the same passage four times. Reading stays at its real
  * size until more passages are written.
  */
-const SUPPLEMENTAL_EXAM_QUESTIONS = [
-  ...generateCharacterSupplements("japanese"),
-  ...generateCharacterSupplements("english"),
-  ...generateGrammarSupplements("japanese"),
-  ...generateGrammarSupplements("english"),
-];
+/**
+ * Placeholder for generated filler. The generators above are kept for
+ * reference but are NOT used any more: they produced one sentence template
+ * per section ("「X」的读音最接近下列哪一项？"), which customers reasonably
+ * called worthless. Real material from the local books replaces them; a
+ * section simply stays as small as its real material until more is imported.
+ */
+const SUPPLEMENTAL_EXAM_QUESTIONS: ExamQuestion[] = [];
 
 export const EXAM_QUESTIONS: ExamQuestion[] = [
   ...BASE_EXAM_QUESTIONS,
