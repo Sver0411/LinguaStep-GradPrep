@@ -13,9 +13,11 @@ export interface ExternalQuestion {
   prompt: string;
   options: [string, string, string, string];
   correctIndex: number;
+  /** Why the answer is right, with the completed sentence. */
+  explanation: string;
 }
 
-type Row = [string, string, string, string, string, string, string, number];
+type Row = [string, string, string, string, string, string, string, number, string];
 
 export const EXTERNAL_QUESTIONS: ExternalQuestion[] = (compactRows as Row[]).map((row) => ({
   level: row[0] as JapaneseExamLevel,
@@ -23,4 +25,5 @@ export const EXTERNAL_QUESTIONS: ExternalQuestion[] = (compactRows as Row[]).map
   prompt: row[2],
   options: [row[3], row[4], row[5], row[6]],
   correctIndex: row[7],
+  explanation: row[8] ?? "",
 }));

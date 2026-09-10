@@ -283,7 +283,8 @@ const PRACTICE_QUESTIONS: ExamQuestion[] = EXTERNAL_QUESTIONS.map((question, ind
     question.prompt,
     question.options,
     question.correctIndex,
-    `「${question.options[question.correctIndex]}」是本题正确答案。`,
+    question.explanation ||
+      `「${question.options[question.correctIndex]}」是本题正确答案。`,
     undefined,
     "JLPT 练习题（japanesetest4you）",
   ),
