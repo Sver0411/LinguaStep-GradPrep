@@ -15,9 +15,15 @@ export interface ExternalQuestion {
   correctIndex: number;
   /** Why the answer is right, with the completed sentence. */
   explanation: string;
+  /**
+   * The passage a numbered-blank item refers to. Reading blocks ask
+   * "「１」に入る…" without restating the text, so the text rides along here
+   * and is rendered above the question.
+   */
+  context?: string;
 }
 
-type Row = [string, string, string, string, string, string, string, number, string];
+type Row = [string, string, string, string, string, string, string, number, string, string?];
 
 export const EXTERNAL_QUESTIONS: ExternalQuestion[] = (compactRows as Row[]).map((row) => ({
   level: row[0] as JapaneseExamLevel,
@@ -26,4 +32,5 @@ export const EXTERNAL_QUESTIONS: ExternalQuestion[] = (compactRows as Row[]).map
   options: [row[3], row[4], row[5], row[6]],
   correctIndex: row[7],
   explanation: row[8] ?? "",
+  context: row[9] || undefined,
 }));
