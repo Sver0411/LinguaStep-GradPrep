@@ -8,9 +8,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
+  BadgeCheck,
   BookOpen,
   BookOpenText,
   CalendarDays,
@@ -468,27 +469,65 @@ function selectedStudyWords(allWords: WordPair[], snapshot: ReturnType<typeof us
 }
 
 function MobileWordStudy({ params }: { params: NavParams }) {
-  const { allWords, snapshot, settings, studyWord } = useLearning();
+  const { allWords, snapshot, settings, studyWord, markWordKnown } = useLearning();
   const rawMode = params.get("mode");
   const mode: StudyMode = rawMode === "japanese" || rawMode === "english" ? rawMode : "combined";
   const words = useMemo(() => selectedStudyWords(allWords, snapshot, mode, params.get("source"), params.get("word"), settings.studyRoundSize), [allWords, mode, params, settings.studyRoundSize, snapshot]);
   const [index, setIndex] = useState(0);
   const [revealStage, setRevealStage] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [ratings, setRatings] = useState<MasteryRating[]>([]);
-  const word = words[index];
+  const [ratings, setRatings] = useState<Record<string, MasteryRating>>({});
+  /**
+   * Live queue: a word rated "unknown" goes to the back and a "fuzzy" one is
+   * re-inserted a few cards later, so weak words come round again in the same
+   * sitting. Each word loops at most once, keeping the round finite.
+   */
+  const [queue, setQueue] = useState<WordPair[]>(words);
+  const requeuedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    setQueue(words);
+    setIndex(0);
+    setRevealStage(0);
+    setRatings({});
+    requeuedRef.current = new Set();
+  }, [words]);
+  const word = queue[index];
   const rate = async (rating: MasteryRating) => {
     if (!word || saving) return;
     setSaving(true);
     try {
       await studyWord(word.id, rating, mode);
-      setRatings((value) => [...value, rating]);
-      setIndex((value) => value + 1);
+      setRatings((value) => ({ ...value, [word.id]: rating }));
+
+      let nextQueue = queue;
+      const shouldLoop =
+        (rating === "unknown" || rating === "fuzzy") && !requeuedRef.current.has(word.id);
+      if (shouldLoop) {
+        requeuedRef.current.add(word.id);
+        const gap = rating === "unknown" ? 6 : 3;
+        const at = Math.min(index + gap, queue.length);
+        nextQueue = [...queue.slice(0, at), word, ...queue.slice(at)];
+        setQueue(nextQueue);
+      }
+
+      setIndex(index + 1);
       setRevealStage(0);
     } finally { setSaving(false); }
   };
+  /** Retire the current word: it leaves the queue and never comes back. */
+  const markKnown = async () => {
+    if (!word || saving) return;
+    setSaving(true);
+    try {
+      await markWordKnown(word.id, mode);
+      const nextQueue = queue.filter((_, position) => position !== index);
+      setQueue(nextQueue);
+      setRevealStage(0);
+    } finally { setSaving(false); }
+  };
+  const weakWords = words.filter((item) => ratings[item.id] === "unknown");
   if (words.length === 0) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo(mobileHref("/words", { mobile: "library" }))} title="没有可学习的单词" /><div className="m3-empty-card"><BookOpen size={28} /><h2>先从词库选择单词</h2><button className="m3-primary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">浏览词库</button></div></main>;
-  if (!word) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo("/")} title="本轮完成" /><div className="m3-complete"><CheckCircle2 size={36} /><h2>完成 {ratings.length} 个单词</h2><p>已同步更新你的学习记录与复习安排。</p><button className="m3-primary" onClick={() => navigateTo("/")} type="button">回到首页</button><button className="m3-secondary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">继续选词</button></div></main>;
+  if (!word) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo("/")} title="本轮完成" /><div className="m3-complete"><CheckCircle2 size={36} /><h2>完成 {Object.keys(ratings).length} 个单词</h2><p>已同步更新你的学习记录与复习安排。</p>{weakWords.length > 0 && <button className="m3-primary" onClick={() => { setQueue(weakWords); setIndex(0); setRevealStage(0); setRatings({}); requeuedRef.current = new Set(); }} type="button">重练不认识的 {weakWords.length} 个词</button>}<button className={weakWords.length > 0 ? "m3-secondary" : "m3-primary"} onClick={() => navigateTo("/")} type="button">回到首页</button><button className="m3-secondary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">继续选词</button></div></main>;
   const firstLanguage: "japanese" | "english" = settings.revealOrder === "english-first"
     ? "english"
     : settings.revealOrder === "random"
@@ -517,9 +556,10 @@ function MobileWordStudy({ params }: { params: NavParams }) {
     <main className="m3-page m3-study-session">
       <header className="m3-session-header">
         <button onClick={() => navigateTo("/")} type="button"><X size={19} />结束</button>
-        <span>{index + 1} / {words.length}</span>
+        <span>{index + 1} / {queue.length}</span>
+        <button className="m3-known" disabled={saving} onClick={() => void markKnown()} title="标记为已熟知，以后不再安排复习" type="button"><BadgeCheck size={17} />熟知</button>
       </header>
-      <div className="m3-session-progress"><span style={{ width: `${((index + 1) / words.length) * 100}%` }} /></div>
+      <div className="m3-session-progress"><span style={{ width: `${((index + 1) / queue.length) * 100}%` }} /></div>
       <article className="m3-flashcard">
         <span>{mode === "japanese" ? "日语词汇" : mode === "english" ? "英语词汇" : "日英对照"}</span>
         <h1>{word.meaningZh}</h1>

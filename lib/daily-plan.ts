@@ -36,7 +36,24 @@ export function generateDailyPlan(input: DailyPlanInput): DailyPlan {
   const startOfToday = startOfLocalDayTimestamp(nowDate);
   const endOfToday = endOfLocalDayTimestamp(nowDate);
   const factor = weekendFactor(nowDate, input.settings);
-  const newLimit = Math.max(0, Math.round(input.settings.dailyNewWords * factor));
+  /**
+   * Backlog-aware new-word budget. A fixed daily quota keeps piling work on
+   * top of an already crowded review queue, so once reviews are overdue the
+   * day's new words are trimmed: clearing what is due matters more than
+   * meeting today's quota, and the quota returns as the backlog clears.
+   */
+  const dueBacklog = input.wordProgress.filter((progress) => {
+    const state = getWordModeState(progress, input.settings.defaultStudyMode);
+    if (!state?.nextReviewAt) return false;
+    const due = Date.parse(state.nextReviewAt);
+    return Number.isFinite(due) && due < nowTimestamp;
+  }).length;
+  const backlogFactor =
+    dueBacklog >= 60 ? 0.2 : dueBacklog >= 30 ? 0.4 : dueBacklog >= 15 ? 0.7 : 1;
+  const newLimit = Math.max(
+    0,
+    Math.round(input.settings.dailyNewWords * factor * backlogFactor),
+  );
   const reviewLimit = Math.max(1, Math.round(input.settings.dailyReviewLimit * factor));
   const grammarLimit = Math.max(0, Math.round(input.settings.dailyGrammarCount * factor));
   const testTarget = Math.max(1, Math.round(input.settings.dailyTestQuestions * factor));

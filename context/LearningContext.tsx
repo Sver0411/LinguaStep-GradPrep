@@ -23,6 +23,7 @@ import {
   updateMistakeRecord,
   updateWordMastery,
 } from "@/lib/learning";
+import { suspendReview } from "@/lib/spaced-repetition";
 import type {
   AppSettings,
   DailyPlan,
@@ -50,7 +51,10 @@ import {
   type LearningRepository,
   type SettingsRepository,
 } from "@/lib/repositories";
-import { migrateLearningSnapshot } from "@/lib/repositories/migrations";
+import {
+  migrateLearningSnapshot,
+  summarizeWordProgress,
+} from "@/lib/repositories/migrations";
 import {
   appendAIArtifacts,
   type AIArtifactBatch,
@@ -122,6 +126,7 @@ interface LearningContextValue {
   toggleFavorite: (kind: FavoriteKind, id: string) => Promise<void>;
   removeFavorites: (keys: readonly string[]) => Promise<void>;
   isFavorite: (kind: FavoriteKind, id: string) => boolean;
+  markWordKnown: (wordId: string, mode?: StudyMode) => Promise<void>;
   updateSettings: (patch: Partial<AppSettings>) => void;
   rebuildTodayPlan: () => Promise<DailyPlan>;
   saveAIArtifacts: (batch: AIArtifactBatch) => Promise<void>;
@@ -617,6 +622,34 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(timer);
   }, [ready, rebuildTodayPlan]);
 
+  /**
+   * Take a word out of the rotation for good ("熟知"). This is a deliberate
+   * side action rather than a fourth rating: the three ratings describe how
+   * the recall went, while this one asserts the word is already known.
+   */
+  const markWordKnown = useCallback(
+    async (wordId: string, mode?: StudyMode) => {
+      const useMode = mode ?? settingsRef.current.defaultStudyMode;
+      const now = new Date().toISOString();
+      const current = snapshotRef.current;
+      const previous = current.wordProgress.find((item) => item.wordId === wordId);
+      const rated = updateWordMastery(previous, wordId, "known", now, useMode);
+      const progress = summarizeWordProgress(
+        wordId,
+        { ...rated.modes, [useMode]: suspendReview(rated.modes[useMode], now) },
+        now,
+      );
+      await persistSnapshot({
+        ...current,
+        wordProgress: [
+          ...current.wordProgress.filter((item) => item.wordId !== wordId),
+          progress,
+        ],
+      });
+    },
+    [persistSnapshot],
+  );
+
   const studyWord = useCallback(
     async (
       wordId: string,
@@ -1111,6 +1144,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       focusMode,
       setFocusMode,
       studyWord,
+      markWordKnown,
       completeGrammar,
       completeTest,
       answerMistake,

@@ -6,7 +6,7 @@
 
 LinguaStep is a Chinese-interface web app for personal Japanese and English study. It is designed for long-term goals including Japanese JLPT N3/N2/N1 and English CET-4/CET-6/TOEIC. It brings bilingual word cards, grammar, review plans, exam-style practice, mistakes, favorites, and statistics into one learning loop.
 
-The current version is **v0.14.9**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
+The current version is **v0.15.0**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
 
 Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 
@@ -404,6 +404,7 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.14.7 | Complete | Fixed clipped endings and missing openings: audio is now downloaded in full before playback (blob + local cache) instead of streaming; removed the dead Baidu source |
 | v0.14.8 | Complete | Pronunciation added across the phone experience: flashcards (word, English, example), kana charts (tap to hear), reference entries |
 | v0.14.9 | Complete | Phone study flow aligned with desktop (Chinese prompt → Japanese → English → rating, the order was reversed); audio is preloaded and played synchronously, fixing the fallback to the system voice on mobile |
+| v0.15.0 | Complete | Study mechanics brought in line with mainstream apps: (1) same-session looping — an "unknown" word returns at the end of the round and a "fuzzy" one a few cards later; (2) the phone gained the "retry unknown words" action; (3) the daily new-word budget shrinks with the review backlog; (4) a "known for good" button in the top-right corner |
 | Future | Uncommitted | Accounts and cloud sync, import/export, pronunciation, speech recognition, free-text correction, PWA, and full FSRS |
 
 ## Current boundaries

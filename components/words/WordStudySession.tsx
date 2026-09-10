@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
+  BadgeCheck,
   Check,
   Eye,
   Heart,
@@ -42,17 +43,32 @@ export function WordStudySession({
     snapshot,
     settings,
     studyWord,
+    markWordKnown,
     isFavorite,
     toggleFavorite,
     setFocusMode,
   } = useLearning();
   const [index, setIndex] = useState(0);
   const [revealStage, setRevealStage] = useState(0);
+  /**
+   * The running queue. A word rated "unknown" is pushed to the back and a
+   * "fuzzy" one is re-inserted a few cards later, so a weak word is met again
+   * within the same sitting instead of waiting for its next due date. Each
+   * word can loop at most once, which keeps the round finite.
+   */
+  const [queue, setQueue] = useState<WordPair[]>(items);
+  const requeuedRef = useRef<Set<string>>(new Set());
   const [ratings, setRatings] = useState<Partial<Record<string, MasteryRating>>>({});
   const [finished, setFinished] = useState(false);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
-  const current = items[index];
+  useEffect(() => {
+    setQueue(items);
+    setIndex(0);
+    setRevealStage(0);
+    requeuedRef.current = new Set();
+  }, [items]);
+  const current = queue[index];
   const firstLanguage = useMemo(() => {
     if (settings.revealOrder === "english-first") return "english";
     if (settings.revealOrder === "random" && current) {
@@ -87,11 +103,11 @@ export function WordStudySession({
     (direction: -1 | 1) => {
       if (busyRef.current) return;
       setIndex((currentIndex) =>
-        Math.max(0, Math.min(items.length - 1, currentIndex + direction)),
+        Math.max(0, Math.min(queue.length - 1, currentIndex + direction)),
       );
       setRevealStage(0);
     },
-    [items.length],
+    [queue.length],
   );
 
   const rate = useCallback(
@@ -103,19 +119,24 @@ export function WordStudySession({
         await studyWord(current.id, rating, mode);
         const nextRatings = { ...ratings, [current.id]: rating };
         setRatings(nextRatings);
-        if (Object.keys(nextRatings).length >= items.length) {
+
+        let nextQueue = queue;
+        const shouldLoop =
+          (rating === "unknown" || rating === "fuzzy") &&
+          !requeuedRef.current.has(current.id);
+        if (shouldLoop) {
+          requeuedRef.current.add(current.id);
+          const gap = rating === "unknown" ? 6 : 3;
+          const at = Math.min(index + gap, queue.length);
+          nextQueue = [...queue.slice(0, at), current, ...queue.slice(at)];
+          setQueue(nextQueue);
+        }
+
+        if (index + 1 >= nextQueue.length) {
           setFinished(true);
           setFocusMode(false);
         } else {
-          let nextIndex = index;
-          for (let offset = 1; offset <= items.length; offset += 1) {
-            const candidate = (index + offset) % items.length;
-            if (!nextRatings[items[candidate].id]) {
-              nextIndex = candidate;
-              break;
-            }
-          }
-          setIndex(nextIndex);
+          setIndex(index + 1);
           setRevealStage(0);
         }
       } finally {
@@ -123,8 +144,29 @@ export function WordStudySession({
         setBusy(false);
       }
     },
-    [answerVisible, current, index, items, mode, ratings, setFocusMode, studyWord],
+    [answerVisible, current, index, mode, queue, ratings, setFocusMode, studyWord],
   );
+
+  /** Retire the current word: it leaves the queue and never comes back. */
+  const markKnown = useCallback(async () => {
+    if (!current || busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    try {
+      await markWordKnown(current.id, mode);
+      const nextQueue = queue.filter((_, position) => position !== index);
+      setQueue(nextQueue);
+      if (index >= nextQueue.length) {
+        setFinished(true);
+        setFocusMode(false);
+      } else {
+        setRevealStage(0);
+      }
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  }, [current, index, markWordKnown, mode, queue, setFocusMode]);
 
   useEffect(() => {
     return () => setFocusMode(false);
@@ -222,9 +264,9 @@ export function WordStudySession({
     <section className={`study-session${answerVisible ? " rating-visible" : ""}`} aria-live="polite">
       <div className="session-topline">
         <span>{mode === "combined" ? "日英对照" : mode === "japanese" ? "日语" : "英语"}学习</span>
-        <div className="session-top-actions"><strong>{index + 1} / {items.length}</strong><button className="text-button" onClick={onFinish}><ArrowLeft size={16} />退出学习</button></div>
+        <div className="session-top-actions"><strong>{index + 1} / {queue.length}</strong><button className="text-button" onClick={() => void markKnown()} disabled={busy} title="标记为已熟知，以后不再安排复习"><BadgeCheck size={16} />已熟知</button><button className="text-button" onClick={onFinish}><ArrowLeft size={16} />退出学习</button></div>
       </div>
-      <div className="session-progress"><span style={{ width: `${((index + 1) / items.length) * 100}%` }} /></div>
+      <div className="session-progress"><span style={{ width: `${((index + 1) / queue.length) * 100}%` }} /></div>
 
       <article className="flashcard">
         <button

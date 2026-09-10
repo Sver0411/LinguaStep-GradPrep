@@ -4383,6 +4383,19 @@ input[type="number"] {
     color: #173632;
     font: inherit;
   }
+  .m3-session-header .m3-known {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid #dcebe7;
+    border-radius: 999px;
+    background: #fff;
+    color: #0f6e56;
+    font: inherit;
+    font-size: 12px;
+  }
+  .m3-session-header .m3-known:disabled { opacity: 0.5; }
   .m3-study-hint { margin: 0 0 4px; color: #718781; font-size: 12px; }
   .m3-study-lang {
     display: grid;

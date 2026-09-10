@@ -137,6 +137,24 @@ export function applyReviewRating(
   };
 }
 
+/**
+ * Mark a word as known for good. `isReviewDue` / `isReviewOverdue` already
+ * skip suspended entries, so this is enough to take the word out of every
+ * future queue without deleting the progress that is already recorded.
+ */
+export function suspendReview(state: ReviewState | undefined, now: string): ReviewState {
+  const prior = state ?? initialState(now);
+  return {
+    ...prior,
+    status: "mastered",
+    mastery: "known",
+    suspended: true,
+    lastStudiedAt: now,
+    lastRating: "known",
+    algorithmVersion: REVIEW_ALGORITHM_VERSION,
+  };
+}
+
 export function isReviewDue(state: ReviewState, nowTimestamp: number): boolean {
   return !state.suspended && safeTimestamp(state.nextReviewAt) <= nowTimestamp;
 }
