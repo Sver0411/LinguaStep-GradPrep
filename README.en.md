@@ -6,7 +6,7 @@
 
 LinguaStep is a Chinese-interface web app for personal Japanese and English study. It is designed for long-term goals including Japanese JLPT N3/N2/N1 and English CET-4/CET-6/TOEIC. It brings bilingual word cards, grammar, review plans, exam-style practice, mistakes, favorites, and statistics into one learning loop.
 
-The current version is **v0.13.0**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
+The current version is **v0.14.0**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
 
 Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 
@@ -90,15 +90,16 @@ Review state includes first/most-recent study times, next review time, review co
 - Japanese N3/N2/N1 character, vocabulary, and grammar questions are based on a local *Red/Blue Book 1000 Questions N5–N1* reference and supplemented with built-in level-based questions. Reading questions are original exam-style passages for each level and are clearly labeled in the UI.
 - Real drill questions from the local 红蓝宝书1000题 PDFs are now in the bank — **378 items in total**: 245 N1 (pypdf layout parsing cross-checked with Vision OCR), 68 N2 and 65 N3 (scanned books OCRed in full; only completely recovered answer rows were kept), all with the publisher's answers and deduplicated.
 
-- Real composition per level and section (the UI shows "real questions" and "auto-generated review questions" separately instead of one inflated total):
+- Real composition per level and section (every item is genuine material — no generated templates remain):
 
 | Section | N3 | N2 | N1 |
 |---|---|---|---|
-| Vocabulary | 63 (all real) | 70 (all real) | 224 (all real) |
-| Grammar | 40 (18 real) | 40 (14 real) | 37 (all real) |
+| Vocabulary | 225 | 301 | 410 |
+| Grammar | 260 | 243 | 253 |
 | Reading | 8 (original) | 8 (original) | 8 (original) |
 
-- Generated questions are only used to top a thin section up to a comfortable 40-question round; they never pad a section to a fixed quota — real questions always win.
+- Sources: past-paper questions extracted from the local 红蓝宝书1000题 PDFs (publisher answer keys) plus the public JLPT exercise bank at japanesetest4you.com (grammar and vocabulary drills with their own answer keys). Practice items carry their own source label so they can be told apart from past papers.
+- The auto-generated filler, which reused one sentence template per section, has been removed entirely.
 - Question bank sizes are reported honestly: each level/section holds what the real content adds up to. Character questions are derived from the graded vocabulary, grammar questions only use grammar points that belong to that level, and reading keeps its hand-written passages.
 - The bank is never padded by repetition: the same prompt cannot appear twice inside one level/section, and grammar material is not reused across levels. When a bucket is smaller than the requested round size the UI says so and uses the available maximum.
 - English offers three original exam-style sets: CET-4, CET-6, and TOEIC, mixing vocabulary, grammar, and reading.
@@ -155,6 +156,7 @@ The AI entry point has been removed from frontend navigation, the home page, wor
 - v0.12.0 added a "high-frequency words" library section (1989 words across N3/N2/N1/Basic) built mainly from open Wikdict definitions plus filtered local book-scan OCR entries, each tagged with provenance; book words are lookup-only and stay out of the SRS flow.
 - v0.12.1 walked the whole app as a user and fixed three issues: (1) book-vocab favourites were silently deleted by the snapshot cleanup — they now use a dedicated `vocab` favourite kind and appear on the favourites page; (2) the mobile word library was hard-capped at 36 entries with no way to browse further — it now supports load-more paging; (3) the mobile library gained the source-section picker and book cards with speech and favourites.- v0.12.1 walked the whole app as a user and fixed three issues: (1) book-vocab favourites were silently deleted by the snapshot cleanup — they now use a dedicated `vocab` favourite kind and appear on the favourites page; (2) the mobile word library was hard-capped at 36 entries with no way to browse further — it now supports load-more paging; (3) the mobile library gained the source-section picker and book cards with speech and favourites.
 - v0.13.0 product-review fixes: (1) the section classifier was rewritten — it used to label a question by whether its options were all kana, which sent nearly every grammar item into the vocabulary bucket (139 of the 220 N1 vocabulary items were actually grammar blanks) and left the grammar round 99% filler; labelling now follows the grammatical function words in the options, so N1 grammar is 37 real questions and N3/N2 grammar went from 1% to 35-45% real; (2) generated questions only top thin sections up to 40 instead of padding every bucket to a fixed quota; (3) bank stats split real vs generated; (4) the home screen now guides users with zero progress; (5) the home screen shows a consecutive-study-day metric.
+- v0.14.0 content cleanup and expansion: (1) every generated template question is gone (they made up 99% of grammar rounds and nearly half of vocabulary rounds); (2) 1266 answer-keyed grammar and vocabulary practice items were scraped from the public JLPT exercise bank and imported by level and section, each labelled with its source; (3) bank stats follow: the Japanese bank went from 765 inflated entries to 1716 genuine questions, with grammar rounds growing from 14-37 to 243-260.
 
 ## Recommended workflow
 
@@ -382,6 +384,7 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.12.0 | Complete | Added "high-frequency word" sections to the library (N3/N2/N1/Basic, 1989 words) from open dictionary data and filtered book-scan OCR, with speech/favourites/search |
 | v0.12.1 | Complete | Full walkthrough fixes: book-vocab favourites were silently dropped by the snapshot cleanup (now a dedicated vocab favourite kind shown on the favourites page); the mobile word library showed only 36 entries with no way to load more (now paged); the mobile library gained a source-section picker with book cards || v0.12.1 | Complete | Full walkthrough fixes: book-vocab favourites were silently dropped by the snapshot cleanup (now a dedicated vocab favourite kind shown on the favourites page); the mobile word library showed only 36 entries with no way to load more (now paged); the mobile library gained a source-section picker with book cards |
 | v0.13.0 | Complete | Four fixes after a product review: (1) question-section labelling rewritten (grammar items had been mis-filed as vocabulary, leaving grammar rounds 99% filler); (2) bank stats now split real vs generated; (3) first-run home screen now guides new users; (4) home screen shows a study-streak metric |
+| v0.14.0 | Complete | Removed all generated template questions; imported 1266 answer-keyed grammar and vocabulary items from the public JLPT exercise bank, growing grammar rounds from 14-37 to 243-260 questions. The Japanese bank now holds 1716 genuine questions |
 | Future | Uncommitted | Accounts and cloud sync, import/export, pronunciation, speech recognition, free-text correction, PWA, and full FSRS |
 
 ## Current boundaries

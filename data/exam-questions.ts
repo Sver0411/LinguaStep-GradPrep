@@ -2,6 +2,7 @@ import type { ChoiceQuestion } from "@/lib/models";
 import { GRAMMAR_POINTS } from "@/data/grammar";
 import { WORD_PAIRS } from "@/data/words";
 import { BOOK_N1_QUESTIONS, BOOK_N2_QUESTIONS, BOOK_N3_QUESTIONS } from "@/data/book-n1-questions";
+import { EXTERNAL_QUESTIONS } from "@/data/exam-practice";
 
 export type ExamLanguage = "japanese" | "english";
 export type JapaneseExamLevel = "N3" | "N2" | "N1";
@@ -267,6 +268,26 @@ const PDF_BOOK_QUESTIONS: ExamQuestion[] = [
   ),
 ];
 
+/**
+ * JLPT-style practice items pulled from the public exercise bank. They carry
+ * their own answer keys, which is why they could replace the generated filler
+ * outright. Labelled separately so users can tell them from the PDF-sourced
+ * past-paper questions.
+ */
+const PRACTICE_QUESTIONS: ExamQuestion[] = EXTERNAL_QUESTIONS.map((question, index) =>
+  japaneseQuestion(
+    `ext-${index}`,
+    question.level,
+    question.section,
+    question.prompt,
+    question.options,
+    question.correctIndex,
+    `「${question.options[question.correctIndex]}」是本题正确答案。`,
+    undefined,
+    "JLPT 练习题（japanesetest4you）",
+  ),
+);
+
 const BASE_EXAM_QUESTIONS: ExamQuestion[] = [
   ...JAPANESE_BOOK_QUESTIONS,
   ...JAPANESE_READING_QUESTIONS,
@@ -274,6 +295,7 @@ const BASE_EXAM_QUESTIONS: ExamQuestion[] = [
   ...JAPANESE_EXTRA_QUESTIONS,
   ...ENGLISH_EXTRA_QUESTIONS,
   ...PDF_BOOK_QUESTIONS,
+  ...PRACTICE_QUESTIONS,
 ];
 
 const JAPANESE_LEVEL_ORDER: JapaneseExamLevel[] = ["N3", "N2", "N1"];
