@@ -105,6 +105,23 @@ async function playChain(
   }
 }
 
+/**
+ * Warm the cache for a word before the user asks for it.
+ *
+ * iOS only allows audio to start from inside the click's own synchronous
+ * call stack; once we `await` a download the gesture is spent and playback is
+ * refused, which silently dropped people back to the robotic system voice.
+ * Fetching ahead of time means the click finds the blob already in hand and
+ * can play synchronously.
+ */
+export function preload(text: string, language: SpeechLanguage): void {
+  const trimmed = text.trim();
+  if (!trimmed || typeof window === "undefined") return;
+  const url = sources(trimmed, language)[0];
+  if (blobCache.has(url) || inflight.has(url)) return;
+  void resolveAudio(url);
+}
+
 export function speak(text: string, language: SpeechLanguage): void {
   const trimmed = text.trim();
   if (!trimmed || typeof window === "undefined") return;
@@ -122,7 +139,25 @@ export function speak(text: string, language: SpeechLanguage): void {
     currentAudio = null;
   }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
-  void playChain(sources(trimmed, language), 0, trimmed, language, token);
+
+  const urls = sources(trimmed, language);
+  const ready = blobCache.get(urls[0]);
+  if (ready) {
+    // Synchronous path: still inside the click handler, so mobile browsers
+    // allow it.
+    const audio = new Audio(ready);
+    audio.currentTime = 0;
+    currentAudio = audio;
+    void audio.play().catch(() => {
+      if (token === playToken) {
+        currentAudio = null;
+        void playChain(urls, 1, trimmed, language, token);
+      }
+    });
+    return;
+  }
+
+  void playChain(urls, 0, trimmed, language, token);
 }
 
 export function isSpeechSupported(): boolean {

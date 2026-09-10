@@ -4383,6 +4383,46 @@ input[type="number"] {
     color: #173632;
     font: inherit;
   }
+  .m3-study-hint { margin: 0 0 4px; color: #718781; font-size: 12px; }
+  .m3-study-lang {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid #e1eeeb;
+    border-radius: 16px;
+    background: #fff;
+    text-align: center;
+  }
+  .m3-study-lang .m3-lang-tag {
+    justify-self: center;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: #e8f5f2;
+    color: #0f6e56;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .m3-study-lang.en .m3-lang-tag { background: rgba(55, 138, 221, 0.12); color: #185fa5; }
+  .m3-study-lang strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #173632;
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .m3-study-lang .m3-study-reading { color: #718781; font-size: 13px; }
+  .m3-study-lang p {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 4px 0 0;
+    color: #3d5c56;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .m3-study-lang small { color: #8da19c; font-size: 11px; }
   .m3-book-vocab-list { display: grid; gap: 10px; }
   .m3-book-vocab-card {
     display: grid;

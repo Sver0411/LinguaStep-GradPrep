@@ -473,7 +473,7 @@ function MobileWordStudy({ params }: { params: NavParams }) {
   const mode: StudyMode = rawMode === "japanese" || rawMode === "english" ? rawMode : "combined";
   const words = useMemo(() => selectedStudyWords(allWords, snapshot, mode, params.get("source"), params.get("word"), settings.studyRoundSize), [allWords, mode, params, settings.studyRoundSize, snapshot]);
   const [index, setIndex] = useState(0);
-  const [revealed, setRevealed] = useState(false);
+  const [revealStage, setRevealStage] = useState(0);
   const [saving, setSaving] = useState(false);
   const [ratings, setRatings] = useState<MasteryRating[]>([]);
   const word = words[index];
@@ -484,14 +484,82 @@ function MobileWordStudy({ params }: { params: NavParams }) {
       await studyWord(word.id, rating, mode);
       setRatings((value) => [...value, rating]);
       setIndex((value) => value + 1);
-      setRevealed(false);
+      setRevealStage(0);
     } finally { setSaving(false); }
   };
   if (words.length === 0) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo(mobileHref("/words", { mobile: "library" }))} title="没有可学习的单词" /><div className="m3-empty-card"><BookOpen size={28} /><h2>先从词库选择单词</h2><button className="m3-primary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">浏览词库</button></div></main>;
   if (!word) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo("/")} title="本轮完成" /><div className="m3-complete"><CheckCircle2 size={36} /><h2>完成 {ratings.length} 个单词</h2><p>已同步更新你的学习记录与复习安排。</p><button className="m3-primary" onClick={() => navigateTo("/")} type="button">回到首页</button><button className="m3-secondary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">继续选词</button></div></main>;
-  const primary = mode === "english" ? word.english : word.japanese;
-  const primaryReading = mode === "japanese" ? word.japanese.reading : mode === "english" ? word.english.phonetic : undefined;
-  return <main className="m3-page m3-study-session"><header className="m3-session-header"><button onClick={() => navigateTo("/")} type="button"><X size={19} />结束</button><span>{index + 1} / {words.length}</span></header><div className="m3-session-progress"><span style={{ width: `${(index + 1) / words.length * 100}%` }} /></div><article className="m3-flashcard"><span>{mode === "japanese" ? "日语词汇" : mode === "english" ? "英语词汇" : "日英对照"}</span><h1>{primary.term}<SpeakButton text={primary.term} language={mode === "english" ? "en-US" : "ja-JP"} label="朗读单词" size={19} /></h1>{primaryReading && <p>{primaryReading}</p>}{mode === "combined" && <strong>{word.english.term}<SpeakButton text={word.english.term} language="en-US" label="朗读英语" size={15} /></strong>}{revealed && <div className="m3-answer"><b>{word.meaningZh}</b><p>{primary.example}<SpeakButton text={primary.example} language={mode === "english" ? "en-US" : "ja-JP"} label="朗读例句" size={15} /></p><small>{primary.exampleZh}</small></div>}</article>{!revealed ? <button className="m3-primary m3-reveal" onClick={() => setRevealed(true)} type="button">揭示答案</button> : <div className="m3-rating-row"><button className="unknown" disabled={saving} onClick={() => void rate("unknown")} type="button">不认识</button><button className="fuzzy" disabled={saving} onClick={() => void rate("fuzzy")} type="button">模糊</button><button className="known" disabled={saving} onClick={() => void rate("known")} type="button">认识</button></div>}</main>;
+  const firstLanguage: "japanese" | "english" = settings.revealOrder === "english-first"
+    ? "english"
+    : settings.revealOrder === "random"
+      ? [...word.id].reduce((sum, character) => sum + character.charCodeAt(0), 0) % 2 === 0
+        ? "japanese"
+        : "english"
+      : "japanese";
+  const singleLanguage = mode !== "combined";
+  const answerVisible = revealStage >= (singleLanguage ? 1 : 2);
+  const japaneseVisible =
+    mode === "japanese" ||
+    (mode === "combined" && (revealStage >= 2 || (revealStage === 1 && firstLanguage === "japanese")));
+  const englishVisible =
+    mode === "english" ||
+    (mode === "combined" && (revealStage >= 2 || (revealStage === 1 && firstLanguage === "english")));
+  const reveal = () =>
+    setRevealStage((stage) =>
+      singleLanguage ? 1 : settings.revealMode === "together" ? 2 : Math.min(2, stage + 1),
+    );
+  const revealLabel = singleLanguage
+    ? "揭示答案"
+    : revealStage === 0
+      ? "揭示第一个表达"
+      : "揭示第二个表达";
+  return (
+    <main className="m3-page m3-study-session">
+      <header className="m3-session-header">
+        <button onClick={() => navigateTo("/")} type="button"><X size={19} />结束</button>
+        <span>{index + 1} / {words.length}</span>
+      </header>
+      <div className="m3-session-progress"><span style={{ width: `${((index + 1) / words.length) * 100}%` }} /></div>
+      <article className="m3-flashcard">
+        <span>{mode === "japanese" ? "日语词汇" : mode === "english" ? "英语词汇" : "日英对照"}</span>
+        <h1>{word.meaningZh}</h1>
+        <p className="m3-study-hint">
+          想一想：{mode === "combined" ? "日语和英语分别" : mode === "japanese" ? "日语" : "英语"}怎么表达？
+        </p>
+        {japaneseVisible && (
+          <div className="m3-study-lang jp">
+            <span className="m3-lang-tag">日</span>
+            <strong>{word.japanese.term}<SpeakButton text={word.japanese.term} language="ja-JP" label="朗读日语" size={18} /></strong>
+            <span className="m3-study-reading">{word.japanese.reading}{word.japanese.romanization ? ` · ${word.japanese.romanization}` : ""}</span>
+            {word.japanese.example && (
+              <p>{word.japanese.example}<SpeakButton text={word.japanese.example} language="ja-JP" label="朗读日语例句" size={15} /></p>
+            )}
+            {word.japanese.exampleZh && <small>{word.japanese.exampleZh}</small>}
+          </div>
+        )}
+        {englishVisible && (
+          <div className="m3-study-lang en">
+            <span className="m3-lang-tag">英</span>
+            <strong>{word.english.term}<SpeakButton text={word.english.term} language="en-US" label="朗读英语" size={18} /></strong>
+            {word.english.phonetic && <span className="m3-study-reading">{word.english.phonetic}</span>}
+            {word.english.example && (
+              <p>{word.english.example}<SpeakButton text={word.english.example} language="en-US" label="朗读英语例句" size={15} /></p>
+            )}
+            {word.english.exampleZh && <small>{word.english.exampleZh}</small>}
+          </div>
+        )}
+      </article>
+      {!answerVisible ? (
+        <button className="m3-primary m3-reveal" onClick={reveal} type="button">{revealLabel}</button>
+      ) : (
+        <div className="m3-rating-row">
+          <button className="unknown" disabled={saving} onClick={() => void rate("unknown")} type="button">不认识</button>
+          <button className="fuzzy" disabled={saving} onClick={() => void rate("fuzzy")} type="button">模糊</button>
+          <button className="known" disabled={saving} onClick={() => void rate("known")} type="button">认识</button>
+        </div>
+      )}
+    </main>
+  );
 }
 
 function MobileGrammarHub({ params }: { params: NavParams }) {
