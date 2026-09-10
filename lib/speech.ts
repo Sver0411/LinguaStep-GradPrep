@@ -30,14 +30,99 @@ function sources(text: string, language: SpeechLanguage): string[] {
       // that cannot reach the dictionary directly still gets the recording.
       `${APP_BASE_PATH}/api/tts?text=${query}&lang=${lang}`,
       `https://dict.youdao.com/dictvoice?audio=${query}&le=jap`,
-      `https://fanyi.baidu.com/gettts?lan=jap&text=${query}&spd=3&source=web`,
     ];
   }
   return [
     `${APP_BASE_PATH}/api/tts?text=${query}&lang=${lang}`,
     `https://dict.youdao.com/dictvoice?audio=${query}&type=2`,
-    `https://fanyi.baidu.com/gettts?lan=en&text=${query}&spd=3&source=web`,
   ];
+}
+
+/**
+ * The clip is downloaded in full and handed to the player as a local object
+ * URL. Streaming straight from the network meant playback started before the
+ * data arrived, which is what produced clipped endings and missing openings
+ * depending on how the buffering happened to land that time.
+ */
+const blobCache = new Map<string, string>();
+const inflight = new Map<string, Promise<string | null>>();
+let playToken = 0;
+
+async function resolveAudio(url: string): Promise<string | null> {
+  const cached = blobCache.get(url);
+  if (cached) return cached;
+  let pending = inflight.get(url);
+  if (!pending) {
+    pending = (async () => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        if (blob.size < 512) return null;
+        const objectUrl = URL.createObjectURL(blob);
+        blobCache.set(url, objectUrl);
+        return objectUrl;
+      } catch {
+        return null;
+      } finally {
+        inflight.delete(url);
+      }
+    })();
+    inflight.set(url, pending);
+  }
+  return pending;
+}
+
+async function playChain(
+  urls: string[],
+  index: number,
+  text: string,
+  language: SpeechLanguage,
+  token: number,
+): Promise<void> {
+  if (token !== playToken) return;
+  if (index >= urls.length) {
+    speakOffline(text, language);
+    return;
+  }
+  const objectUrl = await resolveAudio(urls[index]);
+  if (token !== playToken) return;
+  if (!objectUrl) {
+    await playChain(urls, index + 1, text, language, token);
+    return;
+  }
+  const audio = new Audio(objectUrl);
+  // Reset explicitly: some browsers resume the previous position otherwise.
+  audio.currentTime = 0;
+  currentAudio = audio;
+  try {
+    await audio.play();
+  } catch {
+    if (token === playToken) {
+      currentAudio = null;
+      await playChain(urls, index + 1, text, language, token);
+    }
+  }
+}
+
+export function speak(text: string, language: SpeechLanguage): void {
+  const trimmed = text.trim();
+  if (!trimmed || typeof window === "undefined") return;
+
+  if (typeof window.Audio !== "function") {
+    speakOffline(trimmed, language);
+    return;
+  }
+
+  // A new click invalidates whatever is still resolving or playing.
+  playToken += 1;
+  const token = playToken;
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  void playChain(sources(trimmed, language), 0, trimmed, language, token);
 }
 
 export function isSpeechSupported(): boolean {
@@ -88,43 +173,6 @@ function speakOffline(text: string, language: SpeechLanguage): void {
   const voice = pickVoice(language);
   if (voice) utterance.voice = voice;
   synth.speak(utterance);
-}
-
-function playFrom(urls: string[], index: number, text: string, language: SpeechLanguage): void {
-  if (index >= urls.length) {
-    // Every network source failed — the system voice is the last resort.
-    speakOffline(text, language);
-    return;
-  }
-  const audio = new Audio(urls[index]);
-  audio.preload = "auto";
-  currentAudio = audio;
-  const play = audio.play();
-  if (play && typeof play.catch === "function") {
-    play.catch(() => {
-      if (currentAudio !== audio) return; // superseded by a newer click
-      currentAudio = null;
-      playFrom(urls, index + 1, text, language);
-    });
-  }
-}
-
-export function speak(text: string, language: SpeechLanguage): void {
-  const trimmed = text.trim();
-  if (!trimmed || typeof window === "undefined") return;
-
-  if (typeof window.Audio === "function") {
-    // Stop whatever is playing so rapid clicks do not overlap.
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio = null;
-    }
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
-    playFrom(sources(trimmed, language), 0, trimmed, language);
-    return;
-  }
-
-  speakOffline(trimmed, language);
 }
 
 /**
