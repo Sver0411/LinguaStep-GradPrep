@@ -6,7 +6,7 @@
 
 LinguaStep is a Chinese-interface web app for personal Japanese and English study. It is designed for long-term goals including Japanese JLPT N3/N2/N1 and English CET-4/CET-6/TOEIC. It brings bilingual word cards, grammar, review plans, exam-style practice, mistakes, favorites, and statistics into one learning loop.
 
-The current version is **v0.14.5**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
+The current version is **v0.14.6**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
 
 Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 
@@ -400,6 +400,7 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.14.3 | Complete | Example sentences: real JMdict / Tanaka corpus pairs replaced the templated sentences in the core bank (4410 entries) and 1943 Japanese-English example pairs were added to the high-frequency words |
 | v0.14.4 | Complete | Pronunciation upgraded: word playback now prefers Youdao's real dictionary recordings (Japanese and English) with the browser voice as an offline fallback; buttons no longer disappear when no system Japanese voice is installed |
 | v0.14.5 | Complete | Pronunciation source chain: Youdao real recording → Baidu voice → browser speech, switching automatically when a source is unreachable |
+| v0.14.6 | Complete | Fixed pronunciation always sounding synthetic: loading the third-party audio straight from the browser fails (measured error:4), so the audio is now proxied through the app's own /api/tts endpoint |
 | Future | Uncommitted | Accounts and cloud sync, import/export, pronunciation, speech recognition, free-text correction, PWA, and full FSRS |
 
 ## Current boundaries

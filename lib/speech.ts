@@ -15,17 +15,26 @@
 
 export type SpeechLanguage = "ja-JP" | "en-US";
 
+const APP_BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "")
+  .trim()
+  .replace(/\/+$/, "");
+
 let currentAudio: HTMLAudioElement | null = null;
 
 function sources(text: string, language: SpeechLanguage): string[] {
   const query = encodeURIComponent(text);
+  const lang = language === "ja-JP" ? "ja" : "en";
   if (language === "ja-JP") {
     return [
+      // Our own origin first: the audio is fetched server-side, so a browser
+      // that cannot reach the dictionary directly still gets the recording.
+      `${APP_BASE_PATH}/api/tts?text=${query}&lang=${lang}`,
       `https://dict.youdao.com/dictvoice?audio=${query}&le=jap`,
       `https://fanyi.baidu.com/gettts?lan=jap&text=${query}&spd=3&source=web`,
     ];
   }
   return [
+    `${APP_BASE_PATH}/api/tts?text=${query}&lang=${lang}`,
     `https://dict.youdao.com/dictvoice?audio=${query}&type=2`,
     `https://fanyi.baidu.com/gettts?lan=en&text=${query}&spd=3&source=web`,
   ];

@@ -1,0 +1,15 @@
+export const REVIEW_CONFIG = {
+  algorithmVersion: 2,
+  initialKnownDays: 4,
+  fuzzyIntervalDays: 1,
+  unknownRetryMinutes: 10,
+  minimumEase: 1.3,
+  maximumEase: 2.8,
+  knownEaseBonus: 0.08,
+  fuzzyEasePenalty: 0.18,
+  unknownEasePenalty: 0.3,
+  minimumDifficulty: 1,
+  maximumDifficulty: 10,
+  masteredCorrectStreak: 3,
+  overdueBonusCap: 0.4,
+} as const;
