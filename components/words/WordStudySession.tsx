@@ -12,7 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 import { dateKey } from "@/lib/learning";
 import { getNextLearningAction } from "@/lib/learning-flow";
 import type { MasteryRating, StudyMode, WordPair } from "@/lib/models";

@@ -53,7 +53,7 @@ import type {
   TestMode,
   TestSourceFilter,
 } from "@/lib/models";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 
 type BusyOperation = "connection" | "words" | "grammar" | "quiz" | "explanation" | null;
 

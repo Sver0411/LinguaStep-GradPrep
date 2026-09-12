@@ -21,7 +21,7 @@ import type {
   StudyMode,
   ThemeMode,
 } from "@/lib/models";
-import { useLearning, type ResetScope } from "@/context/LearningContext";
+import { useLearning, type ResetScope } from "@/context/learning";
 import { Button, PageHeader } from "@/components/ui";
 import { ENGLISH_STUDY_LEVELS, JAPANESE_STUDY_LEVELS } from "@/lib/word-levels";
 

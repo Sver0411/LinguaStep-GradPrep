@@ -14,7 +14,7 @@ import {
   Search,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { dateKey } from "@/lib/learning";

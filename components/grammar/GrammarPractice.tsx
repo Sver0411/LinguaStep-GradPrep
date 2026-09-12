@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 import { dateKey, isAnswerCorrect } from "@/lib/learning";
 import { getNextLearningAction } from "@/lib/learning-flow";
 import type { GrammarPoint, TestAnswer } from "@/lib/models";

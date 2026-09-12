@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useAI } from "@/context/AIContext";
-import { useLearning, type AIClearScope } from "@/context/LearningContext";
+import { useLearning, type AIClearScope } from "@/context/learning";
 import type { AISecretPersistence } from "@/lib/models";
 import { Button } from "@/components/ui";
 

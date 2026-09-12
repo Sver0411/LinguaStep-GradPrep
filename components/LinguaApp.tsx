@@ -3,9 +3,9 @@
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { AppShell } from "@/components/AppShell";
-import { MobileApp } from "@/components/mobile/MobileExperience";
+import { MobileApp } from "@/components/mobile";
 import { LoadingState, StorageWarning } from "@/components/ui";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 import { useIsMobileViewport } from "@/hooks/useIsMobileViewport";
 import { FavoritesView } from "@/components/views/FavoritesView";
 import { GrammarView } from "@/components/views/GrammarView";

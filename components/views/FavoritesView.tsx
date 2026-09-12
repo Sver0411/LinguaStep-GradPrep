@@ -11,7 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { BOOK_VOCAB_WORDS } from "@/data/book-vocab-data";
 import { Button, EmptyState, PageHeader } from "@/components/ui";

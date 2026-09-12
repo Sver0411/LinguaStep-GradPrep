@@ -9,7 +9,7 @@ import {
   Target,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { dateKey } from "@/lib/learning";
 import {

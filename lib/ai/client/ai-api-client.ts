@@ -13,7 +13,7 @@ import type {
   WordGenerationInput,
 } from "@/lib/ai/types/ai.types";
 import type { AISettings } from "@/lib/models";
-import { invokeAIAction } from "@/app/actions/ai-actions";
+import { executeAIAction } from "@/lib/ai/server/action-handler";
 import type { AIActionResult } from "@/lib/ai/server/action-handler";
 
 type AIInput =
@@ -129,7 +129,7 @@ export class AIAPIClient {
 
     let result: AIActionResult;
     try {
-      result = await invokeAIAction({
+      result = await executeAIAction({
         operation,
         input,
         connectionMode: settings?.connectionMode,

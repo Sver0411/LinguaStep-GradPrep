@@ -40,7 +40,7 @@ const mocked = vi.hoisted(() => ({
   pathname: "/words",
 }));
 
-vi.mock("@/context/LearningContext", () => ({
+vi.mock("@/context/learning", () => ({
   useLearning: () => mocked.learning,
 }));
 

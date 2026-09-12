@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAI } from "@/context/AIContext";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 import type {
   AIGenerationKind,
   AIGenerationRecord,

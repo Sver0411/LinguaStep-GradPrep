@@ -17,7 +17,7 @@ import {
 import { dateKey, calculateStreak } from "@/lib/learning";
 import { calculateDailyPlanProgress } from "@/lib/daily-plan";
 import { getNextLearningAction } from "@/lib/learning-flow";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 import { PageHeader, ProgressBar } from "@/components/ui";
 
 export function HomeView() {

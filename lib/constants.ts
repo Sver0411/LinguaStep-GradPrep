@@ -2,7 +2,7 @@ import type { AISettings, AppSettings, LearningSnapshot } from "./models";
 
 export const APP_NAME = "LinguaStep";
 export const APP_NAME_ZH = "日英阶梯";
-export const APP_VERSION = "0.15.6";
+export const APP_VERSION = "0.16.0";
 export const REVIEW_ALGORITHM_VERSION = 2;
 
 export const DEFAULT_SETTINGS: AppSettings = {

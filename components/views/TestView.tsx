@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useLearning } from "@/context/LearningContext";
+import { useLearning } from "@/context/learning";
 import {
   ENGLISH_EXAM_LEVELS,
   EXAM_QUESTIONS,

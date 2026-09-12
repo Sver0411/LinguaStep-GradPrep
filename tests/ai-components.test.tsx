@@ -15,7 +15,7 @@ const mocked = vi.hoisted(() => ({
   learning: {} as ReturnType<typeof learningMock>,
 }));
 vi.mock("@/context/AIContext", () => ({ useAI: () => mocked.ai }));
-vi.mock("@/context/LearningContext", () => ({ useLearning: () => mocked.learning }));
+vi.mock("@/context/learning", () => ({ useLearning: () => mocked.learning }));
 vi.mock("next/link", () => ({
   default: ({ href, children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children: ReactNode }) => <a href={href} {...props}>{children}</a>,
 }));
