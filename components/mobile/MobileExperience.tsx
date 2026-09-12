@@ -40,6 +40,7 @@ import {
   X,
 } from "lucide-react";
 import { useLearning } from "@/context/LearningContext";
+import { getNextLearningAction } from "@/lib/learning-flow";
 import {
   HIRAGANA_ROWS,
   KANA_TOTAL,
@@ -66,6 +67,7 @@ import {
   dateKey,
   getWordModeState,
   isAnswerCorrect,
+  needsWordReview,
 } from "@/lib/learning";
 import type { GrammarPoint, MasteryRating, StudyMode, TestAnswer, WordPair } from "@/lib/models";
 
@@ -86,6 +88,28 @@ let appRouter: ReturnType<typeof useRouter> | null = null;
 function navigateTo(url: string) {
   if (appRouter) appRouter.push(url);
   else window.location.assign(url);
+}
+
+/**
+ * The flow logic hands back desktop URLs ("/words?plan=new"). The phone has its
+ * own routes, so map the *step* rather than reusing the href — otherwise
+ * "继续：今日语法" would land on the desktop shell in a narrow viewport.
+ */
+function mobileHrefForStep(action: ReturnType<typeof getNextLearningAction>, mode: StudyMode) {
+  switch (action.step) {
+    case "review":
+      return mobileHref("/words", { mobile: "study", source: "review", mode });
+    case "new-words":
+      return mobileHref("/words", { mobile: "study", source: "new", mode });
+    case "grammar":
+      return mobileHref("/grammar", { mobile: "practice" });
+    case "test":
+      return mobileHref("/test", { mobile: "practice" });
+    case "mistakes":
+      return mobileHref("/mistakes", { mobile: "list" });
+    default:
+      return "/";
+  }
 }
 
 function mobileHref(path: string, values: Record<string, string | number | undefined>) {
@@ -112,7 +136,7 @@ function MobileHomeScreen() {
   const record = snapshot.dailyRecords.find((item) => item.date === today);
   const progress = plan
     ? calculateDailyPlanProgress(plan, record)
-    : { total: 0, completed: 0, percent: 0, reviewCompleted: 0, newCompleted: 0, testCompleted: 0 };
+    : { total: 0, completed: 0, percent: 0, reviewCompleted: 0, newCompleted: 0, grammarCompleted: 0, testCompleted: 0 };
   const activityDates = snapshot.dailyRecords
     .filter((item) => item.wordsStudied + item.grammarStudied + item.questionsAnswered > 0)
     .map((item) => item.date);
@@ -131,7 +155,18 @@ function MobileHomeScreen() {
     .find((item) => Boolean(item));
   const reviewCount = plan?.reviewWordIds.length ?? 0;
   const newCount = plan?.newWordIds.length ?? settings.dailyNewWords;
+  const grammarCount = plan?.grammarIds.length ?? settings.dailyGrammarCount;
   const testCount = plan?.testTarget ?? settings.dailyTestQuestions;
+  /**
+   * Everything the learner reads is "how much is left", never "how big the plan
+   * was". The desktop home already reads that way; a plan total that refuses to
+   * move while the bar advances is what makes people stop trusting the numbers.
+   */
+  const reviewLeft = Math.max(0, reviewCount - progress.reviewCompleted);
+  const newLeft = Math.max(0, newCount - progress.newCompleted);
+  const nextAction = plan ? getNextLearningAction(snapshot, today) : null;
+  const allDone = nextAction?.step === "complete";
+  const studyLabel = !plan ? "开始学习" : allDone ? "自由学习" : "继续学习";
   const startStudy = async () => {
     if (!plan) {
       setRebuilding(true);
@@ -141,11 +176,25 @@ function MobileHomeScreen() {
         setRebuilding(false);
       }
     }
-    navigateTo(mobileHref("/words", { mobile: "study", source: "new", mode }));
+    if (!plan) {
+      // A plan was just generated; it starts with new words by construction.
+      navigateTo(mobileHref("/words", { mobile: "study", source: "new", mode }));
+      return;
+    }
+    // Follow the plan instead of always assuming "new words" — once today's new
+    // words are done this same button should carry on with grammar or a test.
+    navigateTo(
+      allDone && nextAction
+        ? mobileHref("/words", { mobile: "library" })
+        : mobileHrefForStep(nextAction ?? getNextLearningAction(snapshot, today), mode),
+    );
   };
+  // Mirrors the desktop plan, which has four parts. Grammar was missing here, so
+  // a finished day could never show as finished on the phone.
   const flow = [
     { label: "复习", complete: reviewCount > 0 && progress.reviewCompleted >= reviewCount },
     { label: "新词", complete: newCount > 0 && progress.newCompleted >= newCount },
+    { label: "语法", complete: grammarCount > 0 && progress.grammarCompleted >= grammarCount },
     { label: "测试", complete: testCount > 0 && progress.testCompleted >= testCount },
   ];
 
@@ -173,12 +222,12 @@ function MobileHomeScreen() {
             <p>{plan ? `还剩 ${Math.max(0, progress.total - progress.completed)} 项任务` : "生成计划后即可开始"}</p>
           </div>
           <div className="m2-progress"><span style={{ width: `${plan ? progress.percent : 0}%` }} /></div>
-          <div className="m2-study-summary"><span>待复习<b>{reviewCount}</b></span><span>新词<b>{newCount}</b></span><button disabled={rebuilding} onClick={() => void startStudy()} type="button"><Play size={17} fill="currentColor" />{rebuilding ? "准备中…" : "开始学习"}<ArrowRight size={17} /></button></div>
+          <div className="m2-study-summary"><span>待复习<b>{reviewLeft}</b></span><span>新词<b>{newLeft}</b></span><button disabled={rebuilding} onClick={() => void startStudy()} type="button"><Play size={17} fill="currentColor" />{rebuilding ? "准备中…" : studyLabel}<ArrowRight size={17} /></button></div>
         </div>
       </section>
 
       <section className="m2-rhythm-card">
-        <div className="m2-section-title"><h2>今日节奏</h2><span>{flow.filter((item) => item.complete).length} / 3</span></div>
+        <div className="m2-section-title"><h2>今日节奏</h2><span>{flow.filter((item) => item.complete).length} / {flow.length}</span></div>
         <div className="m2-rhythm-steps">{flow.map((item, index) => <div className={item.complete ? "done" : ""} key={item.label}><i>{item.complete ? "✓" : index + 1}</i><small>{item.label}</small></div>)}</div>
       </section>
 
@@ -448,15 +497,32 @@ function MobileWordLibrary() {
 function selectedStudyWords(allWords: WordPair[], snapshot: ReturnType<typeof useLearning>["snapshot"], mode: StudyMode, source: string | null, wordId: string | null, roundSize: number) {
   if (wordId) return allWords.filter((word) => word.id === wordId);
   const plan = snapshot.dailyPlans.find((item) => item.date === dateKey(new Date()));
+  const progressOf = (word: WordPair) =>
+    snapshot.wordProgress.find((item) => item.wordId === word.id);
+  /**
+   * The plan lists every new word for the day, so slicing its first `roundSize`
+   * entries handed back the same ten cards after a round was finished: the phone
+   * repeated round one forever and words 11-20 were unreachable, which also
+   * pinned today's progress at 10/20. Pick whatever is still outstanding, and
+   * only fall back to the whole list when a round would otherwise be empty.
+   */
+  const outstanding = (list: WordPair[]) =>
+    list.filter((word) => getWordModeState(progressOf(word), mode) === undefined);
+
   if (source === "review") {
     const ids = plan?.reviewWordIds;
     const candidates = ids
       ? allWords.filter((word) => ids.includes(word.id))
       : allWords.filter((word) => {
-          const state = getWordModeState(snapshot.wordProgress.find((item) => item.wordId === word.id), mode);
+          const state = getWordModeState(progressOf(word), mode);
           return state !== undefined && state.status !== "mastered";
         });
-    return candidates.slice(0, roundSize);
+    const now = Date.now();
+    const due = candidates.filter((word) => {
+      const progress = progressOf(word);
+      return progress ? needsWordReview(progress, now, mode) : false;
+    });
+    return (due.length > 0 ? due : candidates).slice(0, roundSize);
   }
   if (source === "favorites") {
     return allWords.filter((word) => snapshot.favorites.includes(`word:${word.id}`)).slice(0, roundSize);
@@ -464,8 +530,9 @@ function selectedStudyWords(allWords: WordPair[], snapshot: ReturnType<typeof us
   const ids = plan?.newWordIds;
   const candidates = ids
     ? allWords.filter((word) => ids.includes(word.id))
-    : allWords.filter((word) => !getWordModeState(snapshot.wordProgress.find((item) => item.wordId === word.id), mode));
-  return candidates.slice(0, roundSize);
+    : allWords.filter((word) => !getWordModeState(progressOf(word), mode));
+  const fresh = outstanding(candidates);
+  return (fresh.length > 0 ? fresh : candidates).slice(0, roundSize);
 }
 
 function MobileWordStudy({ params }: { params: NavParams }) {
@@ -538,8 +605,27 @@ function MobileWordStudy({ params }: { params: NavParams }) {
     } finally { setSaving(false); }
   };
   const weakWords = words.filter((item) => ratings[item.id] === "unknown");
+  /**
+   * The summary used to dead-end on "回到首页": on the phone a finished word
+   * round told you nothing about the grammar and test still sitting in today's
+   * plan, so most days stopped here. Mirror the desktop summary and lead with the
+   * plan's next step instead.
+   */
+  const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
+  const hasNextStep = nextAction.step !== "complete";
+  // Another word round happens on this very route, so navigating to it would be
+  // a no-op — the bar never moved and the tap looked broken. Reseed in place.
+  const nextIsWordRound = nextAction.step === "new-words" || nextAction.step === "review";
+  const canContinueInPlace = nextIsWordRound && words.length > 0;
+  const continueRound = () => {
+    setQueue(words);
+    setIndex(0);
+    setRevealStage(0);
+    setRatings({});
+    requeuedRef.current = new Set();
+  };
   if (words.length === 0) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo(mobileHref("/words", { mobile: "library" }))} title="没有可学习的单词" /><div className="m3-empty-card"><BookOpen size={28} /><h2>先从词库选择单词</h2><button className="m3-primary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">浏览词库</button></div></main>;
-  if (!word) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo("/")} title="本轮完成" /><div className="m3-complete"><CheckCircle2 size={36} /><h2>完成 {Object.keys(ratings).length} 个单词</h2><p>已同步更新你的学习记录与复习安排。</p>{weakWords.length > 0 && <button className="m3-primary" onClick={() => { setQueue(weakWords); setIndex(0); setRevealStage(0); setRatings({}); requeuedRef.current = new Set(); seededRef.current = `${sessionId}|retry`; }} type="button">重练不认识的 {weakWords.length} 个词</button>}<button className={weakWords.length > 0 ? "m3-secondary" : "m3-primary"} onClick={() => navigateTo("/")} type="button">回到首页</button><button className="m3-secondary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">继续选词</button></div></main>;
+  if (!word) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo("/")} title="本轮完成" /><div className="m3-complete"><CheckCircle2 size={36} /><h2>完成 {Object.keys(ratings).length} 个单词</h2><p>{hasNextStep ? nextAction.description : "已同步更新你的学习记录与复习安排。"}</p>{hasNextStep && <button className="m3-primary" onClick={() => { if (canContinueInPlace) continueRound(); else navigateTo(mobileHrefForStep(nextAction, mode)); }} type="button">{nextAction.label}<ArrowRight size={17} /></button>}{weakWords.length > 0 && <button className={hasNextStep ? "m3-secondary" : "m3-primary"} onClick={() => { setQueue(weakWords); setIndex(0); setRevealStage(0); setRatings({}); requeuedRef.current = new Set(); seededRef.current = `${sessionId}|retry`; }} type="button">重练不认识的 {weakWords.length} 个词</button>}<button className={hasNextStep || weakWords.length > 0 ? "m3-secondary" : "m3-primary"} onClick={() => navigateTo("/")} type="button">回到首页</button><button className="m3-secondary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">继续选词</button></div></main>;
   const firstLanguage: "japanese" | "english" = settings.revealOrder === "english-first"
     ? "english"
     : settings.revealOrder === "random"
@@ -748,13 +834,13 @@ const TAB_ITEMS = [
   { href: "/profile", label: "我的", icon: UserRound },
 ] as const;
 
-export function MobileApp() {
+function MobileTabBar() {
   const pathname = usePathname();
+  const params = useSearchParams();
+  // A study round owns the whole screen (its rating row sits at the bottom), so
+  // the bar steps aside while one is running.
+  if (params?.get("mobile") === "study") return null;
   return (
-    <div className="m2-app">
-      <Suspense fallback={null}>
-        <MobileExperience />
-      </Suspense>
       <nav className="m2-tabbar" aria-label="移动端主导航">
         {TAB_ITEMS.map((item) => {
           const Icon = item.icon;
@@ -767,6 +853,18 @@ export function MobileApp() {
           );
         })}
       </nav>
+  );
+}
+
+export function MobileApp() {
+  return (
+    <div className="m2-app">
+      <Suspense fallback={null}>
+        <MobileExperience />
+      </Suspense>
+      <Suspense fallback={null}>
+        <MobileTabBar />
+      </Suspense>
     </div>
   );
 }

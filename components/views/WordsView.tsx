@@ -16,6 +16,7 @@ import {
   getWordModeState,
   needsWordReview,
 } from "@/lib/learning";
+import { calculateDailyPlanProgress } from "@/lib/daily-plan";
 import { searchWords, type WordSearchFilters } from "@/lib/search";
 import { shuffled } from "@/lib/shuffle";
 import type { StudyMode, WordPair } from "@/lib/models";
@@ -162,7 +163,18 @@ export function WordsView() {
     );
   }, [debouncedQuery, vocabSource]);
   const todayPlan = snapshot.dailyPlans.find((plan) => plan.date === dateKey(new Date()));
-  const planWordCount = todayPlan?.newWordIds.length ?? 0;
+  // What is left today, not the size of the plan — the button used to keep
+  // advertising the full 20 after the round was already done.
+  const planWordCount = todayPlan
+    ? Math.max(
+        0,
+        todayPlan.newWordIds.length -
+          calculateDailyPlanProgress(
+            todayPlan,
+            snapshot.dailyRecords.find((item) => item.date === dateKey(new Date())),
+          ).newCompleted,
+      )
+    : 0;
   const startSession = useCallback(
     (source: SessionSource = "all", selectedMode: StudyMode = mode) => {
       const todayPlan = snapshot.dailyPlans.find(

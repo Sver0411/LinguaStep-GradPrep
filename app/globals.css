@@ -6425,3 +6425,32 @@ input[type="number"] {
 }
 
 .study-filter-details .study-filter-block { margin-top: 12px; }
+
+
+/* ---------------------------------------------------------------------------
+ * Mobile tab bar container.
+ *
+ * `.m2-tabbar-item` was ported over but the rule for `.m2-tabbar` itself never
+ * made it, so the nav fell back to `position: static` and rendered as four
+ * stacked rows at the very bottom of the document — i.e. no tab bar at all on a
+ * phone. The page containers already reserve room for it (`.m2-page` and
+ * `.m3-page` both pad ~106px at the bottom), so only the bar itself was missing.
+ * Styling mirrors the main app's `.mobile-nav` so the two shells match.
+ * ------------------------------------------------------------------------ */
+.m2-app .m2-tabbar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 70;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  min-height: calc(78px + env(safe-area-inset-bottom));
+  padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+  border: 1px solid #e0ece9;
+  border-radius: 23px 23px 0 0;
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 -6px 22px rgb(21 73 66 / 9%);
+  backdrop-filter: blur(17px);
+}
