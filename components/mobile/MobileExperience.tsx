@@ -484,13 +484,25 @@ function MobileWordStudy({ params }: { params: NavParams }) {
    */
   const [queue, setQueue] = useState<WordPair[]>(words);
   const requeuedRef = useRef<Set<string>>(new Set());
+  /**
+   * `words` is recomputed whenever the snapshot changes — and the snapshot
+   * changes on every single rating. Seeding the queue off its identity threw
+   * the learner back to the first card after each answer, so a round never
+   * advanced past word one. The queue is seeded once per navigation instead
+   * (mode + source + word), then left alone until the round is over.
+   */
+  const sessionId = `${mode}|${params.get("source") ?? ""}|${params.get("word") ?? ""}`;
+  const seededRef = useRef<string | null>(null);
   useEffect(() => {
+    if (seededRef.current === sessionId) return;
+    if (words.length === 0) return;
+    seededRef.current = sessionId;
     setQueue(words);
     setIndex(0);
     setRevealStage(0);
     setRatings({});
     requeuedRef.current = new Set();
-  }, [words]);
+  }, [sessionId, words]);
   const word = queue[index];
   const rate = async (rating: MasteryRating) => {
     if (!word || saving) return;
@@ -527,7 +539,7 @@ function MobileWordStudy({ params }: { params: NavParams }) {
   };
   const weakWords = words.filter((item) => ratings[item.id] === "unknown");
   if (words.length === 0) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo(mobileHref("/words", { mobile: "library" }))} title="没有可学习的单词" /><div className="m3-empty-card"><BookOpen size={28} /><h2>先从词库选择单词</h2><button className="m3-primary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">浏览词库</button></div></main>;
-  if (!word) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo("/")} title="本轮完成" /><div className="m3-complete"><CheckCircle2 size={36} /><h2>完成 {Object.keys(ratings).length} 个单词</h2><p>已同步更新你的学习记录与复习安排。</p>{weakWords.length > 0 && <button className="m3-primary" onClick={() => { setQueue(weakWords); setIndex(0); setRevealStage(0); setRatings({}); requeuedRef.current = new Set(); }} type="button">重练不认识的 {weakWords.length} 个词</button>}<button className={weakWords.length > 0 ? "m3-secondary" : "m3-primary"} onClick={() => navigateTo("/")} type="button">回到首页</button><button className="m3-secondary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">继续选词</button></div></main>;
+  if (!word) return <main className="m3-page"><MobileSubHeader detail="WORD STUDY" onBack={() => navigateTo("/")} title="本轮完成" /><div className="m3-complete"><CheckCircle2 size={36} /><h2>完成 {Object.keys(ratings).length} 个单词</h2><p>已同步更新你的学习记录与复习安排。</p>{weakWords.length > 0 && <button className="m3-primary" onClick={() => { setQueue(weakWords); setIndex(0); setRevealStage(0); setRatings({}); requeuedRef.current = new Set(); seededRef.current = `${sessionId}|retry`; }} type="button">重练不认识的 {weakWords.length} 个词</button>}<button className={weakWords.length > 0 ? "m3-secondary" : "m3-primary"} onClick={() => navigateTo("/")} type="button">回到首页</button><button className="m3-secondary" onClick={() => navigateTo(mobileHref("/words", { mobile: "library" }))} type="button">继续选词</button></div></main>;
   const firstLanguage: "japanese" | "english" = settings.revealOrder === "english-first"
     ? "english"
     : settings.revealOrder === "random"

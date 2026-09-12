@@ -73,36 +73,59 @@ async function resolveAudio(url: string): Promise<string | null> {
   return pending;
 }
 
-async function playChain(
+/**
+ * Play one candidate URL through an <audio> element.
+ *
+ * Media playback is not subject to CORS, which is the whole point: the
+ * dictionary endpoint sends no Access-Control-Allow-Origin header, so any
+ * fetch()-based path fails from a browser and quietly drops the learner onto
+ * the system's robotic voice. Letting the element load the URL itself works
+ * whether or not a same-origin proxy is available — the proxy is only an
+ * optimisation that makes the clip available instantly on iOS.
+ *
+ * A stalled request neither plays nor errors, so a timeout moves down the
+ * chain instead of leaving a silent tap.
+ */
+function playUrl(
+  url: string,
   urls: string[],
   index: number,
   text: string,
   language: SpeechLanguage,
   token: number,
-): Promise<void> {
+): void {
   if (token !== playToken) return;
-  if (index >= urls.length) {
-    speakOffline(text, language);
-    return;
-  }
-  const objectUrl = await resolveAudio(urls[index]);
-  if (token !== playToken) return;
-  if (!objectUrl) {
-    await playChain(urls, index + 1, text, language, token);
-    return;
-  }
-  const audio = new Audio(objectUrl);
+  const audio = new Audio(url);
   // Reset explicitly: some browsers resume the previous position otherwise.
   audio.currentTime = 0;
   currentAudio = audio;
-  try {
-    await audio.play();
-  } catch {
-    if (token === playToken) {
-      currentAudio = null;
-      await playChain(urls, index + 1, text, language, token);
+  let settled = false;
+  let timer = 0;
+
+  const advance = () => {
+    if (settled || token !== playToken) return;
+    settled = true;
+    window.clearTimeout(timer);
+    currentAudio = null;
+    try {
+      audio.pause();
+    } catch {
+      /* already failing; nothing to stop */
     }
-  }
+    if (index + 1 < urls.length) {
+      playUrl(urls[index + 1], urls, index + 1, text, language, token);
+    } else {
+      speakOffline(text, language);
+    }
+  };
+
+  timer = window.setTimeout(advance, 6000);
+  audio.addEventListener("playing", () => {
+    settled = true;
+    window.clearTimeout(timer);
+  });
+  audio.addEventListener("error", advance);
+  void audio.play().catch(advance);
 }
 
 /**
@@ -141,23 +164,15 @@ export function speak(text: string, language: SpeechLanguage): void {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
 
   const urls = sources(trimmed, language);
+  // Preferred path: a clip that `preload` already fetched, played from inside
+  // the click handler so iOS allows it.
   const ready = blobCache.get(urls[0]);
   if (ready) {
-    // Synchronous path: still inside the click handler, so mobile browsers
-    // allow it.
-    const audio = new Audio(ready);
-    audio.currentTime = 0;
-    currentAudio = audio;
-    void audio.play().catch(() => {
-      if (token === playToken) {
-        currentAudio = null;
-        void playChain(urls, 1, trimmed, language, token);
-      }
-    });
+    playUrl(ready, [ready, ...urls.slice(1)], 0, trimmed, language, token);
     return;
   }
 
-  void playChain(urls, 0, trimmed, language, token);
+  playUrl(urls[0], urls, 0, trimmed, language, token);
 }
 
 export function isSpeechSupported(): boolean {
