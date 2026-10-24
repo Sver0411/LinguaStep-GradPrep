@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useLearning } from "@/context/learning";
 import {
   ENGLISH_EXAM_LEVELS,
+  summarizeExamBank,
   EXAM_QUESTIONS,
   EXAM_SECTION_LABELS,
   JAPANESE_EXAM_LEVELS,
@@ -85,9 +86,9 @@ function categoryLabel(category: string | undefined): string {
 
 export function TestView() {
   const { snapshot, settings, completeTest, setFocusMode } = useLearning();
-  const [language, setLanguage] = useState<ExamLanguage>("japanese");
-  const [japaneseLevel, setJapaneseLevel] = useState<JapaneseExamLevel>("N3");
-  const [englishLevel, setEnglishLevel] = useState<EnglishExamLevel>("CET-4");
+  const [language, setLanguage] = useState<ExamLanguage>(settings.defaultStudyMode === "english" ? "english" : "japanese");
+  const [japaneseLevel, setJapaneseLevel] = useState<JapaneseExamLevel>(/^N[123]$/.test(settings.primaryGoal ?? "") ? settings.primaryGoal as JapaneseExamLevel : "N3");
+  const [englishLevel, setEnglishLevel] = useState<EnglishExamLevel>(["CET-4", "CET-6", "TOEIC"].includes(settings.primaryGoal ?? "") ? settings.primaryGoal as EnglishExamLevel : "基础英语");
   const [section, setSection] = useState<ExamSection>("characters");
   const [questionCount, setQuestionCount] = useState(
     () => QUESTION_COUNT_OPTIONS.find((count) => count === settings.dailyTestQuestions) ?? 10,
@@ -118,10 +119,7 @@ export function TestView() {
 
   const japaneseBank = useMemo(() => examBankStats("japanese"), []);
   const englishBank = useMemo(() => examBankStats("english"), []);
-  const poolStats = useMemo(() => {
-    const real = selectedPool.filter((item) => !item.id.includes("generated")).length;
-    return { real, practice: selectedPool.length - real, total: selectedPool.length };
-  }, [selectedPool]);
+  const poolStats = useMemo(() => summarizeExamBank(selectedPool), [selectedPool]);
   const effectiveQuestionCount = Math.min(questionCount, selectedPool.length);
   const overallAccuracy = useMemo(() => {
     const values = snapshot.testResults.flatMap((item) => item.answers);
@@ -290,7 +288,7 @@ export function TestView() {
           </div>
         )}
         <article className="question-card card">
-          <div className="question-meta"><span className="question-type">{EXAM_SECTION_LABELS[question.examSection]}</span><span>{question.examLevel}</span></div>
+          <div className="question-meta"><span className="question-type">{EXAM_SECTION_LABELS[question.examSection]}</span><span>{question.examLevel}</span><small>{question.sourceLabel}</small></div>
           {question.context && <div className="exam-passage"><span><BookOpenCheck size={17} />阅读材料</span><p>{question.context}</p></div>}
           <h1>{question.prompt}</h1>
           <div className={`option-list${showFeedback ? "" : " neutral"}`}>
@@ -310,12 +308,12 @@ export function TestView() {
 
   return (
     <div className="page-stack test-page exam-home-page">
-      <PageHeader eyebrow="真题练习" title={setupStage === "language" ? "先选择练习语言" : `设置${LANGUAGE_LABEL[language]}练习`} description="把语言选择、难度和题型拆成两步，减少同一页面的选项堆叠。" />
-      <section className="exam-setup-layout">
+      <PageHeader eyebrow="分级练习" title={setupStage === "language" ? "先选择练习语言" : `设置${LANGUAGE_LABEL[language]}练习`} description="把语言选择、难度和题型拆成两步，减少同一页面的选项堆叠。" />
+      <section className="card"><h2>听写与语境训练</h2><p>用短句听辨、听写、输入填空和新语境阅读检验掌握情况。</p><Link className="button button-primary" href="/training">进入能力训练</Link></section><section className="exam-setup-layout">
         <article className="card exam-config-card">
           <div className="exam-step-heading"><span>1</span><div><strong>选择语言</strong><small>日语或英语</small></div></div>
           <div className="exam-language-picker">
-            {(["japanese", "english"] as ExamLanguage[]).map((item) => <button type="button" className={language === item ? "active" : ""} onClick={() => setLanguage(item)} key={item}><Languages size={23} /><span><strong>{LANGUAGE_LABEL[item]}</strong><small>{item === "japanese" ? "JLPT N3 / N2 / N1" : "四级 / 六级 / TOEIC"}</small></span></button>)}
+            {(["japanese", "english"] as ExamLanguage[]).map((item) => <button type="button" className={language === item ? "active" : ""} onClick={() => setLanguage(item)} key={item}><Languages size={23} /><span><strong>{LANGUAGE_LABEL[item]}</strong><small>{item === "japanese" ? "JLPT N3 / N2 / N1" : "基础英语 / 四级 / 六级 / TOEIC"}</small></span></button>)}
           </div>
           {setupStage === "language" ? (
             <div className="exam-next-step"><p>下一步会选择考试等级；日语还可以继续选择文字、文法或阅读。</p><Button onClick={() => setSetupStage("options")}>下一步：选择难度<ArrowRight size={18} /></Button></div>
@@ -336,13 +334,13 @@ export function TestView() {
                   {QUESTION_COUNT_OPTIONS.map((count) => <button type="button" className={questionCount === count ? "active" : ""} aria-pressed={questionCount === count} onClick={() => setQuestionCount(count)} key={count}>{count} 题</button>)}
                 </div>
               </div>
-              <div className="exam-start-row"><div><span>本组内容</span><strong>{language === "japanese" ? `${japaneseLevel} · ${EXAM_SECTION_LABELS[section]}` : `${englishLevel} · 综合`}</strong><small>随机抽取 {effectiveQuestionCount} 题 · 本档共 {poolStats.total} 题（真题 {poolStats.real} · 复习题 {poolStats.practice}）{effectiveQuestionCount < questionCount ? "（本档题量不足，已按上限出题）" : ""}</small></div><Button className="button-large" onClick={startTest} disabled={selectedPool.length === 0}><Play size={18} fill="currentColor" />开始测试</Button></div>
+              <p className="practice-scope-note">基础英语题来自中学题库；考试等级下为专项练习，未经标准化难度校准，正确率不能换算考试分数。</p><div className="exam-start-row"><div><span>本组内容</span><strong>{language === "japanese" ? `${japaneseLevel} · ${EXAM_SECTION_LABELS[section]}` : `${englishLevel} · 综合`}</strong><small>随机抽取 {effectiveQuestionCount} 题 · 本档共 {poolStats.total} 题（官方历年题 {poolStats.real} · 教辅 {poolStats.textbook} · 公开练习 {poolStats.practice} · 内置/原创 {poolStats.original}）{effectiveQuestionCount < questionCount ? "（本档题量不足，已按上限出题）" : ""}</small></div><Button className="button-large" onClick={startTest} disabled={selectedPool.length === 0}><Play size={18} fill="currentColor" />开始测试</Button></div>
             </>
           )}
         </article>
         <aside className="exam-info-column">
-          <article className="card mini-stat-card"><span>日语题库</span><strong>{japaneseBank.real}<small>道题</small></strong><p>含 {japaneseBank.practice} 道自动生成复习题</p></article>
-          <article className="card mini-stat-card"><span>英语题库</span><strong>{englishBank.real}<small>道题</small></strong><p>含 {englishBank.practice} 道自动生成复习题</p></article>
+          <article className="card mini-stat-card"><span>日语题库</span><strong>{japaneseBank.total}<small>道题</small></strong><p>官方历年题 {japaneseBank.real} · 教辅 {japaneseBank.textbook} · 其余为练习题</p></article>
+          <article className="card mini-stat-card"><span>英语题库</span><strong>{englishBank.total}<small>道题</small></strong><p>含基础英语题；四六级/TOEIC 为原创专项，不代表考试分数</p></article>
           <article className="card mini-stat-card"><span>历史正确率</span><strong>{overallAccuracy}<small>%</small></strong><ProgressBar value={overallAccuracy} label="历史测试正确率" /></article>
         </aside>
       </section>

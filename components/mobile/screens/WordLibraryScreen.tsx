@@ -1,5 +1,6 @@
 "use client";
 
+import { BookStudyButton } from "@/components/words/BookStudyButton";
 import { useMemo, useState } from "react";
 import { ChevronRight, Search } from "lucide-react";
 import { useLearning } from "@/context/learning";
@@ -69,7 +70,7 @@ export function MobileWordLibrary() {
         >
           <option value="core">核心词库（可背词）</option>
           {BOOK_VOCAB_SECTIONS.map((item) => (
-            <option key={item.id} value={item.id}>{item.label}（查阅）</option>
+            <option key={item.id} value={item.id}>{item.label}（可加入学习）</option>
           ))}
         </select>
       </label>
@@ -118,7 +119,7 @@ export function MobileWordLibrary() {
                   </button>
                 </div>
               </div>
-              <p>{word.meaningZh}</p>
+              <BookStudyButton word={word} /><p>{word.meaningZh}</p>
               {word.english && <p className="m3-book-vocab-english"><span>英</span> {word.english}</p>}
               {word.exampleJp && <p className="m3-book-vocab-example">{word.exampleJp}</p>}
               {word.exampleEn && <p className="m3-book-vocab-example en">{word.exampleEn}</p>}

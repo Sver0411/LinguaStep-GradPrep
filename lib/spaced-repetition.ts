@@ -119,6 +119,7 @@ export function applyReviewRating(
   }
 
   return {
+    recallHistory: [...(prior.recallHistory ?? []), { at: now, rating, gapDays: previous ? Math.max(0, (nowTimestamp - safeTimestamp(previous.lastStudiedAt, nowTimestamp)) / DAY_MS) : 0 }].slice(-400),
     status: statusFor(rating, correctStreak),
     mastery: rating,
     firstStudiedAt: previous?.firstStudiedAt ?? now,

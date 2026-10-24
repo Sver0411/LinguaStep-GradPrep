@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { LearningGoalSettings } from "@/components/settings/LearningGoalSettings";
 import { APP_VERSION } from "@/lib/constants";
 import type {
   FontSize,
@@ -132,6 +133,7 @@ export function SettingsView() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+    updateSettings({ lastBackupAt: new Date().toISOString() });
   };
 
   const handleImportFile = async (file: File | undefined) => {
@@ -256,7 +258,7 @@ export function SettingsView() {
         <SettingRow title="每日测试题数" description="首页计划和测试页默认值。"><NumberControl value={settings.dailyTestQuestions} options={[10,20,30]} min={1} max={100} label="每日测试题数" onChange={(value) => updateSettings({ dailyTestQuestions:value })} /></SettingRow>
         <SettingRow title="语法练习题数" description="每个语法点最多提供 5 道配套题。"><NumberControl value={settings.grammarExerciseCount} options={[3,5]} min={1} max={5} label="语法练习题数" onChange={(value) => updateSettings({ grammarExerciseCount:value })} /></SettingRow>
         <SettingRow title="测试即时反馈" description="开启后每题立即显示正确答案和解析。"><Switch value={settings.immediateTestFeedback} label="测试即时反馈" onChange={() => updateSettings({ immediateTestFeedback:!settings.immediateTestFeedback })} /></SettingRow>
-        <SettingRow title="揭示后自动朗读" description="使用设备自带的语音引擎朗读单词；卡片上始终提供手动朗读按钮。"><Switch value={settings.autoSpeak} label="揭示后自动朗读" onChange={() => updateSettings({ autoSpeak:!settings.autoSpeak })} /></SettingRow>
+        <SettingRow title="揭示后自动朗读" description="使用自然神经语音朗读单词和例句；需要联网，不使用系统机械音兜底。"><Switch value={settings.autoSpeak} label="揭示后自动朗读" onChange={() => updateSettings({ autoSpeak:!settings.autoSpeak })} /></SettingRow>
       </section>
 
       <section className={`settings-section card mobile-settings-section${mobileSection === "appearance" ? " mobile-open" : ""}`}>
@@ -267,9 +269,9 @@ export function SettingsView() {
         <SettingRow title="字体大小" description="较大字体会提高正文和表单的基础字号。"><div className="segmented-control">{([{ value:"standard", label:"标准" }, { value:"large", label:"较大" }] as Array<{ value:FontSize; label:string }>).map((item) => <button className={settings.fontSize === item.value ? "active" : ""} onClick={() => updateSettings({ fontSize:item.value })} key={item.value}>{item.label}</button>)}</div></SettingRow>
       </section>
 
-      <section className="settings-section card backup-section">
+      <LearningGoalSettings /><section className="settings-section card backup-section">
         <div className="settings-section-heading"><span className="settings-icon"><Database size={20} /></span><div><h2>备份与恢复</h2><p>学习记录只保存在这台浏览器里，换设备或清缓存前请先导出</p></div></div>
-        <div className="backup-actions">
+        <p>最近导出：{settings.lastBackupAt ? new Date(settings.lastBackupAt).toLocaleString("zh-CN") : "尚无导出记录"} · 设备之间需手动传递备份，不会自动同步。</p><div className="backup-actions">
           <button onClick={downloadBackup}><Download size={18} /><span><strong>导出备份</strong><small>下载包含全部进度、错题、收藏和设置的 JSON 文件</small></span></button>
           <button onClick={() => fileInputRef.current?.click()}><Upload size={18} /><span><strong>导入备份</strong><small>用备份文件替换当前设备上的全部数据</small></span></button>
           <input ref={fileInputRef} type="file" accept="application/json,.json" className="sr-only" aria-label="选择备份文件" onChange={(event) => { void handleImportFile(event.target.files?.[0]); event.target.value = ""; }} />

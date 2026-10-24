@@ -15,13 +15,13 @@ import type {
   MasteryRating,
   MistakeRecord,
   MistakeState,
-  QuestionSource,
   StudyMode,
   TestAnswer,
   TestMode,
   TestResult,
   TestSourceFilter,
   WordPair,
+  WordStudyOptions,
   WordProgress,
 } from "@/lib/models";
 
@@ -67,7 +67,10 @@ export interface LearningContextValue {
     wordId: string,
     rating: MasteryRating,
     mode?: StudyMode,
+    options?: WordStudyOptions,
   ) => Promise<WordProgress>;
+  answerWordQuiz: (question: import("@/lib/word-quiz").WordQuizQuestion, selectedIndex: number, options?: WordStudyOptions) => Promise<WordProgress>;
+  addBookWord: (bookId: string) => Promise<string>;
   completeGrammar: (
     grammarId: string,
     answers: TestAnswer[],

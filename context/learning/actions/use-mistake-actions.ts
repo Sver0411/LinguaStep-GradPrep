@@ -4,16 +4,22 @@ import { useCallback, useMemo } from "react";
 import { dateKey, isAnswerCorrect, updateDailyRecord, updateMistakeRecord } from "@/lib/learning";
 import type { MistakeState } from "@/lib/models";
 
-type Deps = Pick<SnapshotStore, "persistSnapshot" | "snapshotRef" | "settingsRef">;
+type Deps = Pick<SnapshotStore, "persistSnapshot" | "snapshotRef" | "settingsRef"> & {
+  answerWordQuiz?: import("../types").LearningContextValue["answerWordQuiz"];
+};
 
 export function useMistakeActions(deps: Deps) {
-  const { persistSnapshot, snapshotRef, settingsRef } = deps;
+  const { persistSnapshot, snapshotRef, settingsRef, answerWordQuiz } = deps;
 
     const answerMistake = useCallback(
       async (mistakeId: string, selectedIndex: number) => {
         const current = snapshotRef.current;
         const existing = current.mistakes.find((item) => item.id === mistakeId);
         if (!existing) return null;
+        if (existing.question.wordQuiz && answerWordQuiz) {
+          await answerWordQuiz(existing.question as import("@/lib/word-quiz").WordQuizQuestion, selectedIndex);
+          return snapshotRef.current.mistakes.find((item) => item.id === mistakeId) ?? null;
+        }
         const nowDate = new Date();
         const now = nowDate.toISOString();
         const updated = updateMistakeRecord(
@@ -38,7 +44,7 @@ export function useMistakeActions(deps: Deps) {
         });
         return updated;
       },
-      [persistSnapshot],
+      [answerWordQuiz, persistSnapshot, settingsRef, snapshotRef],
     );
 
     const setMistakeState = useCallback(

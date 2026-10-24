@@ -19,6 +19,7 @@ import { getNextLearningAction } from "@/lib/learning-flow";
 import type { MistakeRecord, MistakeState, QuestionSource } from "@/lib/models";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { FilterPanel } from "@/components/filters/FilterPanel";
+import { TrainingQuestionInput } from "@/components/TrainingQuestionInput";
 
 type MistakeLanguage = "all" | "japanese" | "english" | "mixed";
 
@@ -126,6 +127,7 @@ export function MistakesView() {
     if (!reviewing || reviewResult) return;
     const handleKey = (event: KeyboardEvent) => {
       const number = Number(event.key);
+      if (event.target instanceof Element && event.target.matches("input, textarea")) return;
       if (number >= 1 && number <= 4) setSelectedIndex(number - 1);
     };
     window.addEventListener("keydown", handleKey);
@@ -205,7 +207,8 @@ export function MistakesView() {
           <span className="question-type">{sourceLabel(reviewing, allGrammar)}</span>
           {question.context && <p className="question-context">{question.context}</p>}
           <h1>{question.prompt}</h1>
-          <div className="option-list">
+          <TrainingQuestionInput key={question.id} question={question} disabled={reviewResult !== null} onChange={setSelectedIndex} />
+          {!question.acceptedAnswers && <div className="option-list">
             {question.options.map((option, optionIndex) => {
               const selected = selectedIndex === optionIndex;
               const submitted = reviewResult !== null;
@@ -217,7 +220,7 @@ export function MistakesView() {
                 </button>
               );
             })}
-          </div>
+          </div>}
           {reviewResult && (
             <div className={`answer-explanation ${correct ? "correct" : "wrong"}`}>
               <strong>{correct ? (reviewResult.active ? `答对了，当前状态：${STATE_LABEL[reviewResult.state]}` : "已掌握，这道题已移出活跃列表") : "再次答错，复习优先级已提高"}</strong>
@@ -310,7 +313,7 @@ export function MistakesView() {
                   <div className="mistake-detail-content">
                     <p>正确答案：<strong>{mistake.question.options[mistake.question.correctIndex]}</strong></p>
                     <div className="mistake-explanation">{mistake.question.explanation}</div>
-                    <details className="history-details"><summary>错误历史 · {mistake.history.length} 条</summary><ul>{[...mistake.history].reverse().slice(0, 8).map((item, index) => <li key={`${item.answeredAt}-${index}`}>{formatDate(item.answeredAt)} · {item.correct ? "答对" : "答错"} · 选择 {String.fromCharCode(65 + item.selectedIndex)}</li>)}</ul></details>
+                    <details className="history-details"><summary>错误历史 · {mistake.history.length} 条</summary><ul>{[...mistake.history].reverse().slice(0, 8).map((item, index) => <li key={`${item.answeredAt}-${index}`}>{formatDate(item.answeredAt)} · {item.correct ? "答对" : "答错"} · {item.selectedIndex < 0 ? "查看答案，未作答" : `选择 ${String.fromCharCode(65 + item.selectedIndex)}`}</li>)}</ul></details>
                     <div className="mistake-management-actions">
                       {mistake.state !== "mastered" && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "mastered")}><CheckCircle2 size={15} />标记掌握</button>}
                       {!mistake.active && <button className="text-button" onClick={() => void setMistakeState(mistake.id, "active")}><RotateCcw size={15} />重新加入</button>}

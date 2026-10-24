@@ -152,10 +152,11 @@ export function updateDailyRecord(
     "englishGrammarStudied",
     "questionsAnswered",
     "correctAnswers",
+    "studySeconds",
   ];
   const next = { ...current };
   fields.forEach((field) => {
-    next[field] = current[field] + (delta[field] ?? 0);
+    next[field] = (current[field] ?? 0) + (delta[field] ?? 0);
   });
   return [...records.filter((item) => item.date !== date), next].sort((a, b) =>
     a.date.localeCompare(b.date),

@@ -2,7 +2,7 @@ import { DEFAULT_SETTINGS } from "../constants";
 import type { AppSettings } from "../models";
 
 export const SETTINGS_STORAGE_KEY = "lingua-step:settings";
-const SETTINGS_SCHEMA_VERSION = 5;
+const SETTINGS_SCHEMA_VERSION = 6;
 
 export interface SettingsRepository {
   get(): AppSettings;
@@ -79,6 +79,10 @@ function normalizeSettings(
       : fallback.studyEnglishLevel;
 
   return {
+    dailyMinutes: [0, 10, 20, 30].includes(Number(value.dailyMinutes)) ? Number(value.dailyMinutes) : 0,
+    primaryGoal: typeof value.primaryGoal === "string" && ["general", "N3", "N2", "N1", "CET-4", "CET-6", "TOEIC"].includes(value.primaryGoal) ? value.primaryGoal : "general",
+    targetExamDate: typeof value.targetExamDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.targetExamDate) && Number.isFinite(Date.parse(value.targetExamDate)) ? value.targetExamDate : "",
+    lastBackupAt: typeof value.lastBackupAt === "string" && Number.isFinite(Date.parse(value.lastBackupAt)) ? value.lastBackupAt : "",
     theme,
     focusModeEnabled:
       typeof value.focusModeEnabled === "boolean"
@@ -175,6 +179,7 @@ export class LocalStorageSettingsRepository implements SettingsRepository {
             ...(storedVersion < 2 ? { revealMode: DEFAULT_SETTINGS.revealMode } : {}),
             ...(storedVersion < 3 ? { focusModeEnabled: DEFAULT_SETTINGS.focusModeEnabled } : {}),
             ...(storedVersion < 4 ? { immediateTestFeedback: DEFAULT_SETTINGS.immediateTestFeedback } : {}),
+            ...(storedVersion < 6 ? { autoSpeak: true } : {}),
           }
         : parsed;
       this.memorySettings = normalizeSettings(migrationInput);

@@ -1,4 +1,5 @@
 import { REVIEW_ALGORITHM_VERSION } from "../constants";
+import { normalizeQuizMemory } from "../word-quiz-scheduler";
 import type {
   AIContentReport,
   AIExplanationRecord,
@@ -105,7 +106,9 @@ export function migrateReviewState(
     lastRating: masteryValue(record.lastRating ?? mastery),
     isNew: booleanValue(record.isNew, reviewCount === 0),
     suspended: booleanValue(record.suspended, false),
-    algorithmVersion: REVIEW_ALGORITHM_VERSION,
+    algorithmVersion: normalizeQuizMemory(record.quizMemory) ? 3 : REVIEW_ALGORITHM_VERSION,
+    quizMemory: normalizeQuizMemory(record.quizMemory),
+    recallHistory: Array.isArray(record.recallHistory) ? record.recallHistory.filter((item) => isRecord(item) && typeof item.at === "string" && Number.isFinite(Date.parse(item.at)) && ["known", "fuzzy", "unknown"].includes(String(item.rating)) && typeof item.gapDays === "number" && Number.isFinite(item.gapDays) && item.gapDays >= 0).slice(-400) as ReviewState["recallHistory"] : undefined,
   };
 }
 
@@ -188,6 +191,11 @@ export function migrateGrammarProgressRecord(
   };
 }
 
+function normalizeLegacyQuestion(question: MistakeRecord["question"]): MistakeRecord["question"] {
+  if (!/exam-en-cet-[46]-ext-en-/.test(question.id)) return question;
+  return { ...question, difficulty: "基础英语", prompt: question.prompt };
+}
+
 export function migrateMistakeRecord(
   value: unknown,
   fallbackNow = new Date(0).toISOString(),
@@ -224,7 +232,7 @@ export function migrateMistakeRecord(
     contentRef: isRecord(record.contentRef)
       ? (record.contentRef as unknown as MistakeRecord["contentRef"])
       : { source: question.source, sourceId: question.sourceId },
-    question,
+    question: normalizeLegacyQuestion(question),
     selectedIndex,
     errorCount: numberValue(record.errorCount, 1),
     correctStreak,
@@ -266,7 +274,7 @@ export function migrateTestResult(
         ? record.sourceFilter
         : "all-learned",
     answers: Array.isArray(record.answers)
-      ? (record.answers as TestResult["answers"])
+      ? (record.answers as TestResult["answers"]).map((answer) => ({ ...answer, question: normalizeLegacyQuestion(answer.question) }))
       : [],
     correctCount: numberValue(record.correctCount, 0),
     startedAt: stringValue(record.startedAt, completedAt),
@@ -296,6 +304,7 @@ export function migrateDailyRecord(value: unknown): DailyRecord {
     englishGrammarStudied: numberValue(record.englishGrammarStudied, 0),
     questionsAnswered: numberValue(record.questionsAnswered, 0),
     correctAnswers: numberValue(record.correctAnswers, 0),
+    ...(typeof record.studySeconds === "number" ? { studySeconds: numberValue(record.studySeconds, 0) } : {}),
   };
 }
 
@@ -320,6 +329,9 @@ export function migrateDailyPlan(value: unknown): DailyPlan {
       ? (record.grammarIds.filter((item) => typeof item === "string") as string[])
       : [],
     testTarget: numberValue(record.testTarget, 10),
+    completedBeforePlan: isRecord(record.completedBeforePlan) ? { newWords: numberValue(record.completedBeforePlan.newWords, 0), reviewWords: numberValue(record.completedBeforePlan.reviewWords, 0), grammar: numberValue(record.completedBeforePlan.grammar, 0), test: numberValue(record.completedBeforePlan.test, 0) } : undefined,
+    ...(typeof record.estimatedMinutes === "number" ? { estimatedMinutes: record.estimatedMinutes } : {}),
+    ...(typeof record.budgetReason === "string" ? { budgetReason: record.budgetReason } : {}),
     studyMode:
       record.studyMode === "japanese" || record.studyMode === "english"
         ? record.studyMode
@@ -332,7 +344,7 @@ export function migrateAIWord(value: unknown): WordPair {
   return {
     ...(record as unknown as WordPair),
     id: stringValue(record.id, "unknown-ai-word"),
-    source: "ai-generated",
+    source: record.source === "user-created" ? "user-created" : "ai-generated",
   };
 }
 

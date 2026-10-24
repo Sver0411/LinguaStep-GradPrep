@@ -1,13 +1,7 @@
 import type { EnglishExamLevel, ExamSection } from "./exam-questions";
 import compactRows from "./exam-practice-en.generated.json";
 
-/**
- * English multiple-choice items from the public "Chinese middle school English
- * exam questions" dataset (dry-melon, Hugging Face, CC BY 4.0). Each item
- * carries four options, the correct answer and often an explanation. Grade 7-8
- * items map to CET-4 and grade 9 items to CET-6, which matches their relative
- * difficulty; there is no TOEIC material in this source.
- */
+/** Middle-school exercises are foundation practice, never CET exam questions. */
 export interface ExternalEnglishQuestion {
   level: EnglishExamLevel;
   section: ExamSection;

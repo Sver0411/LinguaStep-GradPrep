@@ -34,15 +34,17 @@ export function LearningProvider({ children }: { children: ReactNode }) {
   const store = useSnapshotStore();
   const word = useWordActions(store);
   const practice = usePracticeActions(store);
-  const mistake = useMistakeActions(store);
+  const mistake = useMistakeActions({ ...store, answerWordQuiz: word.answerWordQuiz });
   const favorite = useFavoriteActions(store);
   const ai = useAIActions(store);
+
+  const allWords = useMemo(() => [...WORD_PAIRS, ...store.snapshot.aiWords.filter((item) => item.source === "user-created")], [store.snapshot.aiWords]);
 
   const value = useMemo<LearningContextValue>(
     () => ({
       snapshot: store.snapshot,
       settings: store.settings,
-      allWords: WORD_PAIRS,
+      allWords,
       allGrammar: [...GRAMMAR_POINTS, ...store.snapshot.aiGrammar],
       allComparisons: [...GRAMMAR_COMPARISONS, ...store.snapshot.aiComparisons],
       ready: store.ready,
@@ -50,6 +52,8 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       focusMode: store.focusMode,
       setFocusMode: store.setFocusMode,
       studyWord: word.studyWord,
+      answerWordQuiz: word.answerWordQuiz,
+      addBookWord: word.addBookWord,
       markWordKnown: word.markWordKnown,
       completeGrammar: practice.completeGrammar,
       completeTest: practice.completeTest,
@@ -71,7 +75,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       exportBackup: store.exportBackup,
       importBackup: store.importBackup,
     }),
-    [ai, favorite, mistake, practice, store, word],
+    [ai, allWords, favorite, mistake, practice, store, word],
   );
 
   return (

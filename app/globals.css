@@ -6454,3 +6454,52 @@ input[type="number"] {
   box-shadow: 0 -6px 22px rgb(21 73 66 / 9%);
   backdrop-filter: blur(17px);
 }
+
+.speech-control { display: inline; font-size: 0.75rem; font-weight: normal; }
+.speech-message { display: inline; margin-inline: 0.35rem; font-size: 0.7rem; line-height: 1.5; overflow-wrap: anywhere; }
+.speech-message { color: var(--muted); }
+
+.book-study-action { font-size: .8rem; margin-block: .5rem; }
+.goal-settings { display: grid; gap: 1rem; }
+.goal-settings label, .training-page label { display: grid; gap: .5rem; }
+.goal-settings select, .goal-settings input, .training-page select, .training-page input { border: 1px solid var(--border); border-radius: 10px; padding: .7rem; color: var(--text); background: var(--panel); width: 100%; }
+.plan-budget { padding: 1rem; }
+.plan-budget p, .practice-scope-note { color: var(--muted); font-size: .85rem; }
+.training-options { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1rem; }
+.training-options button { border: 1px solid var(--border); border-radius: 10px; padding: .75rem; }
+.training-options button.active { color: var(--primary); border-color: var(--primary); background: var(--primary-soft); }
+.training-page { max-width: 900px; margin-inline: auto; }
+.training-page .card { padding: 1.2rem; }
+.training-page .button, .training-page a { margin: .4rem; }
+.training-listen { display: flex; align-items: center; gap: .7rem; margin-block: 1rem; }
+.insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 1rem; margin-block: 1rem; }
+.insight-grid article, .insight-mistake { border: 1px solid var(--border); border-radius: 12px; padding: 1rem; overflow-wrap: anywhere; }
+.learning-insights { padding: 1.25rem; }
+.learning-insights p { font-size: .85rem; color: var(--muted); white-space: pre-line; }
+.learning-insights a { color: var(--primary); text-decoration: underline; margin-right: 1rem; }
+@media (max-width: 680px) { .training-page { padding-bottom: 100px; } .backup-actions { flex-wrap: wrap; } .backup-actions button { min-height: 44px; } .goal-settings input, .training-page input { font-size: 16px; } }
+
+/* Five-word reveal/quiz cycles share the same interaction on both layouts. */
+.word-cycle-session { display: grid; gap: 16px; align-content: start; }
+.word-cycle-session .session-topline { gap: 12px; flex-wrap: wrap; }
+.word-cycle-session .word-choice-card h1 { margin: 24px 0; font-size: clamp(30px, 5vw, 48px); overflow-wrap: anywhere; }
+.word-cycle-session .word-choice-card .option-list { margin: 20px 0; }
+.word-cycle-session .word-choice-card .quiz-option { min-height: 56px; text-align: left; overflow-wrap: anywhere; }
+.word-cycle-session .answer-explanation { margin-block: 16px; }
+.word-cycle-session .summary-actions { flex-wrap: wrap; }
+@media (max-width: 680px) {
+  .word-cycle-session.m3-page { min-height: 100svh; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .word-cycle-session .flashcard { min-height: 360px; padding: 28px 18px; }
+  .word-cycle-session .prompt-side h1 { font-size: 36px; }
+  .word-cycle-session .answer-panel { padding: 18px 14px; }
+  .word-cycle-session .answer-panel > strong { font-size: 26px; overflow-wrap: anywhere; }
+  .word-cycle-session .question-card { padding: 22px 18px; }
+  .word-cycle-session > .m3-primary { position: sticky; bottom: 12px; min-height: 52px; z-index: 2; }
+  .word-cycle-session .quiz-option { width: 100%; }
+}
+
+.word-example { margin-top: 16px; text-align: left; }
+.word-example-heading { display: flex; align-items: center; gap: 8px; color: var(--muted-strong); font-size: 12px; }
+.word-example > p { margin: 8px 0; line-height: 1.7; overflow-wrap: anywhere; }
+.word-example > span { display: block; line-height: 1.65; overflow-wrap: anywhere; }
+.word-example-missing { color: var(--muted); font-size: 13px; }

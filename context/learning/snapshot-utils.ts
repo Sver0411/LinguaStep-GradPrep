@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { GRAMMAR_POINTS } from "@/data/grammar";
 import { WORD_PAIRS } from "@/data/words";
@@ -75,6 +74,7 @@ export function mergeDailyChanges(
     "englishGrammarStudied",
     "questionsAnswered",
     "correctAnswers",
+    "studySeconds",
   ] as const;
   previousMap.forEach((_item, date) => {
     if (!nextMap.has(date)) latestMap.delete(date);
@@ -219,7 +219,7 @@ export function restrictSnapshotToActiveVocabulary(
   snapshot: LearningSnapshot,
   today = dateKey(new Date()),
 ): LearningSnapshot {
-  const activeWordIds = new Set(WORD_PAIRS.map((word) => word.id));
+  const activeWordIds = new Set([...WORD_PAIRS, ...snapshot.aiWords.filter((item) => item.source === "user-created")].map((word) => word.id));
   const wordProgress = snapshot.wordProgress.filter((item) =>
     activeWordIds.has(item.wordId),
   );
@@ -331,15 +331,18 @@ export function createPlan(
   settings: AppSettings,
   now = new Date(),
 ): DailyPlan {
-  return generateDailyPlan({
+  const plan = generateDailyPlan({
     date: dateKey(now),
     now: now.toISOString(),
     settings,
-    words: WORD_PAIRS,
+    words: [...WORD_PAIRS, ...snapshot.aiWords.filter((item) => item.source === "user-created")],
     grammar: [...GRAMMAR_POINTS, ...snapshot.aiGrammar],
     wordProgress: snapshot.wordProgress,
     grammarProgress: snapshot.grammarProgress,
     mistakes: snapshot.mistakes,
     previousPlans: snapshot.dailyPlans,
+    dailyRecords: snapshot.dailyRecords,
   });
+  const record = snapshot.dailyRecords.find((item) => item.date === plan.date);
+  return { ...plan, completedBeforePlan: { newWords: record?.newWordsStudied ?? 0, reviewWords: record?.reviewWordsStudied ?? 0, grammar: record?.grammarStudied ?? 0, test: record?.questionsAnswered ?? 0 } };
 }

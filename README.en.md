@@ -6,9 +6,31 @@
 
 LinguaStep is a Chinese-interface web app for personal Japanese and English study. It is designed for long-term goals including Japanese JLPT N3/N2/N1 and English CET-4/CET-6/TOEIC. It brings bilingual word cards, grammar, review plans, exam-style practice, mistakes, favorites, and statistics into one learning loop.
 
-The current version is **v0.16.0**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
+The current version is **v0.18.1**. No account is required; built-in content and learning records are stored in the current browser, and core learning features continue to work offline. The frontend AI entry points are currently paused and removed, while the related backend code and existing content data are retained for possible future re-enablement.
 
 Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
+
+## v0.18.1 (2026-10-24)
+
+Revealed words always show an example and its Chinese translation, including compact mode. Automatic playback reads the word, its example and the sentence translation for both languages; only the first revealed word additionally reads the word's Chinese definition. Example buttons replay the foreign sentence followed by Chinese. Quiz examples appear only after answering. Audio warm-up is queued at three concurrent requests. All 2,560 built-in pairs have both sentence translations; missing imported translations are labeled rather than fabricated.
+
+## v0.18.0 (2026-10-24)
+
+Learn by revealing up to five word pairs, then answer correspondence questions. Correct words leave the active pool; failed words stay in practice while newly revealed words refill five slots. The last question continues directly into the next batch without a round-summary confirmation page.
+
+Japanese-English mode alternates both translation directions; single-language mode tests Chinese meanings. FSRS-6 (`ts-fsrs@5.4.2`) schedules objective answers using Again/Good at 90% desired retention. Session passing is separate from mature memory: the latter requires spaced successful reviews and sufficient stability. Old self-ratings remain separate; no personal parameter optimization is claimed. See [algorithm details and sources](docs/spaced-repetition.md).
+
+## v0.17.1 (2026-10-23)
+
+Chinese is spoken only after the first revealed foreign word. Revealing both reads: first language → Chinese → second language. Single-language cards still read foreign → Chinese.
+
+## v0.17.0 (2026-10-23)
+
+- Corrected English difficulty and exam provenance, hid mobile word answers until reveal, and restored one shared Known / Uncertain / Unknown rating per card.
+- Keyless Edge neural speech: Nanami (Japanese), Jenny (English), Xiaoxiao (Chinese). Revealing a word reads the foreign expression followed by its Chinese meaning; audio is prepared together to shorten the gap. System-speech fallbacks were removed.
+- Book vocabulary can join daily learning and spaced review. Added listening, dictation, grammar cloze and unseen-first reading practice, with audio and typed recall retained in mistake review.
+- Added mobile backup/restore and export timestamps, a primary goal and daily time budget, delayed self-recall and first-attempt statistics. Devices require manual backup transfer; they do not sync automatically.
+- Reuses the existing corpus and scheduler; this is not a complete exam course or professional difficulty calibration. See the [Chinese release notes](README.md#v0170-使用体验修复2026-10-23) for details.
 
 ## Highlights
 
@@ -16,8 +38,8 @@ Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 - **Synchronized Japanese and English study**: Learn both languages from the same Chinese meaning, or study either language independently.
 - **Local-first**: No login is required. IndexedDB stores structured learning data, and core features do not depend on the network.
 - **Long-term review**: An explainable spaced-repetition scheduler and daily plan help you study instead of merely browsing a word list.
-- **Ready-to-study content**: Includes 2,559 curated or textbook-aligned exam word groups, with at least 800 words at each N1/N2/N3 level, 80 independent grammar points, and 137 Japanese-English grammar comparisons.
-- **Exam-style practice**: Japanese is organized by N3/N2/N1, while English is organized by CET-4/CET-6/TOEIC. The question bank is independent from the word-learning library.
+- **Ready-to-study content**: Includes 2,560 curated or textbook-aligned exam word groups, with at least 800 words at each N1/N2/N3 level, 80 independent grammar points, and 137 Japanese-English grammar comparisons.
+- **Level-based practice**: Japanese N3/N2/N1; English separates 800 foundation items from small original CET-4/CET-6/TOEIC sets. Source types are explicit.
 - **Dedicated mobile experience**: Desktop keeps its sidebar; mobile uses an independent hierarchy, fixed bottom navigation, filter drawers, and one-primary-action pages instead of compressing desktop content.
 
 ## Features
@@ -35,7 +57,7 @@ Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
 
 ### Word study
 
-- Includes **2,559** Japanese-English word groups covering common exam vocabulary for N3/N2/N1 and CET-4/CET-6/TOEIC. Each N1/N2/N3 level contains at least 800 words; newly added words were aligned with local Red/Green reference-book units through OCR and supplemented by a reviewed expansion set.
+- Includes **2,560** Japanese-English word groups covering common exam vocabulary for N3/N2/N1 and CET-4/CET-6/TOEIC. Each N1/N2/N3 level contains at least 800 words; newly added words were aligned with local Red/Green reference-book units through OCR and supplemented by a reviewed expansion set.
 - Each group includes a Chinese core meaning, Japanese writing/kana/romaji, English word/phonetic transcription, parts of speech, levels, example sentences, translations, collocations, and usage differences.
 - Japanese transitive and intransitive verbs use dictionary-form headwords consistently. サ変 verbs such as `勉強する` and `確認する` are stored as the stems `勉強` and `確認`, with the ability to attach `する` retained in parts of speech and notes.
 - Supports three independent study tracks:
@@ -44,9 +66,9 @@ Public site: [Open LinguaStep](https://twclab.top/LinguaStep)
   - English only
 - The page separates “Start studying” from “Browse library”; search and filters do not interfere with the daily study entry point.
 - Supports compact and full card views, reveal-all and step-by-step reveal, and Japanese-first/English-first/random reveal. Defaults are managed in Settings.
-- Choose 10, 20, 30, or a custom number of cards, then review the proportions of known, uncertain, unknown, and mastered items.
+- Choose the session size; each internal batch reveals at most five new word groups, then tests them. No self-rating buttons are used.
 - Every study session reselects and shuffles its cards while prioritizing unlearned words. Review, favorite, and today's-new-word queues are shuffled as well.
-- Continue with remaining new words after a session. “Retry new words” only retries words marked “unknown” in the current session.
+- Failed words stay in practice; new word reveals refill the pool to five. Batch transitions happen directly, followed by a final session completion page.
 - Search Chinese, Japanese kanji, kana, romaji, English, example sentences, and collocations.
 - Start Study first chooses Japanese, English, or mixed mode and then shows the relevant levels. Browse Library supports Japanese levels, English levels, and mastery-status filters.
 
@@ -54,24 +76,13 @@ Study shortcuts:
 
 | Key | Action |
 | --- | --- |
-| `Space` | Reveal the answer |
-| `1` | Know it |
-| `2` | Uncertain |
-| `3` | Don't know |
-| `←` / `→` | Previous / next card |
+| `Space` | Reveal/continue learning, or continue after answer feedback |
+| `1`–`4` | Answer A–D |
 | `Esc` | Exit focus mode |
 
 ### Spaced-repetition review
 
-LinguaStep uses an explainable **SM-2-derived scheduler** rather than claiming to implement full FSRS. The three feedback options produce different review intervals:
-
-| Feedback | Main effect |
-| --- | --- |
-| Know it | Extends the interval and increases consecutive-correct counts; repeated correct answers lead to mastery |
-| Uncertain | Reviews again after about one day and lowers stability |
-| Don't know | Reappears after about 10 minutes and raises forgetting priority |
-
-Review state includes first/most-recent study times, next review time, review count, consecutive correct answers, forgetting count, stability, difficulty, pause state, language mode, and algorithm version. The queue prioritizes overdue mistakes, overdue items, “don't know” items, uncertain items, today's due items, and new content.
+Objective word practice uses FSRS-6 with a 90% retention target and Again/Good outcomes. Legacy self-rating and grammar paths retain the original SM-2-derived scheduler. Original history is preserved; personal FSRS memory begins with the first objective response. See [scheduling details](docs/spaced-repetition.md).
 
 ### Grammar and Japanese-English comparisons
 
@@ -84,39 +95,13 @@ Review state includes first/most-recent study times, next review time, review co
 - Today's planned grammar is shown first by default; full search and filtering can be expanded when needed.
 - Search and filter by keyword, language, level, status, favorite, mistake, and due state.
 
-### Exam-style practice
+### Level-based and skill practice
 
-- Choose Japanese or English first, then choose a level. Japanese additionally offers character/vocabulary, grammar, and reading sections.
-- Japanese N3/N2/N1 character, vocabulary, and grammar questions are based on a local *Red/Blue Book 1000 Questions N5–N1* reference and supplemented with built-in level-based questions. Reading questions are original exam-style passages for each level and are clearly labeled in the UI.
-- Real drill questions from the local 红蓝宝书1000题 PDFs are now in the bank — **378 items in total**: 245 N1 (pypdf layout parsing cross-checked with Vision OCR), 68 N2 and 65 N3 (scanned books OCRed in full; only completely recovered answer rows were kept), all with the publisher's answers and deduplicated.
-
-- Real composition per level and section (every item is genuine material — no generated templates remain):
-
-| Section | N3 | N2 | N1 |
-|---|---|---|---|
-| Vocabulary | 225 | 301 | 410 |
-| Grammar | 260 | 243 | 253 |
-| Reading | 8 (original) | 8 (original) | 8 (original) |
-
-The English bank was expanded the same way:
-
-| Level | Questions |
-|---|---|
-| CET-4 | 416 |
-| CET-6 | 416 |
-| TOEIC | 16 |
-
-English items come from the public "Chinese middle school English exam questions" dataset (Hugging Face, CC BY 4.0) — all four-option multiple choice with answer keys. Grade 7-8 map to CET-4 and grade 9 to CET-6. There is no comparable open TOEIC source, so TOEIC keeps its hand-written items.
-
-- Sources: past-paper questions extracted from the local 红蓝宝书1000题 PDFs (publisher answer keys) plus the public JLPT exercise bank at japanesetest4you.com (grammar and vocabulary drills with their own answer keys). Practice items carry their own source label so they can be told apart from past papers.
-- The auto-generated filler, which reused one sentence template per section, has been removed entirely.
-- Question bank sizes are reported honestly: each level/section holds what the real content adds up to. Character questions are derived from the graded vocabulary, grammar questions only use grammar points that belong to that level, and reading keeps its hand-written passages.
-- The bank is never padded by repetition: the same prompt cannot appear twice inside one level/section, and grammar material is not reused across levels. When a bucket is smaller than the requested round size the UI says so and uses the available maximum.
-- English offers three original exam-style sets: CET-4, CET-6, and TOEIC, mixing vocabulary, grammar, and reading.
-- Each level has an independent question bank. Questions are shuffled and do not depend on learned words or repeat multiple translation directions for one word in the same round.
-- Before starting, choose 10, 20, 30, or 50 questions. Starting or choosing “Another set” randomly samples again from the complete bank for the selected level and section.
-- The four options are reshuffled for every round, with correct answers randomly and evenly distributed across A/B/C/D. Use 1–4 to answer; after selecting an option, press Space to continue or submit.
-- “Exit test” is always available. The completion view shows score, category accuracy, time, and explanations for each question; wrong answers are added to the mistake book.
+- Sources are explicitly classified as official papers, textbook items, public exercises or built-in/original items. No current item has verified official past-paper provenance.
+- Japanese: 1,715 available items (N3 493, N2 551, N1 671), including 377 textbook items, 1,266 public drills and 72 built-in/original items. One OCR item with duplicate choices is quarantined pending verification.
+- All 800 middle-school English items are foundation practice. CET-4, CET-6 and TOEIC each have 16 original items; results are practice accuracy, not predicted exam scores.
+- Standard tests reshuffle questions and choices; incomplete buckets use their actual size. Mistakes and daily continuation are connected.
+- Skill practice offers listening comprehension, sentence dictation, grammar cloze and reading, up to five items per round, prioritizing unseen prompts. Dictation ignores punctuation, spacing and English case. Cloze checks reference answers rather than arbitrary equivalent expressions.
 
 ### Mistake book
 
@@ -176,7 +161,7 @@ The AI entry point has been removed from frontend navigation, the home page, wor
 4. After completing today, check trends in Statistics or expand the free-study entry point.
 5. For weak areas, open the relevant focused practice from Mistakes or Favorites.
 
-Desktop navigation is grouped into “Study / Review / Tools”; mobile keeps five fixed entries: “Today / Words / Grammar / Test / More”.
+Desktop navigation is grouped into “Study / Review / Tools”; mobile uses four fixed tabs: “Home / Practice / Reference / Profile”.
 
 ## Tech stack and rationale
 
@@ -217,7 +202,7 @@ Pages do not operate on IndexedDB directly or call DeepSeek directly. Learning l
 app/                    Page entry points, layout, and same-origin AI API
 components/             App shell, learning components, filters, charts, and views
 context/                LearningContext and AIContext
-data/                   2,559 curated exam words, 80 grammar points, and 137 comparisons
+data/                   2,560 curated exam words, 80 grammar points, and 137 comparisons
 lib/                    Models, review, plans, tests, statistics, and shared logic
 lib/ai/                 AI configuration, providers, prompts, schemas, validation, and services
 lib/repositories/       IndexedDB, migrations, repositories, and in-memory fallback
@@ -317,7 +302,7 @@ Current acceptance status (2026-07-23):
 
 - TypeScript strict mode, ESLint, Vinext/Sites build, and Next.js/Vercel build pass.
 - 19 automated test files with **132 tests passing**.
-- Tests cover the integrity of 2,559 curated exam words, 80 grammar points, 137 comparisons, and 2,160 exam-style exercises; 120-question distribution for every language, level, and section; language and level filters; review algorithms; daily plans; date boundaries; random study order; three study modes; search and filters; test grading; mistake lifecycle; statistics aggregation; settings; resets; and v1/v2/v3-to-v4 settings migration.
+- Tests cover the integrity of 2,560 curated exam words, 80 grammar points, 137 comparisons, and 2,160 exam-style exercises; 120-question distribution for every language, level, and section; language and level filters; review algorithms; daily plans; date boundaries; random study order; three study modes; search and filters; test grading; mistake lifecycle; statistics aggregation; settings; resets; and v1/v2/v3-to-v4 settings migration.
 - AI tests cover configuration, providers, JSON Schema, business validation, key isolation, request protection, timeouts, cancellation, retries, components, and complete mocked workflows.
 - Two default models and the complete word-card, Japanese-grammar, Japanese-English-comparison, exercise, and mistake-explanation flows have been checked with the real DeepSeek API.
 
@@ -360,6 +345,8 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 
 ## Release phases
 
+Historical descriptions below reflect their original releases. v0.17.0 corrects textbook/past-paper terminology and the incorrect mapping of middle-school English to CET levels.
+
 | Version | Status | Main changes |
 | --- | --- | --- |
 | v0.1 | Complete | Home, 100 word groups, 20 grammar points, basic learning/tests/mistakes/favorites/statistics, IndexedDB v1, themes, and responsive layout |
@@ -379,7 +366,7 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.5.6 | Complete | Moved grammar details to `/grammar/:id` and split tests into `/test`, `/test/setup`, and `/test/session` routes |
 | v0.5.7 | Complete | Reverted grammar and test subroutes as requested and restored browsing, configuration, and practice within single pages |
 | v0.5.8 | Complete | Removed the current-goal card from the bottom of the sidebar |
-| v0.6.0 | Complete | Aligned and expanded the library to 2,559 words from Red/Green reference books, with at least 800 words per N1/N2/N3 level; simplified grammar levels to N1/N2/N3 |
+| v0.6.0 | Complete | Aligned and expanded the library to 2,560 words from Red/Green reference books, with at least 800 words per N1/N2/N3 level; simplified grammar levels to N1/N2/N3 |
 | v0.6.1 | Complete | Reworked mobile navigation, filter drawers, and card spacing; added grouped “More” menus while preserving desktop layout and data structures |
 | v0.7.0 | Complete | Rebuilt mobile as an independent app shell with a single-action home, simplified study setup, vertical grammar list, mobile filter drawer, collapsed management controls, and categorized settings; desktop and database unchanged |
 | v0.7.1 | Complete | Added 10/20/30/50-question choices and fresh random sampling whenever a test starts or restarts |
@@ -412,11 +399,15 @@ The project includes `.openai/hosting.json` and a Vinext build, so it can be pub
 | v0.15.5 | Complete | Two real bugs: (1) the phone got stuck on the first word — the queue was reseeded every time the snapshot changed (i.e. after every rating); it is now seeded once per session. (2) Japanese always fell back to the robotic system voice — the dictionary audio sends no CORS header, so the fetch()-based path was always blocked; playback now goes through an `<audio>` element (media is not CORS-restricted), with the same-origin proxy as an optimisation only |
 | v0.15.6 | Complete | Three phone fixes: (1) the tab bar's own rule was missing (only `.m2-tabbar-item` existed), so the nav rendered as four stacked rows at the bottom of the page — it is a real fixed bar again; (2) the phone's round summary now continues the daily plan ("继续：今日新词 / 今日语法") instead of dead-ending on "回到首页"; (3) the phone served the **same ten words every round** (plan ids were sliced without excluding words already studied), so items 11-20 were unreachable and progress stuck at 10/20. Also unified both shells on remaining-count and gave the phone a four-step rhythm that includes grammar |
 | v0.16.0 | Complete | Structural refactor: (1) removed 137 macOS duplicate files that had been committed but were referenced by nothing (1.3MB image, 655KB JSON); (2) split the 893-line `MobileExperience.tsx` into 18 files organised as `screens/ + ui/ + navigation.ts + MobileApp.tsx`; (3) split the 1214-line `LearningContext.tsx` into `context/learning/` (types / snapshot-utils / use-snapshot-store / actions/* / context / provider); (4) fixed a lib→app dependency inversion and deleted the vestigial forwarding module; (5) rewrote `docs/architecture.md` with an explicit layering contract. No new type errors; 26/26 flow checks pass on desktop and phone |
-| Future | Uncommitted | Accounts and cloud sync, import/export, pronunciation, speech recognition, free-text correction, PWA, and full FSRS |
+| v0.17.0 | Complete | Usage fixes: explicit provenance, hidden answers, unified ratings, neural foreign-to-Chinese playback, book learning, four skill drills, mobile backups, goal/time planning and meaningful recall statistics. |
+| v0.17.1 | Complete | Speak Chinese only after the first revealed word, including reveal-both mode. |
+| v0.18.0 | Complete | Five-word reveal/practice cycles, failed-word carryover, direct batch transitions, FSRS-6 objective scheduling and delayed recognition statistics |
+| v0.18.1 | Complete | Always-visible revealed examples, automatic sentence/Chinese playback, bilingual replay buttons and queued audio warming |
+| Future | Uncommitted | Accounts and cloud sync, speech recognition, free-text correction, PWA, personal parameter optimization and professional exam calibration |
 
 ## Current boundaries
 
-The project currently does not provide accounts, cloud learning progress, multi-device sync, audio pronunciation, speech recognition, spelling input, free-text translation or essay correction, AI chat practice, data import/export, a full PWA, an admin console, or social features. It is intentionally a personal, local-first Japanese and English learning app without coins, leaderboards, or energy systems.
+No accounts, automatic cloud/device sync, speech recognition, free-text translation/essay grading, AI chat tutor, complete PWA, admin or social features. Online speech, dictation/cloze and manual JSON backup/restore are available. The corpus has limited exam coverage and uncalibrated original items.
 
 ## Detailed documentation
 

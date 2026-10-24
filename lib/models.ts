@@ -4,6 +4,20 @@ export type RevealMode = "together" | "step-by-step";
 export type RevealOrder = "japanese-first" | "english-first" | "random";
 export type StudyMode = "combined" | "japanese" | "english";
 export type MasteryRating = "known" | "fuzzy" | "unknown";
+export type WordQuizDirection = "ja-en" | "en-ja" | "ja-zh" | "en-zh";
+export interface WordQuizMemory {
+  model: "FSRS-6";
+  card: {
+    due: string; stability: number; difficulty: number; elapsed_days: number;
+    scheduled_days: number; learning_steps: number; reps: number; lapses: number;
+    state: 0 | 1 | 2 | 3; last_review?: string;
+  };
+  attempts: number;
+  correct: number;
+  spacedCorrectStreak: number;
+  successfulDirections: WordQuizDirection[];
+  lastDirection: WordQuizDirection;
+}
 export type LearningStatus = "new" | "learning" | "review" | "mastered";
 export type ContentSource = "curated" | "ai-generated" | "user-created";
 export type GrammarLanguage = "japanese" | "english";
@@ -101,6 +115,9 @@ export interface ChoiceQuestion {
   language?: TestMode;
   difficulty?: string;
   category?: string;
+  audio?: { text: string; language: "ja-JP" | "en-US" | "zh-CN" };
+  acceptedAnswers?: string[];
+  wordQuiz?: { mode: StudyMode; direction: WordQuizDirection };
 }
 
 export interface GrammarExample {
@@ -150,8 +167,13 @@ export interface GrammarComparison {
   aiMetadata?: AIContentMetadata;
 }
 
-/** Version 2 review state used by both word modes and grammar items. */
+/** Legacy self/grammar scheduling uses v2; objective word scheduling uses v3. */
+export interface RecallAttempt { at: string; rating: MasteryRating; gapDays: number; method?: "choice" }
+export interface WordStudyOptions { elapsedSeconds?: number }
+
 export interface ReviewState {
+  quizMemory?: WordQuizMemory;
+  recallHistory?: RecallAttempt[];
   status: LearningStatus;
   mastery: MasteryRating;
   firstStudiedAt: string;
@@ -227,6 +249,7 @@ export interface MistakeRecord {
 }
 
 export interface TestAnswer {
+  typedAnswer?: string;
   question: ChoiceQuestion;
   selectedIndex: number;
   isCorrect: boolean;
@@ -244,6 +267,7 @@ export interface TestResult {
 }
 
 export interface DailyRecord {
+  studySeconds?: number;
   date: string;
   wordsStudied: number;
   newWordsStudied: number;
@@ -259,6 +283,9 @@ export interface DailyRecord {
 }
 
 export interface DailyPlan {
+  completedBeforePlan?: { newWords: number; reviewWords: number; grammar: number; test: number };
+  estimatedMinutes?: number;
+  budgetReason?: string;
   date: string;
   generatedAt: string;
   newWordIds: string[];
@@ -271,6 +298,10 @@ export interface DailyPlan {
 }
 
 export interface AppSettings {
+  dailyMinutes?: number;
+  primaryGoal?: string;
+  targetExamDate?: string;
+  lastBackupAt?: string;
   theme: ThemeMode;
   focusModeEnabled: boolean;
   displayDensity: DisplayDensity;
@@ -294,7 +325,7 @@ export interface AppSettings {
   weekendAdjustment: WeekendAdjustment;
   masteryStreak: number;
   immediateTestFeedback: boolean;
-  /** Reads the word aloud with the browser speech engine after the reveal. */
+  /** Reads the word aloud with the online neural voice after the reveal. */
   autoSpeak: boolean;
   animations: boolean;
   reduceMotion: boolean;

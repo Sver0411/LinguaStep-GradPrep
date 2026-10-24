@@ -1,16 +1,24 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Heart, SearchX } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { DisplayDensity, StudyMode, WordPair } from "@/lib/models";
 
 const PAGE_SIZE = 12;
 
-export function WordLibrary({
+export function WordLibrary(props: WordLibraryProps) {
+  return <WordLibraryPage key={props.resetKey} {...props} />;
+}
+
+type WordLibraryProps = {
+  words: WordPair[]; density: DisplayDensity; mode: StudyMode; resetKey: string;
+  isFavorite: (id: string) => boolean; onToggleFavorite: (id: string) => void;
+};
+
+function WordLibraryPage({
   words,
   density,
   mode,
-  resetKey,
   isFavorite,
   onToggleFavorite,
 }: {
@@ -29,12 +37,6 @@ export function WordLibrary({
     currentPage * PAGE_SIZE,
     (currentPage + 1) * PAGE_SIZE,
   );
-
-  // Without this the user filters, lands on page 47 of 200 and sees a page
-  // number that no longer matches the shrunken result set.
-  useEffect(() => {
-    setPage(0);
-  }, [resetKey]);
 
   return (
     <section className="library-section">

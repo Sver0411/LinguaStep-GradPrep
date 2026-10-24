@@ -1,5 +1,6 @@
 "use client";
 
+import { BookStudyButton } from "@/components/words/BookStudyButton";
 import Link from "next/link";
 import {
   BookOpenText,
@@ -212,7 +213,7 @@ export function FavoritesView() {
                       <button className="favorite-button active" onClick={() => void toggleFavorite("vocab", word.id)} aria-label={`取消收藏${word.meaningZh}`}><Heart size={18} fill="currentColor" /></button>
                       <span className="word-meaning">{word.meaningZh}</span>
                       <div className="favorite-pair"><p><span className="language-label jp">日</span><strong>{word.term}</strong><small>{word.reading}</small></p></div>
-                      <p className="favorite-note">{word.pos ? `${word.pos} · ${word.source}` : word.source}</p>
+                      <BookStudyButton word={word} /><p className="favorite-note">{word.pos ? `${word.pos} · ${word.source}` : word.source}</p>
                     </article>
                   );
                 })}

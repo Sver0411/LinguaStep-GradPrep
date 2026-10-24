@@ -34,7 +34,7 @@ export function usePracticeActions(deps: Deps) {
         });
         return mistakes;
       },
-      [],
+      [settingsRef],
     );
 
     const completeGrammar = useCallback(
@@ -85,7 +85,7 @@ export function usePracticeActions(deps: Deps) {
         await persistSnapshot(next);
         return progress;
       },
-      [applyAnswersToMistakes, persistSnapshot],
+      [applyAnswersToMistakes, persistSnapshot, snapshotRef],
     );
 
     const completeTest = useCallback(
@@ -128,6 +128,7 @@ export function usePracticeActions(deps: Deps) {
             current.dailyRecords,
             dateKey(completedDate),
             {
+              studySeconds: Math.min(result.durationSeconds, normalizedAnswers.length * 300),
               questionsAnswered: normalizedAnswers.length,
               correctAnswers: correctCount,
             },
@@ -136,7 +137,7 @@ export function usePracticeActions(deps: Deps) {
         await persistSnapshot(next);
         return result;
       },
-      [applyAnswersToMistakes, persistSnapshot],
+      [applyAnswersToMistakes, persistSnapshot, snapshotRef],
     );
 
   return useMemo(() => ({ completeGrammar, completeTest }), [completeGrammar, completeTest]);

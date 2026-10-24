@@ -15,9 +15,11 @@ import { ReferenceView } from "@/components/views/ReferenceView";
 import { SettingsView } from "@/components/views/SettingsView";
 import { StatsView } from "@/components/views/StatsView";
 import { TestView } from "@/components/views/TestView";
+import { TrainingView } from "@/components/views/TrainingView";
 import { WordsView } from "@/components/views/WordsView";
 
 const views = {
+  training: TrainingView,
   words: WordsView,
   grammar: GrammarView,
   test: TestView,

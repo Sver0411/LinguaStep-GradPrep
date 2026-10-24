@@ -29,7 +29,6 @@ import {
   BOOK_VOCAB_SECTIONS,
   BOOK_VOCAB_WORDS,
 } from "@/data/book-vocab-data";
-import type { BookVocabSection } from "@/lib/book-vocab-types";
 import {
   ENGLISH_STUDY_LEVELS,
   JAPANESE_STUDY_LEVELS,
@@ -48,7 +47,6 @@ export function WordsView() {
     snapshot,
     allWords,
     settings,
-    updateSettings,
     isFavorite,
     toggleFavorite,
     setFocusMode,
@@ -67,14 +65,6 @@ export function WordsView() {
     mistake: false,
     due: false,
   });
-  // The study scope is a setting, not a per-session choice — keep the two in step.
-  useEffect(() => {
-    setFilters((current) => ({
-      ...current,
-      japaneseLevel: settings.studyJapaneseLevel,
-      englishLevel: settings.studyEnglishLevel,
-    }));
-  }, [settings.studyJapaneseLevel, settings.studyEnglishLevel]);
   const autoStarted = useRef(false);
   const debouncedQuery = useDebouncedValue(query);
   const [vocabSource, setVocabSource] = useState<string>("core");
@@ -235,6 +225,12 @@ export function WordsView() {
   useEffect(() => {
     if (autoStarted.current || now === null) return;
     const search = new URLSearchParams(window.location.search);
+    const requestedWord = search.get("word");
+    if (requestedWord) {
+      const word = allWords.find((item) => item.id === requestedWord);
+      if (word) { autoStarted.current = true; const timer = window.setTimeout(() => { setMode("japanese"); setSessionItems([word]); setFocusMode(true); }, 0); return () => window.clearTimeout(timer); }
+      return;
+    }
     const requestedMode = search.get("mode");
     const selectedMode: StudyMode =
       requestedMode === "japanese" || requestedMode === "english"
@@ -257,7 +253,7 @@ export function WordsView() {
       const timer = window.setTimeout(() => startSession(source, selectedMode), 0);
       return () => window.clearTimeout(timer);
     }
-  }, [mode, now, startSession]);
+  }, [allWords, mode, now, setFocusMode, startSession]);
 
   const startFreshSession = useCallback(
     (source: SessionSource, selectedMode: StudyMode = mode) => {
@@ -400,11 +396,11 @@ export function WordsView() {
         </article>
 
         <details className="card method-card compact-details">
-          <summary><span><strong>复习时间如何计算</strong><small>认识、模糊和不认识会形成不同间隔</small></span></summary>
+          <summary><span><strong>复习时间如何计算</strong><small>先熟悉 5 组，再根据答题结果安排复习</small></span></summary>
           <ol className="step-list">
-            <li><span>1</span><div><strong>认识</strong><small>稳定度提高，间隔逐步延长</small></div></li>
-            <li><span>2</span><div><strong>模糊</strong><small>降低稳定度，次日再复习</small></div></li>
-            <li><span>3</span><div><strong>不认识</strong><small>记录遗忘，约十分钟后重试</small></div></li>
+            <li><span>1</span><div><strong>答对</strong><small>本轮通过，FSRS 安排后续复习</small></div></li>
+            <li><span>2</span><div><strong>答错或查看答案</strong><small>保留到下一轮，只继续练习</small></div></li>
+            <li><span>3</span><div><strong>补充新词</strong><small>保留错词后，揭示新词补满 5 组</small></div></li>
           </ol>
         </details>
       </section>

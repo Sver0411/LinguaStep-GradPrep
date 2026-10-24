@@ -13,7 +13,7 @@ import {
   Route,
   Search,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLearning } from "@/context/learning";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -56,7 +56,7 @@ export function GrammarView() {
   const today = dateKey(new Date());
   const todayPlan = snapshot.dailyPlans.find((item) => item.date === today);
   const todayRecord = snapshot.dailyRecords.find((item) => item.date === today);
-  const completedGrammarCount = todayRecord?.grammarStudied ?? 0;
+  const completedGrammarCount = Math.max(0, (todayRecord?.grammarStudied ?? 0) - (todayPlan?.completedBeforePlan?.grammar ?? 0));
   const todayGrammarId = todayPlan && completedGrammarCount < todayPlan.grammarIds.length
     ? todayPlan.grammarIds[completedGrammarCount]
     : undefined;
@@ -66,6 +66,16 @@ export function GrammarView() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [practicing, setPracticing] = useState(false);
   const [query, setQuery] = useState("");
+  const openedFromLink = useRef(false);
+  useEffect(() => {
+    if (openedFromLink.current) return;
+    const id = new URLSearchParams(window.location.search).get("id");
+    const point = allGrammar.find((item) => item.id === id);
+    if (!point) return;
+    openedFromLink.current = true;
+    const timer = window.setTimeout(() => { setViewMode(point.language); setSelectedId(point.id); setDetailOpen(true); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [allGrammar]);
   const debouncedQuery = useDebouncedValue(query);
   const [level, setLevel] = useState("all");
   const [status, setStatus] = useState<GrammarSearchFilters["status"]>("all");
@@ -128,7 +138,9 @@ export function GrammarView() {
       : filteredComparisons,
     [detailOpen, filteredComparisons, selectedId],
   );
-  const [visibleCount, setVisibleCount] = useState(COMPARISON_PAGE_SIZE);
+  const filterKey = `${debouncedQuery}|${level}|${viewMode}`;
+  const [pagination, setPagination] = useState({ key: filterKey, count: COMPARISON_PAGE_SIZE });
+  const visibleCount = pagination.key === filterKey ? pagination.count : COMPARISON_PAGE_SIZE;
   const visibleComparisons = detailOpen
     ? comparisonItems
     : comparisonItems.slice(0, visibleCount);
@@ -156,9 +168,6 @@ export function GrammarView() {
 
   // A new search or filter means the user is looking at a different list;
   // keeping the old batch size would drop them mid-list or hide results.
-  useEffect(() => {
-    setVisibleCount(COMPARISON_PAGE_SIZE);
-  }, [debouncedQuery, level, viewMode]);
 
   if (practicing && selected) {
     return <GrammarPractice point={selected} onClose={() => setPracticing(false)} />;
@@ -231,7 +240,7 @@ export function GrammarView() {
               </article>
             ))}
             {!detailOpen && visibleCount < comparisonItems.length && (
-              <button className="load-more-button" onClick={() => setVisibleCount((count) => count + COMPARISON_PAGE_SIZE)}>
+              <button className="load-more-button" onClick={() => setPagination({ key: filterKey, count: visibleCount + COMPARISON_PAGE_SIZE })}>
                 显示更多对比（已显示 {visibleCount} / {comparisonItems.length}）
               </button>
             )}

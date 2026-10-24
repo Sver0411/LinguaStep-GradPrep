@@ -109,6 +109,7 @@ export function MobileHomeScreen() {
         </div>
       </section>
 
+      {plan?.budgetReason && <section className="m3-card plan-budget"><strong>今日预计 {plan.estimatedMinutes} 分钟</strong><p>{plan.budgetReason}</p><button type="button" onClick={() => navigateTo("/settings")}>调整今日计划</button></section>}
       <section className="m2-rhythm-card">
         <div className="m2-section-title"><h2>今日节奏</h2><span>{flow.filter((item) => item.complete).length} / {flow.length}</span></div>
         <div className="m2-rhythm-steps">{flow.map((item, index) => <div className={item.complete ? "done" : ""} key={item.label}><i>{item.complete ? "✓" : index + 1}</i><small>{item.label}</small></div>)}</div>

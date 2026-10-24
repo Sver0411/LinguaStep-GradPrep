@@ -1,13 +1,11 @@
 import type { ChoiceQuestion } from "@/lib/models";
-import { GRAMMAR_POINTS } from "@/data/grammar";
-import { WORD_PAIRS } from "@/data/words";
 import { BOOK_N1_QUESTIONS, BOOK_N2_QUESTIONS, BOOK_N3_QUESTIONS } from "@/data/book-n1-questions";
 import { EXTERNAL_QUESTIONS } from "@/data/exam-practice";
 import { EXTERNAL_ENGLISH_QUESTIONS } from "@/data/exam-practice-en";
 
 export type ExamLanguage = "japanese" | "english";
 export type JapaneseExamLevel = "N3" | "N2" | "N1";
-export type EnglishExamLevel = "CET-4" | "CET-6" | "TOEIC";
+export type EnglishExamLevel = "基础英语" | "CET-4" | "CET-6" | "TOEIC";
 export type ExamSection = "characters" | "grammar" | "reading";
 
 export interface ExamQuestion extends ChoiceQuestion {
@@ -15,6 +13,7 @@ export interface ExamQuestion extends ChoiceQuestion {
   examLevel: JapaneseExamLevel | EnglishExamLevel;
   examSection: ExamSection;
   sourceLabel: string;
+  sourceKind: "official" | "textbook" | "practice" | "original";
 }
 
 function japaneseQuestion(
@@ -26,7 +25,7 @@ function japaneseQuestion(
   correctIndex: number,
   explanation: string,
   context?: string,
-  sourceLabel = section === "reading" ? "原创 JLPT 真题式阅读" : "红蓝宝书1000题（用户本地资料）",
+  sourceLabel = section === "reading" ? "LinguaStep 原创阅读练习" : "内置练习（具体出处待核实）",
 ): ExamQuestion {
   return {
     id: `exam-jp-${level.toLowerCase()}-${id}`,
@@ -44,6 +43,7 @@ function japaneseQuestion(
     examLevel: level,
     examSection: section,
     sourceLabel,
+    sourceKind: id.startsWith("book-") ? "textbook" : id.startsWith("ext-") ? "practice" : "original",
   };
 }
 
@@ -74,6 +74,7 @@ function englishQuestion(
     examLevel: level,
     examSection: section,
     sourceLabel,
+    sourceKind: id.startsWith("book-") ? "textbook" : id.startsWith("ext-") ? "practice" : "original",
   };
 }
 
@@ -316,205 +317,47 @@ const BASE_EXAM_QUESTIONS: ExamQuestion[] = [
 ];
 
 const JAPANESE_LEVEL_ORDER: JapaneseExamLevel[] = ["N3", "N2", "N1"];
-const ENGLISH_LEVEL_ORDER: EnglishExamLevel[] = ["CET-4", "CET-6", "TOEIC"];
-/**
- * How many synthetic questions a section is filled up to when the real
- * question bank is thinner than that. Real questions always win and a bucket
- * may grow past this number freely — we only top up thin sections to a
- * comfortable round size. Padding every bucket to a fixed target made
- * "120 题" meaningless: a 30-question round would show the same generated
- * prompt several times while real questions sat unused.
- */
-const EXAM_SECTION_MIN_FILL = 40;
-
-function fourUniqueOptions(correct: string, candidates: string[]): [string, string, string, string] {
-  const values = [correct, ...candidates.filter((candidate) => candidate !== correct)];
-  const unique = [...new Set(values)];
-  while (unique.length < 4) unique.push(`选项 ${unique.length + 1}`);
-  return unique.slice(0, 4) as [string, string, string, string];
-}
-
-function wordLevel(word: (typeof WORD_PAIRS)[number], language: ExamLanguage): JapaneseExamLevel | EnglishExamLevel {
-  const value = language === "japanese" ? word.japanese.difficulty : word.english.difficulty;
-  if (value.includes("N3")) return "N3";
-  if (value.includes("N2")) return "N2";
-  if (value.includes("N1")) return "N1";
-  if (value.includes("CET-6")) return "CET-6";
-  if (value.includes("TOEIC")) return "TOEIC";
-  return "CET-4";
-}
-
-function generateCharacterSupplements(language: ExamLanguage): ExamQuestion[] {
-  const levels = language === "japanese" ? JAPANESE_LEVEL_ORDER : ENGLISH_LEVEL_ORDER;
-  const result: ExamQuestion[] = [];
-  let serial = 0;
-  levels.forEach((level) => {
-    const existingCount = BASE_EXAM_QUESTIONS.filter(
-      (question) =>
-        question.examLanguage === language &&
-        question.examSection === "characters" &&
-        question.examLevel === level,
-    ).length;
-    const pool = WORD_PAIRS.filter((word) => wordLevel(word, language) === level);
-    const needed = Math.min(
-      Math.max(0, EXAM_SECTION_MIN_FILL - existingCount),
-      pool.length,
-    );
-    for (let index = 0; index < needed; index += 1) {
-      const word = pool[index];
-      const others = pool.filter((candidate) => candidate.id !== word.id);
-      // Rotate deterministically through the whole remaining pool instead of
-      // slicing a fixed window, which ran past the end on smaller levels and
-      // produced "选项 2/3" filler distractors.
-      const offset = others.length > 0 ? index % others.length : 0;
-      const distractorAt = (step: number) =>
-        others[(offset + step) % others.length];
-      serial += 1;
-      if (language === "japanese") {
-      const correct = word.japanese.reading ?? word.japanese.term;
-      const distractors = [distractorAt(0), distractorAt(1), distractorAt(2)]
-        .map((candidate) => candidate.japanese.reading ?? candidate.japanese.term);
-      result.push(japaneseQuestion(
-        `generated-characters-${serial}`,
-        level as JapaneseExamLevel,
-        "characters",
-        `「${word.japanese.term}」的读音最接近下列哪一项？`,
-        fourUniqueOptions(correct, distractors),
-        0,
-        `「${word.japanese.term}」读作「${correct}」。`,
-        undefined,
-        "内置分级词汇补充题",
-      ));
-    } else {
-      const correct = word.meaningZh;
-      const distractors = [distractorAt(0), distractorAt(1), distractorAt(2)]
-        .map((candidate) => candidate.meaningZh);
-      result.push(englishQuestion(
-        `generated-characters-${serial}`,
-        level as EnglishExamLevel,
-        "characters",
-        `Which meaning is closest to “${word.english.term}”?`,
-        fourUniqueOptions(correct, distractors),
-        0,
-        `“${word.english.term}”对应的中文核心义是“${correct}”。`,
-        undefined,
-        "内置分级词汇补充题",
-      ));
-      }
-    }
-  });
-  return result;
-}
-
-function grammarExamLevel(
-  point: (typeof GRAMMAR_POINTS)[number],
-  language: ExamLanguage,
-): JapaneseExamLevel | EnglishExamLevel {
-  if (language === "japanese") {
-    if (point.level.includes("N1")) return "N1";
-    if (point.level.includes("N2")) return "N2";
-    return "N3";
-  }
-  if (point.level.includes("TOEIC")) return "TOEIC";
-  if (point.level.includes("CET-6")) return "CET-6";
-  return "CET-4";
-}
-
-function generateGrammarSupplements(language: ExamLanguage): ExamQuestion[] {
-  const levels = language === "japanese" ? JAPANESE_LEVEL_ORDER : ENGLISH_LEVEL_ORDER;
-  const result: ExamQuestion[] = [];
-  let serial = 0;
-  levels.forEach((level) => {
-    const existingCount = BASE_EXAM_QUESTIONS.filter(
-      (question) =>
-        question.examLanguage === language &&
-        question.examSection === "grammar" &&
-        question.examLevel === level,
-    ).length;
-    // Only grammar points that actually belong to this level, and only one
-    // question per (point, exercise) pair, so no bucket reuses another level's
-    // material and nothing is emitted twice.
-    const combos = GRAMMAR_POINTS.filter(
-      (point) => point.language === language && grammarExamLevel(point, language) === level,
-    ).flatMap((point) => point.exercises.map((exercise) => ({ point, exercise })));
-    const needed = Math.min(
-      Math.max(0, EXAM_SECTION_MIN_FILL - existingCount),
-      combos.length,
-    );
-    for (let index = 0; index < needed; index += 1) {
-      const { exercise } = combos[index];
-      serial += 1;
-      const id = `generated-grammar-${serial}`;
-      if (language === "japanese") {
-        result.push(japaneseQuestion(id, level as JapaneseExamLevel, "grammar", exercise.prompt, exercise.options, exercise.correctIndex, exercise.explanation, undefined, "内置语法补充题"));
-      } else {
-        result.push(englishQuestion(id, level as EnglishExamLevel, "grammar", exercise.prompt, exercise.options, exercise.correctIndex, exercise.explanation, undefined, "内置语法补充题"));
-      }
-    }
-  });
-  return result;
-}
-
-/**
- * Reading questions are intentionally *not* supplemented. Each level ships a
- * handful of hand-written passages; the previous generator replayed them up to
- * 14 times with a shuffled prefix to reach the 120 target, so a 30-question
- * round could repeat the same passage four times. Reading stays at its real
- * size until more passages are written.
- */
-/**
- * Placeholder for generated filler. The generators above are kept for
- * reference but are NOT used any more: they produced one sentence template
- * per section ("「X」的读音最接近下列哪一项？"), which customers reasonably
- * called worthless. Real material from the local books replaces them; a
- * section simply stays as small as its real material until more is imported.
- */
+const ENGLISH_LEVEL_ORDER: EnglishExamLevel[] = ["基础英语", "CET-4", "CET-6", "TOEIC"];
 const SUPPLEMENTAL_EXAM_QUESTIONS: ExamQuestion[] = [];
 
-export const EXAM_QUESTIONS: ExamQuestion[] = [
+const latestPassage = new Map<string, string>();
+const ALL_EXAM_QUESTIONS: ExamQuestion[] = [
   ...BASE_EXAM_QUESTIONS,
   ...SUPPLEMENTAL_EXAM_QUESTIONS,
-];
+].map((question) => {
+  if (question.examSection !== "reading") return question;
+  const key = `${question.examLanguage}:${question.examLevel}`;
+  if (question.context) latestPassage.set(key, question.context);
+  return { ...question, context: question.context ?? latestPassage.get(key) };
+});
 
-/**
- * Honest bank composition. Real material covers questions shipped from the
- * user's local PDFs ("book-") and hand-written reading passages ("read-");
- * everything else comes from the generators. The UI shows both numbers
- * instead of one inflated total, so imported material is visible.
- */
-function isGeneratedQuestion(question: ExamQuestion): boolean {
-  // Generator ids look like exam-jp-n3-generated-characters-12; hand-written
-  // ids (extra-char-01, lang-01, read-01, book-n1-3) never contain this token.
-  return question.id.includes("generated");
+// OCR can collapse distinct options into the same text. Quarantine rather than fabricate a distractor.
+export const QUARANTINED_EXAM_QUESTIONS = ALL_EXAM_QUESTIONS.filter((question) => question.options.some((option) => !option.trim()) || new Set(question.options.map((option) => option.trim())).size !== 4);
+const quarantinedIds = new Set(QUARANTINED_EXAM_QUESTIONS.map((question) => question.id));
+export const EXAM_QUESTIONS = ALL_EXAM_QUESTIONS.filter((question) => !quarantinedIds.has(question.id));
+
+/** Provenance is explicit; book and original questions are not official papers. */
+export interface ExamBankStat { real: number; practice: number; textbook: number; original: number; total: number }
+export function summarizeExamBank(rows: readonly ExamQuestion[]): ExamBankStat {
+  const real = rows.filter((q) => q.sourceKind === "official").length;
+  const textbook = rows.filter((q) => q.sourceKind === "textbook").length;
+  const original = rows.filter((q) => q.sourceKind === "original").length;
+  return { real, textbook, original, practice: rows.length - real - textbook - original, total: rows.length };
 }
-
-export interface ExamBankStat {
-  real: number;
-  practice: number;
-  total: number;
-}
-
 export function examBankStats(language: ExamLanguage): ExamBankStat {
-  const rows = EXAM_QUESTIONS.filter((question) => question.examLanguage === language);
-  const practice = rows.filter(isGeneratedQuestion).length;
-  return { real: rows.length - practice, practice, total: rows.length };
+  return summarizeExamBank(EXAM_QUESTIONS.filter((q) => q.examLanguage === language));
 }
-
-export function examBankStatsByLevel(
-  language: ExamLanguage,
-): Array<ExamBankStat & { level: JapaneseExamLevel | EnglishExamLevel }> {
+export function examBankStatsByLevel(language: ExamLanguage) {
   const levels = language === "japanese" ? JAPANESE_LEVEL_ORDER : ENGLISH_LEVEL_ORDER;
-  return levels.map((level) => {
-    const rows = EXAM_QUESTIONS.filter(
-      (question) => question.examLanguage === language && question.examLevel === level,
-    );
-    const practice = rows.filter(isGeneratedQuestion).length;
-    return { level, real: rows.length - practice, practice, total: rows.length };
-  });
+  return levels.map((level) => ({ level, ...summarizeExamBank(EXAM_QUESTIONS.filter((q) => q.examLanguage === language && q.examLevel === level)) }));
+}
+export function bankDescription(rows: readonly ExamQuestion[]): string {
+  const s = summarizeExamBank(rows);
+  return `共 ${s.total} 题：官方历年题 ${s.real} · 教辅 ${s.textbook} · 公开练习 ${s.practice} · 内置/原创 ${s.original}`;
 }
 
 export const JAPANESE_EXAM_LEVELS: JapaneseExamLevel[] = ["N3", "N2", "N1"];
-export const ENGLISH_EXAM_LEVELS: EnglishExamLevel[] = ["CET-4", "CET-6", "TOEIC"];
+export const ENGLISH_EXAM_LEVELS: EnglishExamLevel[] = ["基础英语", "CET-4", "CET-6", "TOEIC"];
 
 export const EXAM_SECTION_LABELS: Record<ExamSection, string> = {
   characters: "文字",

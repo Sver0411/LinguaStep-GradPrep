@@ -1,3 +1,4 @@
+import { BookStudyButton } from "@/components/words/BookStudyButton";
 import { useState } from "react";
 import type { BookVocabWord } from "@/lib/book-vocab-types";
 import { SpeakButton } from "@/components/SpeakButton";
@@ -63,7 +64,7 @@ export function BookWordLibrary({
                     </button>
                   </div>
                 </div>
-                <p className="book-vocab-meaning">{word.meaningZh}</p>
+                <BookStudyButton word={word} /><p className="book-vocab-meaning">{word.meaningZh}</p>
                 {word.english && (
                   <p className="book-vocab-english">
                     <span className="language-label en">英</span>

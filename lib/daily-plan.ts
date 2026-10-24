@@ -1,4 +1,5 @@
 import { endOfLocalDayTimestamp, startOfLocalDayTimestamp } from "./date";
+import { wordInGoal } from "./study-goals";
 import { getWordModeState } from "./learning";
 import { isReviewDue, isReviewOverdue, reviewUrgency } from "./spaced-repetition";
 import type {
@@ -28,6 +29,7 @@ export interface DailyPlanInput {
   grammarProgress: readonly GrammarProgress[];
   mistakes: readonly MistakeRecord[];
   previousPlans?: readonly DailyPlan[];
+  dailyRecords?: readonly DailyRecord[];
 }
 
 export function generateDailyPlan(input: DailyPlanInput): DailyPlan {
@@ -78,6 +80,7 @@ export function generateDailyPlan(input: DailyPlanInput): DailyPlan {
   const newWordIds = orderedWords
     .map((wordId) => wordById.get(wordId))
     .filter((word): word is WordPair => Boolean(word))
+    .filter((word) => wordInGoal(word, input.settings))
     .filter((word) => !getWordModeState(progressByWord.get(word.id), selectedMode))
     .slice(0, newLimit)
     .map((word) => word.id);
@@ -128,21 +131,41 @@ export function generateDailyPlan(input: DailyPlanInput): DailyPlan {
   ])]
     .map((grammarId) => grammarById.get(grammarId))
     .filter((point): point is GrammarPoint => Boolean(point))
+    .filter((point) => input.settings.defaultStudyMode === "combined" || point.language === input.settings.defaultStudyMode)
+    .filter((point) => !input.settings.primaryGoal || input.settings.primaryGoal === "general" || point.level.includes(input.settings.primaryGoal))
     .filter((point) => !learnedGrammarIds.has(point.id))
     .slice(0, grammarLimit)
     .map((point) => point.id);
 
-  return {
-    date: input.date,
-    generatedAt: input.now,
-    newWordIds,
-    reviewWordIds,
-    overdueWordIds,
-    mistakeIds: input.settings.prioritizeMistakes ? mistakeIds : [],
-    grammarIds,
-    testTarget,
-    studyMode: selectedMode,
+  const plan: DailyPlan = {
+    date: input.date, generatedAt: input.now, newWordIds, reviewWordIds, overdueWordIds,
+    mistakeIds: input.settings.prioritizeMistakes ? mistakeIds : [], grammarIds, testTarget, studyMode: selectedMode,
   };
+  const recent = [...(input.dailyRecords ?? [])].filter((record) => record.date < input.date && (record.studySeconds ?? 0) > 0).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
+  const activities = recent.reduce((sum, record) => sum + record.wordsStudied + record.questionsAnswered, 0);
+  const average = activities ? Math.min(90, Math.max(8, recent.reduce((sum, record) => sum + (record.studySeconds ?? 0), 0) / activities)) : 25;
+  const wordSeconds = average, questionSeconds = activities ? average : 35, grammarSeconds = 120;
+  const minutes = input.settings.dailyMinutes ?? 0;
+  if (minutes > 0) {
+    let remaining = minutes * 60;
+    const take = (count: number, cost: number) => { const allowed = Math.min(count, Math.max(0, Math.floor(remaining / cost))); remaining -= allowed * cost; return allowed; };
+    // Reviews receive priority. Remaining time is shared across new words, grammar and practice.
+    const reviewCount = take(plan.reviewWordIds.length, wordSeconds);
+    plan.reviewWordIds = plan.reviewWordIds.slice(0, reviewCount);
+    plan.overdueWordIds = plan.overdueWordIds.filter((id) => plan.reviewWordIds.includes(id));
+    const reserveGrammar = Math.min(plan.grammarIds.length, Math.floor(remaining / grammarSeconds));
+    const reserveTest = Math.min(plan.testTarget, Math.floor(Math.max(0, remaining - reserveGrammar * grammarSeconds) / questionSeconds));
+    const newCount = Math.min(plan.newWordIds.length, Math.floor(Math.max(0, remaining - reserveGrammar * grammarSeconds - reserveTest * questionSeconds) / wordSeconds));
+    plan.newWordIds = plan.newWordIds.slice(0, newCount);
+    plan.grammarIds = plan.grammarIds.slice(0, reserveGrammar);
+    plan.testTarget = reserveTest;
+  }
+  const estimated = (plan.newWordIds.length + plan.reviewWordIds.length) * wordSeconds + plan.grammarIds.length * grammarSeconds + plan.testTarget * questionSeconds;
+  plan.estimatedMinutes = Math.round(estimated / 60 * 10) / 10;
+  const target = input.settings.targetExamDate;
+  const days = target ? Math.ceil((new Date(`${target}T23:59:59`).getTime() - nowTimestamp) / 86400000) : null;
+  plan.budgetReason = `${minutes ? `每日 ${minutes} 分钟预算，优先复习` : "按设定数量安排"}；${activities ? "参考最近 7 个有计时记录的学习日" : "暂无计时基线，使用初始耗时估算"}${backlogFactor < 1 ? "；复习积压已减少新词" : ""}${days !== null && days >= 0 ? `；距离目标日期 ${days} 天，保持当前时间预算` : ""}。`;
+  return plan;
 }
 
 export function getOrCreateDailyPlan(
@@ -172,19 +195,19 @@ export function calculateDailyPlanProgress(
 ): DailyPlanProgress {
   const newCompleted = Math.min(
     plan.newWordIds.length,
-    record?.newWordsStudied ?? 0,
+    Math.max(0, (record?.newWordsStudied ?? 0) - (plan.completedBeforePlan?.newWords ?? 0)),
   );
   const reviewCompleted = Math.min(
     plan.reviewWordIds.length,
-    record?.reviewWordsStudied ?? 0,
+    Math.max(0, (record?.reviewWordsStudied ?? 0) - (plan.completedBeforePlan?.reviewWords ?? 0)),
   );
   const grammarCompleted = Math.min(
     plan.grammarIds.length,
-    record?.grammarStudied ?? 0,
+    Math.max(0, (record?.grammarStudied ?? 0) - (plan.completedBeforePlan?.grammar ?? 0)),
   );
   const testCompleted = Math.min(
     plan.testTarget,
-    record?.questionsAnswered ?? 0,
+    Math.max(0, (record?.questionsAnswered ?? 0) - (plan.completedBeforePlan?.test ?? 0)),
   );
   const total =
     plan.newWordIds.length +

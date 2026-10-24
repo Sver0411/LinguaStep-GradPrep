@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { APP_NAME, APP_VERSION, DEFAULT_SETTINGS, EMPTY_SNAPSHOT } from "@/lib/constants";
@@ -304,7 +303,9 @@ export function useSnapshotStore() {
       ) {
         return { ok: false, message: "文件结构不符合 LinguaStep 备份格式。" };
       }
-      const settings = { ...DEFAULT_SETTINGS, ...(parsed.settings as Partial<AppSettings>) };
+      if (parsed.app !== APP_NAME) return { ok: false, message: "这不是 LinguaStep 备份文件。" };
+      const inputSettings = { ...DEFAULT_SETTINGS, ...(parsed.settings as Partial<AppSettings>) };
+      const settings = settingsRepositoryRef.current?.save(inputSettings) ?? inputSettings;
       settingsRef.current = settings;
       settingsRepositoryRef.current?.save(settings);
       setSettings(settings);

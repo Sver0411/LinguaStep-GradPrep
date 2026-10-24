@@ -62,7 +62,10 @@ export function AppShell({
   onExitFocus: () => void;
 }) {
   const pathname = usePathname();
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [moreState, setMoreState] = useState({ pathname, open: false });
+  const moreOpen = moreState.pathname === pathname && moreState.open;
+  const setMoreOpen = useCallback((open: boolean) => setMoreState({ pathname, open }), [pathname]);
+  if (moreState.pathname !== pathname) setMoreState({ pathname, open: false });
   const contentColumnRef = useRef<HTMLDivElement>(null);
   const moreTriggerRef = useRef<HTMLButtonElement>(null);
   const moreCloseRef = useRef<HTMLButtonElement>(null);
@@ -70,7 +73,7 @@ export function AppShell({
   const closeMore = useCallback(() => {
     setMoreOpen(false);
     window.setTimeout(() => moreTriggerRef.current?.focus(), 0);
-  }, []);
+  }, [setMoreOpen]);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -89,10 +92,6 @@ export function AppShell({
   useEffect(() => {
     if (moreOpen) moreCloseRef.current?.focus();
   }, [moreOpen]);
-
-  useEffect(() => {
-    setMoreOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     if (!moreOpen) return;

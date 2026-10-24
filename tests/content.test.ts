@@ -8,7 +8,7 @@ import { EXAM_REFERENCE_WORDS } from "../data/words-exam-reference";
 describe("built-in vocabulary", () => {
   it("contains the expanded, reviewed and unique exam word bank", () => {
     expect(EXAM_REFERENCE_WORDS.length).toBeGreaterThanOrEqual(400);
-    expect(WORD_PAIRS).toHaveLength(2559);
+    expect(WORD_PAIRS).toHaveLength(2560);
     expect(new Set(WORD_PAIRS.map((word) => word.id)).size).toBe(WORD_PAIRS.length);
     expect(new Set(WORD_PAIRS.map((word) => word.japanese.term)).size).toBe(WORD_PAIRS.length);
     expect(
@@ -114,7 +114,7 @@ describe("curated grammar", () => {
       expect(point.confusables.length).toBeGreaterThan(0);
       point.exercises.forEach((question) => {
         expect(question.options).toHaveLength(4);
-        expect(new Set(question.options).size).toBe(4);
+        expect(new Set(question.options).size, `${question.id}: ${question.options.join(" / ")}`).toBe(4);
         expect(question.correctIndex).toBeGreaterThanOrEqual(0);
         expect(question.correctIndex).toBeLessThan(4);
         expect(question.sourceId).toBe(point.id);
@@ -163,7 +163,7 @@ describe("exam question bank", () => {
     EXAM_QUESTIONS.forEach((question) => {
       expect(question.prompt.trim()).not.toBe("");
       expect(question.options).toHaveLength(4);
-      expect(new Set(question.options).size).toBe(4);
+      expect(new Set(question.options).size, `${question.id}: ${question.options.join(" / ")}`).toBe(4);
       expect(question.correctIndex).toBeGreaterThanOrEqual(0);
       expect(question.correctIndex).toBeLessThan(4);
       expect(question.explanation.trim()).not.toBe("");

@@ -1,236 +1,110 @@
-/**
- * Pronunciation for Japanese and English words.
- *
- * Source order:
- *  1. Youdao's public dictionary voice endpoint. It returns a real recording
- *     (160 kbps) rather than a synthesiser, which is why the reading sounds
- *     like a person. Free, no key.
- *  2. Baidu's translate voice endpoint — also reachable from mainland China
- *     when Youdao is blocked or rate limited.
- *  3. The browser's Web Speech API, which needs no network at all but sounds
- *     synthetic and depends on an installed system voice.
- *
- * The app still ships no audio files of its own.
- */
-
-export type SpeechLanguage = "ja-JP" | "en-US";
-
-const APP_BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "")
-  .trim()
-  .replace(/\/+$/, "");
-
+export type SpeechLanguage = "ja-JP" | "en-US" | "zh-CN";
+export type SpeechResult = { ok: true; voice?: string } | { ok: false; message: string };
+const APP_BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").trim().replace(/\/+$/, "");
+interface Clip { url: string; voice?: string }
+const cache = new Map<string, Clip>();
+const inflight = new Map<string, Promise<Clip | null>>();
+let activeLoads = 0;
+const waitingLoads: (() => void)[] = [];
+function scheduleLoad<T>(work: () => Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const run = () => {
+      activeLoads += 1;
+      void work().then(resolve, reject).finally(() => {
+        activeLoads -= 1;
+        waitingLoads.shift()?.();
+      });
+    };
+    if (activeLoads < 3) run(); else waitingLoads.push(run);
+  });
+}
 let currentAudio: HTMLAudioElement | null = null;
-
-function sources(text: string, language: SpeechLanguage): string[] {
-  const query = encodeURIComponent(text);
-  const lang = language === "ja-JP" ? "ja" : "en";
-  if (language === "ja-JP") {
-    return [
-      // Our own origin first: the audio is fetched server-side, so a browser
-      // that cannot reach the dictionary directly still gets the recording.
-      `${APP_BASE_PATH}/api/tts?text=${query}&lang=${lang}`,
-      `https://dict.youdao.com/dictvoice?audio=${query}&le=jap`,
-    ];
-  }
-  return [
-    `${APP_BASE_PATH}/api/tts?text=${query}&lang=${lang}`,
-    `https://dict.youdao.com/dictvoice?audio=${query}&type=2`,
-  ];
+let cancelCurrent: (() => void) | null = null;
+function source(text: string, language: SpeechLanguage) {
+  // Version the URL so old dictionary clips are not reused.
+  return `${APP_BASE_PATH}/api/tts?text=${encodeURIComponent(text)}&lang=${language === "ja-JP" ? "ja" : language === "zh-CN" ? "zh" : "en"}&v=neural-1`;
 }
-
-/**
- * The clip is downloaded in full and handed to the player as a local object
- * URL. Streaming straight from the network meant playback started before the
- * data arrived, which is what produced clipped endings and missing openings
- * depending on how the buffering happened to land that time.
- */
-const blobCache = new Map<string, string>();
-const inflight = new Map<string, Promise<string | null>>();
-let playToken = 0;
-
-async function resolveAudio(url: string): Promise<string | null> {
-  const cached = blobCache.get(url);
+async function resolveAudio(url: string): Promise<Clip | null> {
+  const cached = cache.get(url);
   if (cached) return cached;
-  let pending = inflight.get(url);
-  if (!pending) {
-    pending = (async () => {
-      try {
-        const response = await fetch(url);
-        if (!response.ok) return null;
-        const blob = await response.blob();
-        if (blob.size < 512) return null;
-        const objectUrl = URL.createObjectURL(blob);
-        blobCache.set(url, objectUrl);
-        return objectUrl;
-      } catch {
-        return null;
-      } finally {
-        inflight.delete(url);
+  const pending = inflight.get(url);
+  if (pending) return pending;
+  const request = scheduleLoad(async () => {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(20000) });
+      if (!response.ok || !response.headers.get("content-type")?.startsWith("audio/")) return null;
+      const blob = await response.blob();
+      if (blob.size < 512) return null;
+      const clip = { url: URL.createObjectURL(blob), voice: response.headers.get("X-Speech-Voice") ?? undefined };
+      if (cache.size >= 128) {
+        const oldest = cache.keys().next().value;
+        if (oldest) { URL.revokeObjectURL(cache.get(oldest)!.url); cache.delete(oldest); }
       }
-    })();
-    inflight.set(url, pending);
-  }
-  return pending;
+      cache.set(url, clip);
+      return clip;
+    } catch { return null; }
+    finally { inflight.delete(url); }
+  });
+  inflight.set(url, request);
+  return request;
 }
-
-/**
- * Play one candidate URL through an <audio> element.
- *
- * Media playback is not subject to CORS, which is the whole point: the
- * dictionary endpoint sends no Access-Control-Allow-Origin header, so any
- * fetch()-based path fails from a browser and quietly drops the learner onto
- * the system's robotic voice. Letting the element load the URL itself works
- * whether or not a same-origin proxy is available — the proxy is only an
- * optimisation that makes the clip available instantly on iOS.
- *
- * A stalled request neither plays nor errors, so a timeout moves down the
- * chain instead of leaving a silent tap.
- */
-function playUrl(
-  url: string,
-  urls: string[],
-  index: number,
-  text: string,
-  language: SpeechLanguage,
-  token: number,
-): void {
-  if (token !== playToken) return;
-  const audio = new Audio(url);
-  // Reset explicitly: some browsers resume the previous position otherwise.
+export function preload(text: string, language: SpeechLanguage): void {
+  if (text.trim() && isSpeechSupported()) void resolveAudio(source(text.trim(), language));
+}
+export function isSpeechSupported(): boolean {
+  return typeof window !== "undefined" && typeof window.Audio === "function";
+}
+/** Only the configured neural voice; never fall back to system speech. */
+export function speak(text: string, language: SpeechLanguage, waitForEnd = false): Promise<SpeechResult> {
+  if (!text.trim() || !isSpeechSupported()) return Promise.resolve({ ok: false, message: "当前设备无法播放自然语音" });
+  cancelCurrent?.();
+  currentAudio?.pause();
+  const url = source(text.trim(), language);
+  const ready = cache.get(url);
+  // Start synchronously inside the user's click: iOS requires the gesture.
+  const audio = currentAudio ?? new Audio();
+  audio.src = ready?.url ?? url;
   audio.currentTime = 0;
   currentAudio = audio;
-  let settled = false;
-  let timer = 0;
-
-  const advance = () => {
-    if (settled || token !== playToken) return;
-    settled = true;
-    window.clearTimeout(timer);
-    currentAudio = null;
-    try {
-      audio.pause();
-    } catch {
-      /* already failing; nothing to stop */
-    }
-    if (index + 1 < urls.length) {
-      playUrl(urls[index + 1], urls, index + 1, text, language, token);
-    } else {
-      speakOffline(text, language);
-    }
-  };
-
-  timer = window.setTimeout(advance, 6000);
-  audio.addEventListener("playing", () => {
-    settled = true;
-    window.clearTimeout(timer);
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (result: SpeechResult) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      audio.removeEventListener("playing", playing);
+      audio.removeEventListener("error", failed);
+      audio.removeEventListener("ended", ended);
+      if (cancelCurrent === cancel) cancelCurrent = null;
+      resolve(result);
+    };
+    const failed = () => { audio.pause(); finish({ ok: false, message: "自然语音暂时无法播放，请稍后重试" }); };
+    const playing = () => {
+      window.clearTimeout(timer);
+      if (!waitForEnd) finish({ ok: true, voice: ready?.voice });
+    };
+    const ended = () => finish({ ok: true, voice: ready?.voice });
+    const cancel = () => { audio.pause(); finish({ ok: false, message: "" }); };
+    const timer = window.setTimeout(failed, 20000);
+    cancelCurrent = cancel;
+    audio.addEventListener("playing", playing);
+    audio.addEventListener("error", failed);
+    audio.addEventListener("ended", ended);
+    void audio.play().catch((error: unknown) => {
+      if (error instanceof Error && error.name === "NotAllowedError") {
+        audio.pause(); finish({ ok: false, message: "请点击喇叭播放自然语音" });
+      } else failed();
+    });
+    // Populate the cache even when a cold click starts streaming first.
+    if (!ready) void resolveAudio(url);
   });
-  audio.addEventListener("error", advance);
-  void audio.play().catch(advance);
 }
 
-/**
- * Warm the cache for a word before the user asks for it.
- *
- * iOS only allows audio to start from inside the click's own synchronous
- * call stack; once we `await` a download the gesture is spent and playback is
- * refused, which silently dropped people back to the robotic system voice.
- * Fetching ahead of time means the click finds the blob already in hand and
- * can play synchronously.
- */
-export function preload(text: string, language: SpeechLanguage): void {
-  const trimmed = text.trim();
-  if (!trimmed || typeof window === "undefined") return;
-  const url = sources(trimmed, language)[0];
-  if (blobCache.has(url) || inflight.has(url)) return;
-  void resolveAudio(url);
+export async function speakSequence(clips: { text: string; language: SpeechLanguage }[]): Promise<SpeechResult> {
+  // Prepare every segment now, while the first one is already playing.
+  // Waiting to request the Chinese clip until the foreign clip ends caused a network-sized gap.
+  clips.forEach((clip) => preload(clip.text, clip.language));
+  for (const clip of clips) { const result = await speak(clip.text, clip.language, true); if (!result.ok) return result; }
+  return { ok: true };
 }
-
-export function speak(text: string, language: SpeechLanguage): void {
-  const trimmed = text.trim();
-  if (!trimmed || typeof window === "undefined") return;
-
-  if (typeof window.Audio !== "function") {
-    speakOffline(trimmed, language);
-    return;
-  }
-
-  // A new click invalidates whatever is still resolving or playing.
-  playToken += 1;
-  const token = playToken;
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-  }
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
-
-  const urls = sources(trimmed, language);
-  // Preferred path: a clip that `preload` already fetched, played from inside
-  // the click handler so iOS allows it.
-  const ready = blobCache.get(urls[0]);
-  if (ready) {
-    playUrl(ready, [ready, ...urls.slice(1)], 0, trimmed, language, token);
-    return;
-  }
-
-  playUrl(urls[0], urls, 0, trimmed, language, token);
-}
-
-export function isSpeechSupported(): boolean {
-  if (typeof window === "undefined") return false;
-  return (
-    typeof window.Audio === "function" ||
-    typeof window.SpeechSynthesisUtterance === "function"
-  );
-}
-
-let warmedUp = false;
-
-/**
- * Chrome populates getVoices() asynchronously; registering the listener early
- * makes the first fallback click use a proper voice instead of the default one.
- */
-export function warmUpSpeech(): void {
-  if (typeof window === "undefined") return;
-  if (typeof window.speechSynthesis === "undefined") return;
-  if (warmedUp) return;
-  warmedUp = true;
-  const load = () => void window.speechSynthesis.getVoices();
-  load();
-  window.speechSynthesis.addEventListener?.("voiceschanged", load);
-}
-
-function pickVoice(language: SpeechLanguage): SpeechSynthesisVoice | null {
-  if (typeof window === "undefined" || !window.speechSynthesis) return null;
-  const voices = window.speechSynthesis.getVoices();
-  if (voices.length === 0) return null;
-  const prefix = language.slice(0, 2).toLowerCase();
-  return (
-    voices.find((voice) => voice.lang.toLowerCase() === language.toLowerCase()) ??
-    voices.find((voice) => voice.lang.toLowerCase().startsWith(prefix)) ??
-    null
-  );
-}
-
-function speakOffline(text: string, language: SpeechLanguage): void {
-  if (typeof window === "undefined") return;
-  if (typeof window.SpeechSynthesisUtterance !== "function") return;
-  if (!window.speechSynthesis) return;
-  const synth = window.speechSynthesis;
-  synth.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = language;
-  utterance.rate = language === "ja-JP" ? 0.85 : 1;
-  const voice = pickVoice(language);
-  if (voice) utterance.voice = voice;
-  synth.speak(utterance);
-}
-
-/**
- * True when pronunciation can be attempted at all. With the dictionary voice
- * available this is effectively always true, so the buttons stay visible.
- */
-export function hasVoice(language: SpeechLanguage): boolean {
-  if (typeof window === "undefined") return false;
-  if (typeof window.Audio === "function") return true;
-  return pickVoice(language) !== null;
-}
+export function stopSpeech(): void { cancelCurrent?.(); currentAudio?.pause(); }

@@ -43,6 +43,8 @@ const mocked = vi.hoisted(() => ({
 vi.mock("@/context/learning", () => ({
   useLearning: () => mocked.learning,
 }));
+// JSDOM has no media playback. Speech behavior is exercised in speech.test.ts.
+vi.mock("@/lib/speech", () => ({ isSpeechSupported: () => false, preload: vi.fn(), speak: vi.fn(), speakSequence: vi.fn(), stopSpeech: vi.fn() }));
 
 vi.mock("next/link", () => ({
   default: ({
@@ -82,6 +84,7 @@ function learningMock(overrides: Record<string, unknown> = {}) {
     focusMode: false,
     setFocusMode: vi.fn(),
     studyWord: vi.fn().mockResolvedValue(undefined),
+    answerWordQuiz: vi.fn().mockResolvedValue(undefined),
     completeGrammar: vi.fn().mockResolvedValue(undefined),
     completeTest: vi.fn().mockImplementation(async (answers: Array<{ isCorrect: boolean }>) => ({
       ...makeTestResult(),
@@ -119,7 +122,7 @@ describe("phase-two components", () => {
     expect(onExitFocus).toHaveBeenCalledTimes(2);
   });
 
-  it("reveals and rates a word in the selected independent mode", async () => {
+  it("reveals then quizzes a word in the selected independent mode", async () => {
     mocked.learning = learningMock();
     const word = makeWord("word-component", "组件");
     render(
@@ -135,12 +138,12 @@ describe("phase-two components", () => {
     await userEvent.click(screen.getByRole("button", { name: /揭示答案/ }));
     expect(screen.getByText(word.japanese.term)).toBeTruthy();
     expect(screen.queryByText(word.english.term)).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: /^认识/ }));
+    await userEvent.click(screen.getByRole("button", { name: /开始练习这 1 组/ }));
+    await userEvent.click(screen.getByRole("button", { name: /选项 [A-D]：含义/ }));
     await waitFor(() =>
-      expect(mocked.learning.studyWord).toHaveBeenCalledWith(
-        word.id,
-        "known",
-        "japanese",
+      expect(mocked.learning.answerWordQuiz).toHaveBeenCalledWith(
+        expect.objectContaining({ sourceId: word.id, wordQuiz: { mode: "japanese", direction: "ja-zh" } }),
+        expect.any(Number), expect.objectContaining({ elapsedSeconds: expect.any(Number) }),
       ),
     );
   });
@@ -201,33 +204,28 @@ describe("phase-two components", () => {
       />,
     );
     await userEvent.click(screen.getByRole("button", { name: /揭示答案/ }));
-    await userEvent.click(screen.getByRole("button", { name: /^认识/ }));
+    await userEvent.click(screen.getByRole("button", { name: /开始练习这 1 组/ }));
+    await userEvent.click(screen.getByRole("button", { name: /选项 [A-D]：含义/ }));
+    await userEvent.click(await screen.findByRole("button", { name: "继续学习" }));
     await userEvent.click(await screen.findByRole("button", { name: /继续：今日新词/ }));
     expect(onContinuePlan).toHaveBeenCalledWith(expect.stringContaining("/words"));
   });
 
-  it("restarts only the words marked unknown in the finished round", async () => {
+  it("retains failed words as practice without showing reveal cards again", async () => {
     mocked.learning = learningMock();
-    const unknownWord = makeWord("word-unknown", "不认识");
-    const onReviewUnknown = vi.fn();
-    render(
-      <WordStudySession
-        items={[unknownWord]}
-        mode="japanese"
-        onFinish={vi.fn()}
-        onRestart={vi.fn()}
-        onContinuePlan={vi.fn()}
-        onReviewUnknown={onReviewUnknown}
-      />,
-    );
+    const word = makeWord("word-unknown", "待巩固");
+    render(<WordStudySession items={[word]} mode="japanese" onFinish={vi.fn()} onRestart={vi.fn()} onContinuePlan={vi.fn()} onReviewUnknown={vi.fn()} />);
     await userEvent.click(screen.getByRole("button", { name: /揭示答案/ }));
-    await userEvent.click(screen.getByRole("button", { name: /不认识/ }));
-    await userEvent.click(await screen.findByRole("button", { name: "重练生词" }));
-    expect(onReviewUnknown).toHaveBeenCalledWith([unknownWord]);
-    expect(screen.queryByRole("button", { name: "复习错词" })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: /开始练习这 1 组/ }));
+    await userEvent.click(screen.getByRole("button", { name: /查看答案（本题计错）/ }));
+    await userEvent.click(await screen.findByRole("button", { name: "继续学习" }));
+    expect(screen.queryByRole("button", { name: /揭示答案/ })).toBeNull();
+    expect(screen.getByRole("heading", { name: word.japanese.term })).toBeTruthy();
+    expect(mocked.learning.answerWordQuiz).toHaveBeenCalledTimes(1);
   });
 
   it("never applies a stale learning focus state to settings", async () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     mocked.pathname = "/settings";
     mocked.learning = learningMock({
       focusMode: true,
@@ -235,7 +233,7 @@ describe("phase-two components", () => {
     });
     render(<LinguaApp />);
     expect(screen.queryByRole("button", { name: /退出专注/ })).toBeNull();
-    expect(screen.getByRole("navigation", { name: "移动端主导航" })).toBeTruthy();
+    expect(screen.getByRole("complementary", { name: "主导航" })).toBeTruthy();
     await waitFor(() => expect(mocked.learning.setFocusMode).toHaveBeenCalledWith(false));
   });
 
@@ -279,7 +277,7 @@ describe("phase-two components", () => {
     render(<WordsView />);
     expect(screen.queryByText(/AI 新增/)).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "日语" }));
-    expect(screen.getByRole("combobox", { name: "2. 日语难度" })).toBeTruthy();
+    expect(screen.getByText(/范围在「设置」中调整/)).toBeTruthy();
     expect(screen.queryByRole("combobox", { name: "2. 英语难度" })).toBeNull();
     expect(screen.queryByText("仅收藏")).toBeNull();
     expect(screen.queryByText("仅错词")).toBeNull();
@@ -299,9 +297,7 @@ describe("phase-two components", () => {
 
     expect(screen.queryByRole("combobox", { name: "掌握状态" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "英语" }));
-    const englishLevel = screen.getByRole("combobox", { name: "2. 英语难度" });
-    expect(englishLevel).toBeTruthy();
-    await userEvent.selectOptions(englishLevel, "CET-6");
+    expect(screen.getByText(/英语 · .*组可学习/)).toBeTruthy();
     let startButton = screen
       .getAllByRole("button", { name: "开始学习" })
       .find((button) => button.classList.contains("button-primary"));
@@ -309,8 +305,8 @@ describe("phase-two components", () => {
     expect(startButton?.hasAttribute("disabled")).toBe(false);
 
     await userEvent.click(screen.getByRole("button", { name: "日英混合" }));
-    expect(screen.getByRole("combobox", { name: "2. 日语难度" })).toBeTruthy();
-    expect(screen.getByRole("combobox", { name: "2. 英语难度" })).toBeTruthy();
+    expect(screen.getByText(/范围在「设置」中调整/)).toBeTruthy();
+    expect(screen.queryByRole("combobox", { name: "2. 英语难度" })).toBeNull();
     startButton = screen
       .getAllByRole("button", { name: "开始学习" })
       .find((button) => button.classList.contains("button-primary"));

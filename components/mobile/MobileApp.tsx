@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { BookOpenText, Home, SquarePen, UserRound } from "lucide-react";
 import { setAppRouter } from "./navigation";
+import { TrainingView } from "@/components/views/TrainingView";
 import { MobileFavorites } from "./screens/FavoritesScreen";
 import { MobileGrammarHub } from "./screens/GrammarScreen";
 import { MobileHomeScreen } from "./screens/HomeScreen";
@@ -70,6 +71,7 @@ function MobileExperience() {
   }, [router]);
   const section = pathname.split("/").filter(Boolean)[0] ?? "home";
   const params = searchParams ?? new URLSearchParams();
+  if (section === "training") return <TrainingView />;
   if (section === "home") return <MobileHomeScreen />;
   if (section === "words") return params.get("mobile") === "study" ? <MobileWordStudy params={params} /> : <MobileWordLibrary />;
   if (section === "grammar") return <MobileGrammarHub params={params} />;

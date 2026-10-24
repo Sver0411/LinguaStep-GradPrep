@@ -72,6 +72,7 @@ export function HomeView() {
 
   return (
     <div className="page-stack home-page">
+      {todayPlan?.budgetReason && <section className="card plan-budget"><strong>今日预计 {todayPlan.estimatedMinutes} 分钟</strong><p>{todayPlan.budgetReason}</p><Link href="/settings">调整目标与今日计划</Link></section>}
       <PageHeader
         eyebrow="今日学习"
         title={
@@ -83,7 +84,7 @@ export function HomeView() {
         }
         description={
           isFreshLearner
-            ? "每天的量已经排好了：先过一遍新词，再学一条语法，最后做几道题，大约 15 分钟。点下面的按钮直接开始。"
+            ? "每天的量已经排好了：先过一遍新词，再学一条语法，最后做几道题，按下方计划估时安排。点下面的按钮直接开始。"
             : todayComplete
               ? "做得很好。你可以自由学习，或让记忆在下一次到期前休息。"
               : "计划每天只生成一次；刷新页面不会重复添加任务。"

@@ -19,6 +19,7 @@ import {
 } from "@/lib/statistics";
 import type { StudyMode } from "@/lib/models";
 import { PageHeader } from "@/components/ui";
+import { LearningInsights } from "@/components/stats/LearningInsights";
 import { DistributionChart, TrendChart } from "@/components/stats/TrendChart";
 
 export function StatsView() {
@@ -71,7 +72,7 @@ export function StatsView() {
         })}
       </section>
 
-      <section className="trend-grid">
+      <LearningInsights /><section className="trend-grid">
         <TrendChart points={trend} metric="activity" label={`最近 ${range} 天学习数量`} />
         <TrendChart points={trend} metric="accuracy" label={`最近 ${range} 天正确率`} suffix="%" />
       </section>

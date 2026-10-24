@@ -19,7 +19,7 @@ export function MobilePracticeScreen() {
   const accuracy = answers.length > 0 ? Math.round(answers.filter((item) => item.isCorrect).length / answers.length * 100) : null;
   const mistakes = snapshot.mistakes.filter((item) => item.active).length;
   const quizLang = settings.defaultStudyMode === "english" ? "english" : "japanese";
-  const quizLevel = settings.defaultStudyMode === "english" ? "CET-4" : "N3";
+  const quizLevel = settings.primaryGoal && settings.primaryGoal !== "general" ? settings.primaryGoal : settings.defaultStudyMode === "english" ? "基础英语" : "N3";
   const week = Array.from({ length: 7 }, (_, index) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - index));
@@ -41,7 +41,7 @@ export function MobilePracticeScreen() {
       </section>
       <section>
         <div className="m2-section-title"><h2>选择练习</h2></div>
-        <div className="m2-practice-options">
+        <div className="m2-practice-options"><button type="button" onClick={() => navigateTo("/training")}><span className="mint"><Play size={25} /></span><div><b>能力训练</b><small>短句听辨 / 听写 / 填空 / 新语境阅读</small></div><em>开始</em></button>
           <button onClick={() => navigateTo(mobileHref("/test", { mobile: "setup" }))} type="button"><span className="mint"><Timer size={25} /></span><div><b>快速测验</b><small>{target} 题 · 根据你的计划</small></div><em>开始</em></button>
           <button onClick={() => navigateTo(mobileHref("/mistakes", { mobile: "list" }))} type="button"><span className="lavender"><CircleAlert size={25} /></span><div><b>错题巩固</b><small>{mistakes > 0 ? `${mistakes} 道需要处理` : "暂时没有活跃错题"}</small></div><em className="lavender">去巩固</em></button>
           <button onClick={() => navigateTo("/grammar")} type="button"><span className="coral"><NotebookPen size={25} /></span><div><b>语法即时练习</b><small>根据语法卡片完成小测</small></div><em className="coral">开始</em></button>
