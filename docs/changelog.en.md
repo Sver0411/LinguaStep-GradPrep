@@ -2,6 +2,11 @@
 
 [Project home](../README.en.md) · [Documentation](README.md) · [中文版本记录](changelog.md)
 
+## v0.18.3 · 2026-10-27
+
+- Expanded both READMEs into medium-length project overviews with learning flow, live page links, features, content counts, stack and common commands.
+- Kept the banner and focused documentation navigation; detailed guides and release history remain separate.
+
 ## v0.18.2 · 2026-10-27
 
 - Consolidated development into `main`; the older exam-bank branch was already part of the main history.
