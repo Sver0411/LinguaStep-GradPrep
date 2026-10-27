@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">LinguaStep 日英阶梯</title>
+  <desc id="desc">日语与英语，一起稳步进阶。揭示、练习、复习，让每一步都记得更牢。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eef1ff"/><stop offset=".55" stop-color="#f7f9ff"/><stop offset="1" stop-color="#e8f7f4"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4d65f5"/><stop offset="1" stop-color="#6550ce"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#243e78" flood-opacity=".10"/></filter>
+  </defs>
+  <rect width="1200" height="360" rx="24" fill="url(#bg)"/>
+  <circle cx="1110" cy="10" r="160" fill="#c7d3ff" opacity=".28"/>
+  <circle cx="1090" cy="350" r="150" fill="#b7e8dc" opacity=".30"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <rect x="56" y="55" width="64" height="64" rx="19" fill="url(#accent)"/>
+    <text x="88" y="100" text-anchor="middle" font-size="43" font-weight="750" fill="#fff">L</text>
+    <text x="141" y="87" font-size="37" font-weight="750" letter-spacing="-1" fill="#172443">LinguaStep</text>
+    <text x="143" y="115" font-size="17" fill="#61718c" letter-spacing="3">日英阶梯</text>
+    <text x="56" y="205" font-size="41" font-weight="650" letter-spacing="1" fill="#172443">日语与英语，一起稳步进阶。</text>
+    <text x="59" y="247" font-size="18" fill="#62718c">先熟悉，再练习，让记忆一步一步留下来。</text>
+    <rect x="58" y="281" width="87" height="30" rx="15" fill="#e1e7ff"/>
+    <text x="101" y="302" text-anchor="middle" font-size="13" font-weight="650" fill="#4d5cc2">REVEAL</text>
+    <text x="157" y="301" font-size="18" fill="#90a1bb">→</text>
+    <rect x="183" y="281" width="103" height="30" rx="15" fill="#e1e7ff"/>
+    <text x="234" y="302" text-anchor="middle" font-size="13" font-weight="650" fill="#4d5cc2">PRACTICE</text>
+    <text x="298" y="301" font-size="18" fill="#90a1bb">→</text>
+    <rect x="325" y="281" width="90" height="30" rx="15" fill="#d8efe8"/>
+    <text x="370" y="302" text-anchor="middle" font-size="13" font-weight="650" fill="#267d73">REVIEW</text>
+    <g transform="translate(798 65) rotate(5 145 115)"><rect width="290" height="230" rx="24" fill="#d5e1fa"/></g>
+    <g filter="url(#shadow)">
+      <rect x="774" y="58" width="308" height="240" rx="23" fill="#fff" stroke="#dee6f2"/>
+      <rect x="799" y="83" width="74" height="24" rx="12" fill="#eceaff"/>
+      <text x="836" y="100" text-anchor="middle" font-size="12" font-weight="650" fill="#6b58bc">日英对照</text>
+      <text x="800" y="154" font-size="36" font-weight="700" fill="#263655">準備</text>
+      <text x="802" y="183" font-size="15" fill="#8390a4">じゅんび</text>
+      <path d="M800 201H1056" stroke="#e9edf5"/>
+      <text x="800" y="237" font-size="27" font-weight="650" fill="#258d89">preparation</text>
+      <text x="802" y="269" font-size="16" fill="#75849b">准备 · 每次掌握一小组</text>
+    </g>
+  </g>
+</svg>

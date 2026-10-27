@@ -1,5 +1,7 @@
 # AI 测试
 
+[项目首页](../README.md) · [文档目录](README.md)
+
 ## 默认原则
 
 `npm test` 只使用 MockAIProvider、固定 JSON Fixture、模拟 HTTP Response 和 fake-indexeddb，不读取真实 Key、不访问网络、不产生费用。

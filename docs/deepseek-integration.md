@@ -1,5 +1,7 @@
 # DeepSeek 集成
 
+[项目首页](../README.md) · [文档目录](README.md)
+
 ## 运行配置
 
 配置统一由 `lib/ai/config/ai-config.ts` 读取和限界：

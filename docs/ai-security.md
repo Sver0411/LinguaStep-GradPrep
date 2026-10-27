@@ -1,5 +1,7 @@
 # AI 安全
 
+[项目首页](../README.md) · [文档目录](README.md)
+
 ## 密钥
 
 - 服务器 Key 只读取 `process.env.DEEPSEEK_API_KEY`；不得添加客户端公开前缀。

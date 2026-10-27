@@ -1,5 +1,7 @@
 # 本地存储
 
+[项目首页](../README.md) · [文档目录](README.md)
+
 ## IndexedDB v3
 
 数据库名：`lingua-step-learning`；版本常量：`3`。
@@ -13,7 +15,7 @@
 | `testResults` | `id` | 测试答案与用时；`completedAt` |
 | `dailyRecords` | `date` | 每日学习计数；`date` |
 | `dailyPlans` | `date` | 每日计划；`generatedAt` |
-| `aiWords` | `id` | AI 词卡；`aiMetadata.generationId` |
+| `aiWords` | `id` | 扩展词卡（AI 历史与词书导入）；`aiMetadata.generationId` |
 | `aiGrammar` | `id` | AI 语法；`aiMetadata.generationId` |
 | `aiComparisons` | `id` | AI 日英对比；`aiMetadata.generationId` |
 | `aiGenerations` | `id` | 参数、模型、状态、校验、保存引用；时间/类型/状态索引 |
@@ -24,7 +26,14 @@
 
 AI 内容保存 `AIContentMetadata`：provider、model、Prompt 名称/版本、generationId、时间、校验状态和内容哈希。人工精选内容继续使用既有 `source: "curated"`，不会被 AI 自动覆盖。
 
+客观词汇复习的序列化 FSRS 状态保存在 `wordProgress.modes.*.quizMemory`，实际答题事件保存在 `recallHistory`；这些字段随备份恢复，不需要新增对象仓库。每日耗时与计划重算基线分别保存在 `dailyRecords`、`dailyPlans`。
+
+设置中的 JSON 备份可手动迁移学习记录；同一浏览器内的多标签协调不等于跨设备云同步。
+
 ## 浏览器设置与密钥
+
+AI 前端当前暂停。下表中的 AI 密钥与配置是历史后端兼容结构，并非当前界面开放入口。
+
 
 | 存储 | 键 | 内容 |
 | --- | --- | --- |

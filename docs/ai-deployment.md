@@ -1,5 +1,7 @@
 # AI 部署
 
+[项目首页](../README.md) · [文档目录](README.md)
+
 ## Vercel
 
 使用 `npm run build:vercel`。在 Project Settings → Environment Variables 配置 `.env.example` 中的变量：

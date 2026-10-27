@@ -1,5 +1,7 @@
 # AI Prompt 管理
 
+[项目首页](../README.md) · [文档目录](README.md)
+
 Prompt 全部集中在 `lib/ai/prompts/templates.ts`，每个模板包含 `name`、`version`、`system`、`buildUser` 和 `maxTokens`。业务记录只保存名称和版本，不复制完整系统 Prompt。
 
 | 模板 | 当前版本 | 用途 |

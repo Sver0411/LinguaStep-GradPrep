@@ -1,8 +1,10 @@
 # 架构说明
 
+[项目首页](../README.md) · [文档目录](README.md)
+
 ## 目标与边界
 
-“本地学习优先、AI 按需增强”。AI 故障、断网或未配置密钥时，原有学习功能不依赖网络；页面不直接调用 DeepSeek，也不直接写 IndexedDB。
+本地学习优先，在线语音按需使用；AI 前端当前暂停，后端代码保留兼容维护。断网或未配置密钥时仍可使用内置内容与本地记录，在线语音需要网络。页面不直接调用 DeepSeek，也不直接写 IndexedDB。
 
 ## 分层与依赖方向
 
@@ -32,7 +34,7 @@ context/learning/
   snapshot-utils.ts      纯函数：快照合并、裁剪、集合差量、主题、计划生成
   use-snapshot-store.ts  持久化：打开仓储、写入加锁、跨标签广播、重置、备份/恢复
   actions/
-    use-word-actions.ts      学习与“熟知”标记
+    use-word-actions.ts      客观词汇答题、词书导入及兼容动作
     use-practice-actions.ts  语法与测验完成
     use-mistake-actions.ts   错题本
     use-favorite-actions.ts  收藏

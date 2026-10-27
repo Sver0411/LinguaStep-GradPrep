@@ -1,5 +1,7 @@
 # IndexedDB v1/v2 → v3 迁移
 
+[项目首页](../README.md) · [文档目录](README.md)
+
 ## 原则
 
 - 原地升级，不清库、不改变旧内容 ID。
@@ -20,6 +22,12 @@
 新增八个 AI store：`aiWords`、`aiGrammar`、`aiComparisons`、`aiGenerations`、`aiUsage`、`aiExplanations`、`aiCollections`、`aiContentReports`。
 
 第二阶段七个 store 不改名、不清空。没有 AI 数据的旧快照得到空数组；人工精选内容保持既有 `source: "curated"`。AI 业务内容只有通过第三阶段服务生成时才带 `aiMetadata`。
+
+## 当前字段兼容
+
+IndexedDB 仍为 v3；字段扩展不等于对象仓库版本升级。读取快照时还会规范化客观词汇的 FSRS 记忆、真实答题历史、词书导入词条、学习耗时及计划重算基线。旧自评不会补造成客观答对。
+
+设置目前使用 schema v6，与 IndexedDB 版本分别管理。手机备份入口、主目标和时间预算不会要求清空旧学习数据。
 
 ## 失败与降级
 
