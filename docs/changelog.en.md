@@ -2,6 +2,11 @@
 
 [Project home](../README.en.md) · [Documentation](README.md) · [中文版本记录](changelog.md)
 
+## v0.18.4 · 2026-10-28
+
+- Upgraded `msedge-tts` to 2.1.1 for the updated Edge Read Aloud handshake, restoring synthesis when the previous integration fails.
+- Kept the same Japanese, English and Chinese neural voices and bilingual example playback without an API key.
+
 ## v0.18.3 · 2026-10-27
 
 - Expanded both READMEs into medium-length project overviews with learning flow, live page links, features, content counts, stack and common commands.

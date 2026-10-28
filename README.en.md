@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/changelog.en.md"><img src="https://img.shields.io/badge/version-0.18.3-5964f2?style=flat-square" alt="Version 0.18.3" /></a>
+  <a href="docs/changelog.en.md"><img src="https://img.shields.io/badge/version-0.18.4-5964f2?style=flat-square" alt="Version 0.18.4" /></a>
   <img src="https://img.shields.io/badge/Node.js-%3E%3D22.13-43853d?style=flat-square" alt="Node.js >=22.13" />
   <img src="https://img.shields.io/badge/TypeScript-3178c6?style=flat-square" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Local--first-278c82?style=flat-square" alt="Local-first" />
