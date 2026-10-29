@@ -227,7 +227,7 @@ export function TestView() {
       <div className="page-stack exam-results-page">
         <section className="result-hero card">
           <span className={`result-ring ${percent >= 80 ? "good" : percent >= 60 ? "medium" : "needs-work"}`}><strong>{percent}</strong><small>分</small></span>
-          <div><span className="section-kicker">PRACTICE COMPLETE</span><h1>{LANGUAGE_LABEL[language]} {level} 练习完成</h1><p>正确 {result.correctCount} 题，错误 {wrongCount} 题。</p><p className="keyboard-note"><Timer size={15} />用时 {Math.floor(result.durationSeconds / 60)} 分 {result.durationSeconds % 60} 秒</p></div>
+          <div><h1>{LANGUAGE_LABEL[language]} {level} 练习完成</h1><p>正确 {result.correctCount} 题，错误 {wrongCount} 题。</p><p className="keyboard-note"><Timer size={15} />用时 {Math.floor(result.durationSeconds / 60)} 分 {result.durationSeconds % 60} 秒</p></div>
           <div className="result-actions">
             {nextAction.step === "complete" && (
               <Link className="button button-primary" href="/"><ArrowRight size={18} />回到今日首页</Link>
@@ -246,7 +246,7 @@ export function TestView() {
         </section>
         {wrongCount > 0 && nextAction.step === "mistakes" && (
           <section className="card next-learning-card">
-            <div><span className="section-kicker">NEXT STEP</span><h2>本轮错了 {wrongCount} 题</h2><p>错题已自动进入错题本，接着巩固可以立刻巩固印象。</p></div>
+            <div><h2>本轮错了 {wrongCount} 题</h2><p>错题已自动进入错题本，接着巩固可以立刻巩固印象。</p></div>
             <Link className="button button-primary" href="/mistakes?review=1"><ArrowRight size={18} />开始巩固错题</Link>
           </section>
         )}
@@ -259,7 +259,7 @@ export function TestView() {
           })}
         </section>
         <section className="answer-review">
-          <div className="section-title-row"><div><span className="section-kicker">ANSWER REVIEW</span><h2>逐题解析</h2></div></div>
+          <div className="section-title-row"><div><h2>逐题解析</h2></div></div>
           {result.answers.map((answer, answerIndex) => (
             <article className={`answer-review-card card ${answer.isCorrect ? "correct" : "wrong"}`} key={`${answer.question.id}-${answerIndex}`}>
               <span className="review-number">{answerIndex + 1}</span>

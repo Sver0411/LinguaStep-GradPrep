@@ -9,6 +9,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    maxWorkers: 2,
     include: ["tests/**/*.test.{ts,tsx}"],
     coverage: {
       reporter: ["text", "html"],

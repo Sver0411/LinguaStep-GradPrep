@@ -89,7 +89,7 @@ describe("LocalStorageSettingsRepository", () => {
     );
     expect(repository.get().revealMode).toBe("step-by-step");
     expect(JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY) ?? "{}")).toMatchObject({
-      _settingsVersion: 6,
+      _settingsVersion: 8,
       revealMode: "step-by-step",
       focusModeEnabled: false,
       immediateTestFeedback: true,
@@ -139,7 +139,7 @@ describe("LocalStorageSettingsRepository", () => {
     );
     expect(repository.get().immediateTestFeedback).toBe(true);
     expect(JSON.parse(storage.getItem(SETTINGS_STORAGE_KEY) ?? "{}")).toMatchObject({
-      _settingsVersion: 6,
+      _settingsVersion: 8,
       immediateTestFeedback: true,
     });
 

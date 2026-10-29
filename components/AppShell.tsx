@@ -7,7 +7,6 @@ import {
   BookMarked,
   BookOpenText,
   ChevronRight,
-  CircleHelp,
   Heart,
   Home,
   Menu,
@@ -22,7 +21,6 @@ const navigation = [
   { path: "/", label: "首页", icon: Home },
   { path: "/words", label: "单词", icon: BookOpenText },
   { path: "/grammar", label: "语法", icon: NotebookPen },
-  { path: "/test", label: "测试", icon: CircleHelp },
   { path: "/mistakes", label: "错题本", icon: BookMarked },
   { path: "/favorites", label: "收藏", icon: Heart },
   { path: "/reference", label: "资料", icon: BookOpenCheck },
@@ -32,16 +30,16 @@ const navigation = [
 
 const primaryMobileNavigation = [
   { ...navigation[0], label: "今日" },
-  ...navigation.slice(1, 4),
+  ...navigation.slice(1, 3),
 ] as const;
 const secondaryMobileGroups = [
-  { label: "复习", items: navigation.slice(4, 6) },
-  { label: "工具", items: navigation.slice(6) },
+  { label: "复习", items: navigation.slice(3, 5) },
+  { label: "工具", items: navigation.slice(5) },
 ] as const;
 const desktopGroups = [
-  { label: "学习", items: navigation.slice(0, 4) },
-  { label: "复习", items: navigation.slice(4, 6) },
-  { label: "工具", items: navigation.slice(6) },
+  { label: "学习", items: navigation.slice(0, 3) },
+  { label: "复习", items: navigation.slice(3, 5) },
+  { label: "工具", items: navigation.slice(5) },
 ] as const;
 
 function isActive(pathname: string, path: string): boolean {
@@ -123,7 +121,7 @@ export function AppShell({
           <span className="brand-mark">L</span>
           <span>
             <strong>LinguaStep</strong>
-            <small>日英阶梯</small>
+
           </span>
         </Link>
 
@@ -150,9 +148,7 @@ export function AppShell({
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          <p>日语与英语，一起稳步进阶</p>
-        </div>
+
       </aside>
 
       <header className="mobile-header">
@@ -161,7 +157,6 @@ export function AppShell({
         </Link>
         <div className="mobile-header-copy">
           <strong aria-live="polite">{mobilePageLabel(pathname)}</strong>
-          <span>LinguaStep</span>
         </div>
         <button
           className="mobile-header-menu"

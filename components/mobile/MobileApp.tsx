@@ -1,9 +1,10 @@
 "use client";
 
+import { STANDALONE_TESTS_ENABLED } from "@/lib/features";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
-import { BookOpenText, Home, SquarePen, UserRound } from "lucide-react";
+import { BookOpenText, Home, NotebookPen, UserRound } from "lucide-react";
 import { setAppRouter } from "./navigation";
 import { TrainingView } from "@/components/views/TrainingView";
 import { MobileFavorites } from "./screens/FavoritesScreen";
@@ -22,7 +23,8 @@ import { MobileWordStudy } from "./screens/WordStudyScreen";
 
 const TAB_ITEMS = [
   { href: "/", label: "首页", icon: Home },
-  { href: "/test", label: "练习", icon: SquarePen },
+  { href: "/words", label: "单词", icon: BookOpenText },
+  { href: "/grammar", label: "语法", icon: NotebookPen },
   { href: "/resources", label: "资料", icon: BookOpenText },
   { href: "/profile", label: "我的", icon: UserRound },
 ] as const;
@@ -71,6 +73,7 @@ function MobileExperience() {
   }, [router]);
   const section = pathname.split("/").filter(Boolean)[0] ?? "home";
   const params = searchParams ?? new URLSearchParams();
+  if (!STANDALONE_TESTS_ENABLED && (section === "test" || section === "training")) return <MobileWordLibrary />;
   if (section === "training") return <TrainingView />;
   if (section === "home") return <MobileHomeScreen />;
   if (section === "words") return params.get("mobile") === "study" ? <MobileWordStudy params={params} /> : <MobileWordLibrary />;

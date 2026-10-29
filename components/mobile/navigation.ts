@@ -19,7 +19,10 @@ export function setAppRouter(router: ReturnType<typeof useRouter> | null) {
 
 export function navigateTo(url: string) {
   if (appRouter) appRouter.push(url);
-  else window.location.assign(url);
+  else {
+    const base = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").trim().replace(/\/+$/, "");
+    window.location.assign(base && url.startsWith("/") && !url.startsWith(`${base}/`) && url !== base ? `${base}${url}` : url);
+  }
 }
 
 /**

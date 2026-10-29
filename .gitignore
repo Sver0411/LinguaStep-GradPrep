@@ -47,3 +47,6 @@ next-env.d.ts
 /.workbuddy
 
 tsconfig.*.json
+
+# Separate production verification build
+/.next-verify/

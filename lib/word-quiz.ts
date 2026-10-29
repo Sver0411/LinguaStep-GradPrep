@@ -18,11 +18,15 @@ export function buildWordQuiz(word: WordPair, pool: readonly WordPair[], mode: S
   const { prompt, answer } = quizExpressions(word, direction);
   if (!prompt.trim() || !answer.trim()) return null;
   const source = direction.startsWith("ja") ? "japanese" : "english";
-  const candidates = shuffled(pool, random).filter((candidate) => {
+  const candidates: WordPair[] = [];
+  for (const candidate of shuffled(pool, random)) {
     const other = quizExpressions(candidate, direction);
-    return candidate.id !== word.id && other.prompt.trim() && other.answer.trim()
+    const usable = candidate.id !== word.id && other.prompt.trim() && other.answer.trim()
       && !overlap(prompt, other.prompt) && !overlap(answer, other.answer) && !overlap(word.meaningZh, candidate.meaningZh);
-  }).sort((a, b) => Number(b[source].partOfSpeech === word[source].partOfSpeech) - Number(a[source].partOfSpeech === word[source].partOfSpeech));
+    if (usable) candidates.push(candidate);
+    if (candidates.length >= 32) break;
+  }
+  candidates.sort((a, b) => Number(b[source].partOfSpeech === word[source].partOfSpeech) - Number(a[source].partOfSpeech === word[source].partOfSpeech));
   const choices = [answer];
   for (const candidate of candidates) {
     const value = quizExpressions(candidate, direction).answer;

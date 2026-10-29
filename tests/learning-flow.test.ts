@@ -39,11 +39,11 @@ function snapshot(record: Partial<DailyRecord> = {}): LearningSnapshot {
 }
 
 describe("today learning flow", () => {
-  it("follows review, new words, grammar, test, then mistakes", () => {
+  it("follows review, new words and grammar, skipping the paused standalone test", () => {
     expect(getNextLearningAction(snapshot(), date).step).toBe("review");
     expect(getNextLearningAction(snapshot({ reviewWordsStudied: 1 }), date).step).toBe("new-words");
     expect(getNextLearningAction(snapshot({ reviewWordsStudied: 1, newWordsStudied: 1 }), date).step).toBe("grammar");
-    expect(getNextLearningAction(snapshot({ reviewWordsStudied: 1, newWordsStudied: 1, grammarStudied: 1 }), date).step).toBe("test");
+    expect(getNextLearningAction(snapshot({ reviewWordsStudied: 1, newWordsStudied: 1, grammarStudied: 1 }), date).step).toBe("complete");
 
     const withMistake = snapshot({ reviewWordsStudied: 1, newWordsStudied: 1, grammarStudied: 1, questionsAnswered: 2 });
     withMistake.mistakes = [{ active: true } as LearningSnapshot["mistakes"][number]];

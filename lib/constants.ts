@@ -2,10 +2,14 @@ import type { AISettings, AppSettings, LearningSnapshot } from "./models";
 
 export const APP_NAME = "LinguaStep";
 export const APP_NAME_ZH = "日英阶梯";
-export const APP_VERSION = "0.18.4";
+export const APP_VERSION = "0.20.0";
 export const REVIEW_ALGORITHM_VERSION = 2;
 
 export const DEFAULT_SETTINGS: AppSettings = {
+  grammarCourse: "jp-n3",
+  grammarStudyOrder: "sequential",
+  studyWordBook: "red-n3",
+  wordStudyOrder: "sequential",
   theme: "system",
   focusModeEnabled: false,
   displayDensity: "compact",

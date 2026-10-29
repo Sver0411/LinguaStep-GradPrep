@@ -78,13 +78,13 @@ export function StatsView() {
       </section>
 
       <section className="distribution-section">
-        <div className="section-title-row"><div><span className="section-kicker">MASTERY DISTRIBUTION</span><h2>掌握分布</h2></div><div className="segmented-control">{(["combined","japanese","english"] as StudyMode[]).map((item) => <button className={mode === item ? "active" : ""} onClick={() => setMode(item)} key={item}>{item === "combined" ? "日英对照" : item === "japanese" ? "日语" : "英语"}</button>)}</div></div>
+        <div className="section-title-row"><div><h2>掌握分布</h2></div><div className="segmented-control">{(["combined","japanese","english"] as StudyMode[]).map((item) => <button className={mode === item ? "active" : ""} onClick={() => setMode(item)} key={item}>{item === "combined" ? "日英对照" : item === "japanese" ? "日语" : "英语"}</button>)}</div></div>
         <div className="distribution-grid compact-distribution"><DistributionChart title={`单词 · ${mode === "combined" ? "日英对照" : mode === "japanese" ? "日语" : "英语"}`} values={wordDistribution} /></div>
       </section>
 
       {snapshot.testResults.length > 0 && (
         <section className="recent-tests">
-          <div className="section-title-row"><div><span className="section-kicker">RECENT TESTS</span><h2>最近测试</h2></div></div>
+          <div className="section-title-row"><div><h2>最近测试</h2></div></div>
           <div className="recent-test-list">
             {[...snapshot.testResults].reverse().slice(0, 5).map((result) => {
               const percent = Math.round((result.correctCount / Math.max(1, result.answers.length)) * 100);

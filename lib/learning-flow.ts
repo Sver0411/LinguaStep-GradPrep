@@ -1,3 +1,4 @@
+import { STANDALONE_TESTS_ENABLED } from "./features";
 import { calculateDailyPlanProgress } from "./daily-plan";
 import type { LearningSnapshot } from "./models";
 
@@ -58,7 +59,7 @@ export function getNextLearningAction(
       description: `还剩 ${plan.grammarIds.length - progress.grammarCompleted} 个语法点`,
     };
   }
-  if (progress.testCompleted < plan.testTarget) {
+  if (STANDALONE_TESTS_ENABLED && progress.testCompleted < plan.testTarget) {
     return {
       step: "test",
       href: "/test?source=today&start=1",

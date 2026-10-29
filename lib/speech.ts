@@ -2,6 +2,7 @@ export type SpeechLanguage = "ja-JP" | "en-US" | "zh-CN";
 export type SpeechResult = { ok: true; voice?: string } | { ok: false; message: string };
 const APP_BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").trim().replace(/\/+$/, "");
 interface Clip { url: string; voice?: string }
+export interface SpeechClip { text: string; language: SpeechLanguage; audioUrl?: string }
 const cache = new Map<string, Clip>();
 const inflight = new Map<string, Promise<Clip | null>>();
 let activeLoads = 0;
@@ -20,7 +21,8 @@ function scheduleLoad<T>(work: () => Promise<T>): Promise<T> {
 }
 let currentAudio: HTMLAudioElement | null = null;
 let cancelCurrent: (() => void) | null = null;
-function source(text: string, language: SpeechLanguage) {
+function source(text: string, language: SpeechLanguage, audioUrl?: string) {
+  if (language === "ja-JP" && audioUrl && /^\/api\/word-audio\/[a-f0-9]{32}$/.test(audioUrl)) return `${APP_BASE_PATH}${audioUrl}`;
   // Version the URL so old dictionary clips are not reused.
   return `${APP_BASE_PATH}/api/tts?text=${encodeURIComponent(text)}&lang=${language === "ja-JP" ? "ja" : language === "zh-CN" ? "zh" : "en"}&v=neural-1`;
 }
@@ -48,18 +50,21 @@ async function resolveAudio(url: string): Promise<Clip | null> {
   inflight.set(url, request);
   return request;
 }
-export function preload(text: string, language: SpeechLanguage): void {
-  if (text.trim() && isSpeechSupported()) void resolveAudio(source(text.trim(), language));
+export function preload(text: string, language: SpeechLanguage, audioUrl?: string): void {
+  if (text.trim() && isSpeechSupported()) void resolveAudio(source(text.trim(), language, audioUrl)).then((clip) => {
+    if (!clip && audioUrl) void resolveAudio(source(text.trim(), language));
+  });
 }
 export function isSpeechSupported(): boolean {
   return typeof window !== "undefined" && typeof window.Audio === "function";
 }
 /** Only the configured neural voice; never fall back to system speech. */
-export function speak(text: string, language: SpeechLanguage, waitForEnd = false): Promise<SpeechResult> {
+export function speak(text: string, language: SpeechLanguage, waitForEnd = false, audioUrl?: string): Promise<SpeechResult> {
   if (!text.trim() || !isSpeechSupported()) return Promise.resolve({ ok: false, message: "当前设备无法播放自然语音" });
   cancelCurrent?.();
   currentAudio?.pause();
-  const url = source(text.trim(), language);
+  const url = source(text.trim(), language, audioUrl);
+  const fallbackUrl = source(text.trim(), language);
   const ready = cache.get(url);
   // Start synchronously inside the user's click: iOS requires the gesture.
   const audio = currentAudio ?? new Audio();
@@ -68,6 +73,7 @@ export function speak(text: string, language: SpeechLanguage, waitForEnd = false
   currentAudio = audio;
   return new Promise((resolve) => {
     let settled = false;
+    let retried = false;
     const finish = (result: SpeechResult) => {
       if (settled) return;
       settled = true;
@@ -78,14 +84,22 @@ export function speak(text: string, language: SpeechLanguage, waitForEnd = false
       if (cancelCurrent === cancel) cancelCurrent = null;
       resolve(result);
     };
-    const failed = () => { audio.pause(); finish({ ok: false, message: "自然语音暂时无法播放，请稍后重试" }); };
+    const failed = () => {
+      if (!retried && url !== fallbackUrl) {
+        retried = true; window.clearTimeout(timer); timer = window.setTimeout(failed, 20000);
+        audio.src = cache.get(fallbackUrl)?.url ?? fallbackUrl;
+        void audio.play().catch(() => { audio.pause(); finish({ ok: false, message: "自然语音暂时无法播放，请稍后重试" }); });
+        return;
+      }
+      audio.pause(); finish({ ok: false, message: "自然语音暂时无法播放，请稍后重试" });
+    };
     const playing = () => {
       window.clearTimeout(timer);
       if (!waitForEnd) finish({ ok: true, voice: ready?.voice });
     };
     const ended = () => finish({ ok: true, voice: ready?.voice });
     const cancel = () => { audio.pause(); finish({ ok: false, message: "" }); };
-    const timer = window.setTimeout(failed, 20000);
+    let timer = window.setTimeout(failed, 20000);
     cancelCurrent = cancel;
     audio.addEventListener("playing", playing);
     audio.addEventListener("error", failed);
@@ -100,11 +114,11 @@ export function speak(text: string, language: SpeechLanguage, waitForEnd = false
   });
 }
 
-export async function speakSequence(clips: { text: string; language: SpeechLanguage }[]): Promise<SpeechResult> {
+export async function speakSequence(clips: SpeechClip[]): Promise<SpeechResult> {
   // Prepare every segment now, while the first one is already playing.
   // Waiting to request the Chinese clip until the foreign clip ends caused a network-sized gap.
-  clips.forEach((clip) => preload(clip.text, clip.language));
-  for (const clip of clips) { const result = await speak(clip.text, clip.language, true); if (!result.ok) return result; }
+  clips.forEach((clip) => preload(clip.text, clip.language, clip.audioUrl));
+  for (const clip of clips) { const result = await speak(clip.text, clip.language, true, clip.audioUrl); if (!result.ok) return result; }
   return { ok: true };
 }
 export function stopSpeech(): void { cancelCurrent?.(); currentAudio?.pause(); }

@@ -1,49 +1,26 @@
-# 词汇数据来源与更新
+# 词汇来源与更新
 
-[项目首页](../README.md) · [文档目录](README.md)
+[项目首页](../README.md) · [词书功能](word-books.md)
 
-LinguaStep 当前向应用启用 **2560 组**日英对应词，N1/N2/N3 每级不少于 800 词。基础词条与本地《红宝书》《绿宝书》词汇单元对齐；扫描件先通过本机 OCR 提取日语词头，再与内置日英词典候选去重匹配。OCR 无法完整识别的常用条目从已随项目校订的扩展词库补齐，并在界面标记为“教材词库补充”。
+旧内置词库已完全退出当前应用。当前词条成员与册内顺序来自 AnkiWeb 同一作者公开分享的红宝书、绿宝书文字卡组，不以通用 JLPT 词表冒充教材。
 
-## 教材来源
+| 词书 | N1 | N2 | N3 | N4 | N5 |
+| --- | --- | --- | --- | --- | --- |
+| 红宝书 | [来源](https://ankiweb.net/shared/info/716751361) | [来源](https://ankiweb.net/shared/info/601949071) | [来源](https://ankiweb.net/shared/info/216235073) | [来源](https://ankiweb.net/shared/info/1305673899) | [来源](https://ankiweb.net/shared/info/789028455) |
+| 绿宝书 | [来源](https://ankiweb.net/shared/info/49842504) | [来源](https://ankiweb.net/shared/info/176303074) | [来源](https://ankiweb.net/shared/info/1342852640) | [来源](https://ankiweb.net/shared/info/2039076689) | [来源](https://ankiweb.net/shared/info/983151495) |
 
-- 本地《红宝书·新日本语能力考试 N3 文字词汇（详解＋练习）》：读取 20 个词汇单元，作为 N3 常用考试词的主要来源。
-- 本地《无敌绿宝书·新日语能力考试 N2 词汇（必考词＋基础词＋超纲词）》：本轮读取必考词单元，补充 N2 高频词。
-- 教材 PDF 为扫描版，OCR 只用于确认词头是否出现在教材中；含义、词性、读音和日英对应仍需通过结构化词典数据及人工复核确认。
+[分享作者目录](https://ankiweb.net/shared/by-author/1681155450)。封面来自用户本地对应 PDF；词头、中文和单词音频来自卡组。版权仍归原权利人；公开下载并不表示教材、封面或音频获得了统一的开源许可。
 
-## 数据来源与许可
+英语核心表达参考 [JMdict / EDRDG](https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html)，结构化输入使用 [scriptin/jmdict-simplified](https://github.com/scriptin/jmdict-simplified) 的 3.6.2 数据（2026-10-26）。JMdict 派生数据须遵守其 CC BY-SA 4.0 署名与相同方式共享要求。部分平行例句来自 JMdict 所附 Tatoeba / Tanaka 语料，按原始来源的 CC BY 2.0 条件署名使用；数据内保留词典标识与可用的语料编号。
 
-- [JMdict/EDRDG](https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html)：提供日语写法、读音、英语释义和词性。本项目生成数据使用 CC BY-SA 4.0 发布的 JMdict 英语常用词 JSON；版权归 Electronic Dictionary Research and Development Group（EDRDG）所有。许可与再分发要求见 [EDRDG License Statement](https://www.edrdg.org/edrdg/licence.html)。当前生成批次对应 JMdict `3.6.2+20260720135044`，词典日期为 2026-07-20。
-- [ECDICT](https://github.com/skywind3000/ECDICT)：提供英语音标、词频、词性与中文义项，项目采用 MIT License。
-- [OpenCC](https://github.com/BYVoid/OpenCC)：生成脚本仅在构建数据时用于繁体中文到简体中文转换。
+部分日中例句参考 [5mdld/anki-jlpt-decks（egg rolls）](https://github.com/5mdld/anki-jlpt-decks)，其许可为 CC BY-NC 4.0。只用于匹配词头与读音的例句补充，不作为红绿宝书成员依据。缺失例句另行编写，缺失译文在内容构建阶段补译；学习运行时不调用翻译服务。
 
-`data/words-expanded.generated.json` 是上述公开词典来源派生出的候选数据，目前只作为读音、英语释义和词性等字段的对齐材料，不会整体加载。对 JMdict 派生部分的再使用须遵守 CC BY-SA 4.0 和 EDRDG 的署名、相同方式共享及更新要求；ECDICT 部分仍受其 MIT License 约束。
+## 构建流程
 
-## 生成规则
+1. `scripts/extract-book-audio.py` 安全读取 Anki SQLite 和媒体映射，提取 MP3，以内容散列去重；不执行卡片模板。
+2. `scripts/build-word-books.py` 整理十册数据、同词 ID、词典匹配及音频引用；`data/word-book-editorial.json` 保存词形、释义与例句修订。
+3. `scripts/enrich-book-examples.py` 补充词典语料例句。
+4. `scripts/translate-book-fields.py` 对公开词典文本补译并缓存，遇限流即停止；`scripts/finalize-book-translations.py` 应用缓存并列出缺项。
+5. 检查所有活动词的双语表达、双语例句、中文译文及音频引用，再运行内容与交互测试。
 
-脚本会优先选择 JMdict 标记为常用的条目，并与 ECDICT 的英文词条对齐。随后执行：
-
-1. 检查日语写法、假名、罗马音、英语词、中文义项、词性和频率字段。
-2. 通过义项重合度降低同形多义词的错误配对。
-3. 排除高歧义功能词和不适合作为独立词卡的内容。
-4. 按日语写法与英语词分别去重，生成候选集合。
-5. 普通动词保持词典原形；以「する」结尾的动词统一转换成サ变词干，例如「勉強する」转换为「勉強」。
-6. 只有在本地红宝书或绿宝书 OCR 结果中出现、并完成核心义复核的候选才加入 `data/words-exam-reference.ts`。
-7. 应用运行时将人工基础词和教材复核词合并，再按日语词头与英语词头双重去重。
-
-自动对齐内容适合个人词汇学习，但不能替代专业双语词典。遇到义项或读音问题，应以权威词典为准并更新生成规则。
-
-## 定期更新
-
-下载最新 JMdict 英语 common JSON 和 ECDICT CSV 后执行：
-
-```bash
-python3 -m pip install -r scripts/requirements-vocabulary.txt
-python3 scripts/build-expanded-vocabulary.py \
-  /path/to/jmdict-eng-common.json \
-  /path/to/ecdict.csv \
-  data/words-expanded.generated.json \
-  6500
-npm test -- --run tests/content.test.ts
-```
-
-更新时必须同步记录教材范围、候选词典版本和复核数量，并完成全量测试，确保最终词条不重复且字段完整。不得为了数量重新启用未经教材核对的整个自动候选库。
+原始卡组、媒体和中间缓存保存在忽略的 `work/` 中。生成数据及修订记录可追溯，学习页面不增加来源徽标。分发不同来源的数据时，应分别遵守相应许可；商业使用前需处理教材与非商业语料的授权。

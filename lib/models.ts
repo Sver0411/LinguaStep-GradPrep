@@ -126,6 +126,8 @@ export interface GrammarExample {
 }
 
 export interface GrammarPoint {
+  summary?: string;
+  book?: { sourceNote: string; sourceLink: string; order: string; connections: string[]; explanations: string[]; notes: string[]; images: { path: string; caption: string }[] };
   id: string;
   title: string;
   language: GrammarLanguage;
@@ -283,6 +285,9 @@ export interface DailyRecord {
 }
 
 export interface DailyPlan {
+  grammarCourse?: string;
+  wordBookId?: string;
+  wordStudyOrder?: "sequential" | "random";
   completedBeforePlan?: { newWords: number; reviewWords: number; grammar: number; test: number };
   estimatedMinutes?: number;
   budgetReason?: string;
@@ -298,6 +303,10 @@ export interface DailyPlan {
 }
 
 export interface AppSettings {
+  grammarCourse?: string;
+  grammarStudyOrder?: "sequential" | "random";
+  studyWordBook?: string;
+  wordStudyOrder?: "sequential" | "random";
   dailyMinutes?: number;
   primaryGoal?: string;
   targetExamDate?: string;

@@ -1,6 +1,7 @@
 
 import { GRAMMAR_POINTS } from "@/data/grammar";
 import { WORD_PAIRS } from "@/data/words";
+import { validWordBook, wordsInBook } from "@/lib/word-books";
 import { EMPTY_SNAPSHOT } from "@/lib/constants";
 import { generateDailyPlan } from "@/lib/daily-plan";
 import { dateKey } from "@/lib/learning";
@@ -220,30 +221,27 @@ export function restrictSnapshotToActiveVocabulary(
   today = dateKey(new Date()),
 ): LearningSnapshot {
   const activeWordIds = new Set([...WORD_PAIRS, ...snapshot.aiWords.filter((item) => item.source === "user-created")].map((word) => word.id));
-  const wordProgress = snapshot.wordProgress.filter((item) =>
-    activeWordIds.has(item.wordId),
-  );
-  const favorites = snapshot.favorites.filter(
-    (item) => !item.startsWith("word:") || activeWordIds.has(item.slice(5)),
-  );
-  const mistakes = snapshot.mistakes.filter(
-    (item) =>
-      item.contentRef.source !== "word" ||
-      item.contentRef.sourceId.startsWith("exam-") ||
-      activeWordIds.has(item.contentRef.sourceId),
-  );
+  const activeGrammarIds = new Set([...GRAMMAR_POINTS, ...snapshot.aiGrammar].map((point) => point.id));
+  // Retiring a vocabulary list must not delete the learner's personal history
+  // or backup data. Old word mistakes are archived, not served as new study.
+  const wordProgress = snapshot.wordProgress;
+  const favorites = snapshot.favorites;
+  const mistakes = snapshot.mistakes.map((item) => !item.contentRef.sourceId.startsWith("exam-") && ((item.contentRef.source === "word" && !activeWordIds.has(item.contentRef.sourceId)) || (item.contentRef.source === "grammar" && !activeGrammarIds.has(item.contentRef.sourceId)))
+    ? { ...item, active: false, state: "archived" as const }
+    : item);
   const mistakeIds = new Set(mistakes.map((item) => item.id));
   const dailyPlans = snapshot.dailyPlans
     .filter((plan) => {
       if (plan.date !== today) return true;
       return [...plan.newWordIds, ...plan.reviewWordIds, ...plan.overdueWordIds]
-        .every((id) => activeWordIds.has(id));
+        .every((id) => activeWordIds.has(id)) && plan.grammarIds.every((id) => activeGrammarIds.has(id));
     })
     .map((plan) => ({
       ...plan,
       newWordIds: plan.newWordIds.filter((id) => activeWordIds.has(id)),
       reviewWordIds: plan.reviewWordIds.filter((id) => activeWordIds.has(id)),
       overdueWordIds: plan.overdueWordIds.filter((id) => activeWordIds.has(id)),
+      grammarIds: plan.grammarIds.filter((id) => activeGrammarIds.has(id)),
       mistakeIds: plan.mistakeIds.filter((id) => mistakeIds.has(id)),
     }));
   return {
@@ -334,8 +332,8 @@ export function createPlan(
   const plan = generateDailyPlan({
     date: dateKey(now),
     now: now.toISOString(),
-    settings,
-    words: [...WORD_PAIRS, ...snapshot.aiWords.filter((item) => item.source === "user-created")],
+    settings: { ...settings, primaryGoal: "general", studyJapaneseLevel: "all", studyEnglishLevel: "all" },
+    words: wordsInBook(validWordBook(settings.studyWordBook), [...WORD_PAIRS, ...snapshot.aiWords.filter((item) => item.source === "user-created")]),
     grammar: [...GRAMMAR_POINTS, ...snapshot.aiGrammar],
     wordProgress: snapshot.wordProgress,
     grammarProgress: snapshot.grammarProgress,

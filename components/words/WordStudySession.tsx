@@ -31,7 +31,7 @@ export function WordStudySession(props: WordStudyProps) {
 
 function WordLearningRound({ items, mode, onFinish, onRestart, onContinuePlan, mobile = false }: WordStudyProps) {
   const { allWords, snapshot, settings, answerWordQuiz, isFavorite, toggleFavorite, setFocusMode } = useLearning();
-  const pool = useMemo(() => [...allWords, ...items.filter((word) => !allWords.some((item) => item.id === word.id))], [allWords, items]);
+  const pool = useMemo(() => { const ids = new Set(allWords.map((word) => word.id)); return [...allWords, ...items.filter((word) => !ids.has(word.id))]; }, [allWords, items]);
   const seenIds = useMemo(() => new Set(snapshot.wordProgress.filter((item) => item.modes[mode]).map((item) => item.wordId)), [snapshot.wordProgress, mode]);
   const firstLanguage = useCallback((word: WordPair): "japanese" | "english" => settings.revealOrder === "english-first" ? "english" : settings.revealOrder === "random" ? [...word.id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 2 ? "english" : "japanese" : "japanese", [settings.revealOrder]);
   const createCycle = useCallback((carried: WordPair[], reserve: WordPair[]): Cycle => {
@@ -71,7 +71,7 @@ function WordLearningRound({ items, mode, onFinish, onRestart, onContinuePlan, m
       if (mode !== "combined" && mode !== language) continue;
       const entry = current[language];
       const voice = language === "japanese" ? "ja-JP" : "en-US";
-      preload(entry.term, voice);
+      preload(entry.term, voice, language === "japanese" ? current.audioUrl : undefined);
       if (entry.example.trim()) { preload(entry.example, voice); if (entry.exampleZh.trim()) preload(entry.exampleZh, "zh-CN"); }
     }
     preload(current.meaningZh, "zh-CN");
@@ -158,7 +158,7 @@ function WordLearningRound({ items, mode, onFinish, onRestart, onContinuePlan, m
         <button className={`favorite-button floating${isFavorite("word", current.id) ? " active" : ""}`} onClick={() => void toggleFavorite("word", current.id)} aria-label={isFavorite("word", current.id) ? "取消收藏" : "收藏单词"}><Heart size={20} /></button>
         <div className="prompt-side"><h1>{current.meaningZh}</h1><p>想一想：{mode === "combined" ? "日语和英语分别" : mode === "japanese" ? "日语" : "英语"}怎么表达？</p></div>
         {revealStage === 0 && <button className="reveal-area" onClick={reveal}><strong>揭示答案</strong><span>点击或按 Space</span></button>}
-        {japaneseVisible && <div className="answer-panel japanese-answer"><div className="answer-heading"><span className="language-label jp">日</span><span>{current.japanese.partOfSpeech} · {current.japanese.difficulty}</span><SpeakButton text={current.japanese.term} language="ja-JP" label="朗读日语" /></div><strong>{current.japanese.term}</strong><span className="reading">{current.japanese.reading}</span><WordExample entry={current.japanese} language="japanese" /></div>}
+        {japaneseVisible && <div className="answer-panel japanese-answer"><div className="answer-heading"><span className="language-label jp">日</span><span>{current.japanese.partOfSpeech} · {current.japanese.difficulty}</span><SpeakButton text={current.japanese.term} language="ja-JP" audioUrl={current.audioUrl} label="朗读日语" /></div><strong>{current.japanese.term}</strong><span className="reading">{current.japanese.reading}</span><WordExample entry={current.japanese} language="japanese" /></div>}
         {mode === "combined" && revealStage === 1 && <button className="reveal-next-language" onClick={reveal}>揭示{first === "japanese" ? "英语" : "日语"}<ArrowRight size={17} /></button>}
         {englishVisible && <div className="answer-panel english-answer"><div className="answer-heading"><span className="language-label en">英</span><span>{current.english.partOfSpeech} · {current.english.difficulty}</span><SpeakButton text={current.english.term} language="en-US" label="朗读英语" /></div><strong>{current.english.term}</strong><span className="reading">{current.english.phonetic}</span><WordExample entry={current.english} language="english" /></div>}
         {answerVisible && <p className="word-note">{current.note}</p>}
@@ -166,7 +166,7 @@ function WordLearningRound({ items, mode, onFinish, onRestart, onContinuePlan, m
       {answerVisible && <button className={buttonClass} onClick={nextLearn}>{learnIndex + 1 === cycle.fresh.length ? `开始练习这 ${cycle.active.length} 组` : "下一组词"}<ArrowRight size={18} /></button>}
     </> : question ? <article className="question-card card word-choice-card">
       <p>{question.wordQuiz.direction.endsWith("en") ? "选择对应的英语" : question.wordQuiz.direction.endsWith("ja") ? "选择对应的日语" : "选择对应的中文意思"}</p>
-      <h1>{question.prompt}</h1><SpeakButton text={question.prompt} language={question.wordQuiz.direction.startsWith("ja") ? "ja-JP" : "en-US"} label="朗读题目" />
+      <h1>{question.prompt}</h1><SpeakButton text={question.prompt} language={question.wordQuiz.direction.startsWith("ja") ? "ja-JP" : "en-US"} label="朗读题目" audioUrl={question.wordQuiz.direction.startsWith("ja") ? current.audioUrl : undefined} />
       <div className="option-list">{question.options.map((option, index) => <button key={option} className={`quiz-option${selection === index ? " selected" : ""}${selection !== null && index === question.correctIndex ? " correct" : ""}${selection === index && index !== question.correctIndex ? " wrong" : ""}`} aria-label={`选项 ${String.fromCharCode(65 + index)}：${option}`} disabled={busy || selection !== null} onClick={() => void answer(index)}><span className="option-letter">{String.fromCharCode(65 + index)}</span><span>{option}</span></button>)}</div>
       {selection === null ? <button className="text-button" disabled={busy} onClick={() => void answer(-1)}>查看答案（本题计错）</button> : <><div className={`answer-explanation ${selection === question.correctIndex ? "correct" : "wrong"}`} role="status"><strong>{selection === question.correctIndex ? "答对了，本轮通过" : "这组保留到下一轮练习"}</strong><p>{current.japanese.term} / {current.english.term} · {current.meaningZh}</p>{mode !== "english" && <WordExample entry={current.japanese} language="japanese" />}{mode !== "japanese" && <WordExample entry={current.english} language="english" />}<p>{selection === question.correctIndex ? "后续复习由 FSRS 按答题历史安排。" : "先继续下一题，下一轮会与新词一起练习。"}</p>{reviewOutcome && <p>下次复习：{new Date(reviewOutcome.nextReviewAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })} · {reviewOutcome.status === "mastered" ? "记忆稳定" : "继续巩固"}</p>}</div><button className={buttonClass} onClick={nextQuestion}>{quizIndex + 1 === cycle.active.length ? "继续学习" : "下一题"}<ArrowRight size={18} /></button></>}
       {busy && <p role="status">正在保存…</p>}{error && <p role="alert">{error}</p>}

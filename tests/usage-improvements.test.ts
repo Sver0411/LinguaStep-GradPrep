@@ -36,7 +36,7 @@ describe("usage review fixes", () => {
   });
   it("fits a goal-specific plan inside the time budget and prioritizes due reviews", () => {
     const words = WORD_PAIRS.filter((w) => w.japanese.difficulty.includes("N2")).slice(0, 50);
-    const plan = generateDailyPlan({ date: "2026-07-20", now: NOW, settings: { ...DEFAULT_SETTINGS, dailyMinutes: 10, primaryGoal: "N2", defaultStudyMode: "japanese", studyJapaneseLevel: "all" }, words, grammar: GRAMMAR_POINTS,
+    const plan = generateDailyPlan({ date: "2026-07-20", now: NOW, settings: { ...DEFAULT_SETTINGS, dailyMinutes: 10, grammarCourse: "jp-n2", primaryGoal: "N2", defaultStudyMode: "japanese", studyJapaneseLevel: "all" }, words, grammar: GRAMMAR_POINTS,
       wordProgress: [makeWordProgress(words[0].id, "japanese", makeReviewState("unknown", { nextReviewAt: "2026-07-19T00:00:00Z" }))], grammarProgress: [], mistakes: [] });
     expect(plan.estimatedMinutes).toBeLessThanOrEqual(10);
     expect(plan.reviewWordIds).toContain(words[0].id);

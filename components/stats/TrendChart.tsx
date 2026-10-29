@@ -36,7 +36,7 @@ export function TrendChart({
   return (
     <article className="card trend-card">
       <div className="card-heading-row">
-        <div><span className="section-kicker">TREND</span><h2>{label}</h2></div>
+        <div><h2>{label}</h2></div>
         <span className="count-label">日均 {average}{suffix}</span>
       </div>
       {hasData ? <div className="trend-chart" role="img" aria-label={`${label}，共 ${points.length} 天`}>
@@ -95,7 +95,7 @@ export function DistributionChart({
   ];
   return (
     <article className="card distribution-card">
-      <div className="card-heading-row"><div><span className="section-kicker">MASTERY</span><h2>{title}</h2></div><span className="count-label">到期 {values.due}</span></div>
+      <div className="card-heading-row"><div><h2>{title}</h2></div><span className="count-label">到期 {values.due}</span></div>
       <div className="distribution-bar" role="img" aria-label={`${title}掌握分布`}>
         {segments.filter((segment) => segment.value > 0).map((segment) => <span className={`distribution-${segment.key}`} style={{ width: `${(segment.value / total) * 100}%` }} key={segment.key} />)}
       </div>

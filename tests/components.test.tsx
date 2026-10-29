@@ -240,9 +240,20 @@ describe("phase-two components", () => {
   it("returns from a grammar exercise through its explicit exit button", async () => {
     mocked.learning = learningMock();
     const onClose = vi.fn();
-    render(<GrammarPractice point={GRAMMAR_POINTS[0]} onClose={onClose} />);
+    render(<GrammarPractice point={GRAMMAR_POINTS.find((point) => point.exercises.length > 0)!} onClose={onClose} />);
     await userEvent.click(screen.getByRole("button", { name: "退出练习" }));
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it("hides standalone tests while keeping the vocabulary study entry", () => {
+    mocked.learning = learningMock({ snapshot: { ...makeSnapshot(), dailyPlans: [makeDailyPlan(dateKey(new Date()))] } });
+    render(<HomeView />);
+    expect(screen.queryByRole("link", { name: /^测试/ })).toBeNull();
+    expect(document.querySelector('a[href^="/test"]')).toBeNull();
+    cleanup();
+    render(<AppShell focusMode={false} onExitFocus={vi.fn()}><div>内容</div></AppShell>);
+    expect(document.querySelector('a[href^="/test"]')).toBeNull();
+    expect(document.querySelector('a[href="/words"]')).toBeTruthy();
   });
 
   it("renders the persisted daily plan and recommended next step", () => {
@@ -255,62 +266,61 @@ describe("phase-two components", () => {
       },
     });
     render(<HomeView />);
-    expect(screen.getByText("今日自动计划")).toBeTruthy();
+    expect(screen.getByText("今日任务")).toBeTruthy();
     expect(screen.getByText("到期复习")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /继续：今日新词/ })).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: /今日新词/ })[0]).toBeTruthy();
   });
 
-  it("debounces word search and shows a clear empty state", async () => {
+  it("searches within a chosen book and shows a clear empty state", async () => {
     mocked.learning = learningMock({ snapshot: { ...makeSnapshot(), wordProgress: [] } });
     render(<WordsView />);
-    await userEvent.click(screen.getByRole("button", { name: "浏览词库" }));
-    const input = screen.getByLabelText("搜索单词");
-    await userEvent.type(input, "绝对不存在的词条");
-    await waitFor(
-      () => expect(screen.getByText("没有符合条件的单词")).toBeTruthy(),
-      { timeout: 1000 },
-    );
+    fireEvent.click(screen.getByRole("button", { name: "换书" }));
+    fireEvent.click(screen.getByRole("button", { name: "浏览绿宝书 N5" }));
+    fireEvent.click(screen.getByRole("button", { name: "浏览本册单词" }));
+    fireEvent.change(screen.getByLabelText("搜索本册词汇"), { target: { value: "绝对不存在的词条" } });
+    expect(screen.getByText("没有找到匹配的词。")).toBeTruthy();
   });
 
-  it("chooses the study language before showing its matching word difficulty", async () => {
-    mocked.learning = learningMock();
+  it("opens the remembered book directly and exposes an explicit change-book button", async () => {
+    mocked.learning = learningMock({ settings: { ...DEFAULT_SETTINGS, studyWordBook: "green-n5" } });
     render(<WordsView />);
-    expect(screen.queryByText(/AI 新增/)).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: "日语" }));
-    expect(screen.getByText(/范围在「设置」中调整/)).toBeTruthy();
-    expect(screen.queryByRole("combobox", { name: "2. 英语难度" })).toBeNull();
-    expect(screen.queryByText("仅收藏")).toBeNull();
-    expect(screen.queryByText("仅错词")).toBeNull();
-    expect(screen.queryByText("仅到期")).toBeNull();
+    expect(screen.getByRole("heading", { name: "绿宝书 N5" })).toBeTruthy();
+    expect(screen.queryByRole("checkbox", { name: "选择会う" })).toBeNull();
+    expect(screen.getByText("学习设置", { selector: "summary span" }).closest("details")?.open).toBe(false);
+    expect(screen.queryByRole("button", { name: "浏览红宝书 N1" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "换书" }));
+    expect(screen.getByRole("button", { name: "浏览红宝书 N1" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "浏览红宝书 N1" }));
+    expect(mocked.learning.updateSettings).toHaveBeenCalledWith({ studyWordBook: "red-n1" });
+    expect(screen.getByRole("heading", { name: "红宝书 N1" })).toBeTruthy();
   });
 
-  it("keeps English and combined study available after a library mastery filter", async () => {
+  it("filters the ten book covers by series and grade", async () => {
     mocked.learning = learningMock();
     render(<WordsView />);
+    fireEvent.click(screen.getByRole("button", { name: "换书" }));
+    expect(screen.getAllByRole("button", { name: /^浏览[红绿]宝书/ })).toHaveLength(10);
+    fireEvent.click(screen.getByRole("button", { name: "绿宝书" }));
+    fireEvent.change(screen.getByRole("combobox", { name: "词书等级" }), { target: { value: "N1" } });
+    expect(screen.getAllByRole("button", { name: /^浏览[红绿]宝书/ })).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "浏览绿宝书 N1" })).toBeTruthy();
+  });
 
-    await userEvent.click(screen.getByRole("button", { name: "浏览词库" }));
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: "掌握状态" }),
-      "mastered",
-    );
-    await userEvent.click(screen.getByRole("button", { name: "开始学习" }));
-
-    expect(screen.queryByRole("combobox", { name: "掌握状态" })).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: "英语" }));
-    expect(screen.getByText(/英语 · .*组可学习/)).toBeTruthy();
-    let startButton = screen
-      .getAllByRole("button", { name: "开始学习" })
-      .find((button) => button.classList.contains("button-primary"));
-    expect(startButton).toBeDefined();
-    expect(startButton?.hasAttribute("disabled")).toBe(false);
-
-    await userEvent.click(screen.getByRole("button", { name: "日英混合" }));
-    expect(screen.getByText(/范围在「设置」中调整/)).toBeTruthy();
-    expect(screen.queryByRole("combobox", { name: "2. 英语难度" })).toBeNull();
-    startButton = screen
-      .getAllByRole("button", { name: "开始学习" })
-      .find((button) => button.classList.contains("button-primary"));
-    expect(startButton?.hasAttribute("disabled")).toBe(false);
+  it("starts selected words in the chosen language and remembers random order", async () => {
+    mocked.learning = learningMock();
+    render(<WordsView />);
+    fireEvent.click(screen.getByRole("button", { name: "换书" }));
+    fireEvent.click(screen.getByRole("button", { name: "浏览绿宝书 N5" }));
+    fireEvent.click(screen.getByText("学习设置", { selector: "summary span" }));
+    fireEvent.click(screen.getByRole("button", { name: "英语" }));
+    fireEvent.click(screen.getByRole("button", { name: "随机" }));
+    expect(mocked.learning.updateSettings).toHaveBeenCalledWith({ wordStudyOrder: "random" });
+    expect(mocked.learning.rebuildTodayPlan).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "浏览本册单词" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "选择会う" }));
+    fireEvent.click(screen.getByRole("button", { name: /背诵所选词/ }));
+    expect(screen.getByRole("button", { name: /揭示答案/ })).toBeTruthy();
+    expect(screen.queryByText("see")).toBeNull();
   });
 
   it("keeps grammar search focused on difficulty and mastery", () => {

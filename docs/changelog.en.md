@@ -2,6 +2,20 @@
 
 [Project home](../README.en.md) · [Documentation](README.md) · [中文版本记录](changelog.md)
 
+## v0.20.0 · 2026-10-29
+
+- Rebuilt the shared mobile/desktop grammar workspace with remembered courses, an on-demand catalog, sequential/random study and due reviews.
+- Imported reviewed Blue Book source: 766 Japanese lessons, 2,465 translated examples and 159 original figures. One suspect lesson and two additional examples are quarantined. The 15 existing English lessons are retained separately.
+- Recall blanks reuse explicitly highlighted original text; reading-only lessons do not manufacture answers or count as correct attempts.
+- Checked 12,905 Chinese vocabulary glosses and shortened or corrected 1,248, retaining previous values and stable progress IDs in an audit manifest.
+
+## v0.19.0 · 2026-10-29
+
+- Ten Red/Green Book volumes, N1–N5, with covers, remembered selection, explicit change-book control, optional full-book browser and collapsible language/order settings.
+- Sequential, random and selected-word study; shared cross-book progress and book MP3 playback.
+- Replaced the former built-in vocabulary; retained personal history and backup compatibility.
+- Simplified the home screen and removed decorative copy. Standalone tests/training are hidden with files and history retained; word recognition remains active.
+
 ## v0.18.4 · 2026-10-28
 
 - Upgraded `msedge-tts` to 2.1.1 for the updated Edge Read Aloud handshake, restoring synthesis when the previous integration fails.

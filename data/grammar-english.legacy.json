@@ -1,0 +1,1793 @@
+[
+  {
+    "id": "en-present-perfect",
+    "title": "Present Perfect：现在完成时",
+    "language": "english",
+    "level": "高中基础／CET-4",
+    "explanation": "现在完成时用来连接过去与现在：动作发生在过去，但结果、经历或持续状态与现在有关。它不强调明确的过去时间点，常用于“已经完成”“曾经经历”以及“从过去持续到现在”三类情境。",
+    "structure": "Subject + have/has + past participle",
+    "connection": "主语为 he、she、it 或单数名词时用 has，其余用 have；主要动词使用过去分词。否定式为 have/has not done，疑问式将 have/has 提到主语前。",
+    "scenarios": [
+      "说明刚完成且影响现在的动作",
+      "谈论截至目前的人生经历",
+      "描述从过去持续到现在的状态"
+    ],
+    "nuance": "它关注“截至现在”的关联，而一般过去时关注已结束的过去时间。若句中有 yesterday、last year、in 2020 等明确且已结束的过去时间，通常应使用一般过去时。",
+    "examples": [
+      {
+        "text": "I have just finished my homework, so I can go out now.",
+        "translationZh": "我刚做完作业，所以现在可以出门了。"
+      },
+      {
+        "text": "She has lived in Shanghai for five years.",
+        "translationZh": "她已经在上海住了五年。"
+      }
+    ],
+    "comparison": {
+      "japanese": "私はその映画を三回見たことがあります。",
+      "english": "I have seen that movie three times.",
+      "translationZh": "我看过那部电影三次。"
+    },
+    "commonErrors": [
+      "把过去式当作过去分词，如写成「I have went」；go 的过去分词是 gone，应为「I have gone」。",
+      "与明确的已结束过去时间连用，如「I have seen him yesterday」；应改为「I saw him yesterday」。"
+    ],
+    "confusables": [
+      "一般过去时表示过去某时发生并结束的动作；现在完成时不锁定已结束的时间点，并强调当前关联。",
+      "have been to 表示“去过且已回来”，have gone to 表示“已经去了、目前通常不在这里”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-present-perfect-q1",
+        "source": "grammar",
+        "sourceId": "en-present-perfect",
+        "prompt": "Choose the correct answer: She ___ her report, so she is free now.",
+        "options": [
+          "finishes",
+          "finished yesterday",
+          "has finished",
+          "had finish"
+        ],
+        "correctIndex": 2,
+        "explanation": "报告已完成并造成“现在有空”的结果，要用现在完成时 has finished。"
+      },
+      {
+        "id": "en-present-perfect-q2",
+        "source": "grammar",
+        "sourceId": "en-present-perfect",
+        "prompt": "Choose the grammatically correct sentence.",
+        "options": [
+          "I have visited Beijing last summer.",
+          "I visited Beijing last summer.",
+          "I have visit Beijing last summer.",
+          "I has visited Beijing last summer."
+        ],
+        "correctIndex": 1,
+        "explanation": "last summer 是明确且已结束的过去时间，应使用一般过去时 visited，不能用现在完成时。"
+      },
+      {
+        "id": "en-present-perfect-q3",
+        "source": "grammar",
+        "sourceId": "en-present-perfect",
+        "prompt": "Complete the sentence: We ___ each other since primary school.",
+        "options": [
+          "know",
+          "knew",
+          "have known",
+          "are knowing"
+        ],
+        "correctIndex": 2,
+        "explanation": "since primary school 表示从过去某点持续到现在；know 是状态动词，使用 have known。"
+      },
+      {
+        "id": "en-present-perfect-q4",
+        "source": "grammar",
+        "sourceId": "en-present-perfect",
+        "prompt": "Tom is not in the office. He ___ to the bank.",
+        "options": [
+          "has been",
+          "has gone",
+          "went ever",
+          "have gone"
+        ],
+        "correctIndex": 1,
+        "explanation": "Tom 现在不在办公室，说明他去了银行尚未回来，用 has gone to；has been to 表示去过并已返回。"
+      },
+      {
+        "id": "en-present-perfect-q5",
+        "source": "grammar",
+        "sourceId": "en-present-perfect",
+        "prompt": "Which time expression commonly goes with the present perfect?",
+        "options": [
+          "yesterday",
+          "last night",
+          "in 2019",
+          "so far"
+        ],
+        "correctIndex": 3,
+        "explanation": "so far 意为“到目前为止”，时间范围延续到现在，是现在完成时的典型标志。"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-past-perfect",
+    "title": "Past Perfect：过去完成时",
+    "language": "english",
+    "level": "高中基础／CET-4",
+    "explanation": "过去完成时表示在某个过去时间或另一过去动作之前已经完成的动作，即常说的“过去的过去”。它帮助读者明确两个过去事件的先后关系，较早发生的事件使用 had + 过去分词。",
+    "structure": "Subject + had + past participle",
+    "connection": "所有人称都使用 had，后接过去分词；否定式为 had not done，疑问式为 Had + subject + done。常与 before、after、by the time、already 等连用。",
+    "scenarios": [
+      "交代两个过去事件的先后",
+      "说明过去某时之前已完成",
+      "解释过去状态的原因"
+    ],
+    "nuance": "必须有一个过去参照点，不能只因动作很久以前发生就使用。若 before/after 已清楚表明顺序，口语中有时两个动作都用一般过去时，但过去完成时能突出较早动作。",
+    "examples": [
+      {
+        "text": "By the time we arrived, the movie had already started.",
+        "translationZh": "我们到达时，电影已经开始了。"
+      },
+      {
+        "text": "She was nervous because she had never flown before.",
+        "translationZh": "她很紧张，因为此前从未坐过飞机。"
+      }
+    ],
+    "comparison": {
+      "japanese": "駅に着いたとき、電車はすでに出発していました。",
+      "english": "When I reached the station, the train had already left.",
+      "translationZh": "我到车站时，火车已经开走了。"
+    },
+    "commonErrors": [
+      "把 had 后的动词写成过去式，如「had went」；必须使用过去分词 gone。",
+      "没有过去参照点就滥用过去完成时；单纯说“我昨天吃了早饭”用 I ate breakfast yesterday 即可。"
+    ],
+    "confusables": [
+      "一般过去时用于过去发生的事件；过去完成时专门标出在另一个过去参照点之前已经发生的事件。",
+      "现在完成时连接过去与现在；过去完成时连接更早过去与一个过去参照点。"
+    ],
+    "exercises": [
+      {
+        "id": "en-past-perfect-q1",
+        "source": "grammar",
+        "sourceId": "en-past-perfect",
+        "prompt": "By the time the teacher came in, the students ___ their seats.",
+        "options": [
+          "take",
+          "have taken",
+          "had taken",
+          "were take"
+        ],
+        "correctIndex": 2,
+        "explanation": "学生就座发生在老师走进教室之前，两个都是过去事件，较早的动作使用 had taken。"
+      },
+      {
+        "id": "en-past-perfect-q2",
+        "source": "grammar",
+        "sourceId": "en-past-perfect",
+        "prompt": "Choose the correct answer: I recognized her because we ___ before.",
+        "options": [
+          "met",
+          "had met",
+          "have meet",
+          "were meeting tomorrow"
+        ],
+        "correctIndex": 1,
+        "explanation": "见过她发生在过去的 recognized 之前，应使用过去完成时 had met。"
+      },
+      {
+        "id": "en-past-perfect-q3",
+        "source": "grammar",
+        "sourceId": "en-past-perfect",
+        "prompt": "Which sentence is grammatically correct?",
+        "options": [
+          "He had left before I arrived.",
+          "He had leave before I arrived.",
+          "He has left before I arrived yesterday.",
+          "He had left before I had arrive."
+        ],
+        "correctIndex": 0,
+        "explanation": "较早发生的离开用 had left，随后发生的到达用一般过去时 arrived，形式与顺序都正确。"
+      },
+      {
+        "id": "en-past-perfect-q4",
+        "source": "grammar",
+        "sourceId": "en-past-perfect",
+        "prompt": "Complete the sentence: She ___ the task by 5 p.m. yesterday.",
+        "options": [
+          "has completed",
+          "had completed",
+          "completes",
+          "will complete"
+        ],
+        "correctIndex": 1,
+        "explanation": "by 5 p.m. yesterday 建立过去截止点，表示在该点前已完成，应使用 had completed。"
+      },
+      {
+        "id": "en-past-perfect-q5",
+        "source": "grammar",
+        "sourceId": "en-past-perfect",
+        "prompt": "When is the past perfect normally needed?",
+        "options": [
+          "To describe a future plan",
+          "To state a general truth",
+          "To mark an action earlier than another past point",
+          "To describe an action happening right now"
+        ],
+        "correctIndex": 2,
+        "explanation": "过去完成时的核心功能是标出某动作早于另一个过去动作或过去时间点。"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-conditionals",
+    "title": "Conditionals：第一与第二条件句",
+    "language": "english",
+    "level": "高中基础／CET-4",
+    "explanation": "第一条件句讨论将来真实、可能发生的条件及结果；第二条件句讨论现在或将来不太可能、与事实相反的假设。两者都由 if 从句和主句组成，但动词形式反映说话人对可能性的判断。",
+    "structure": "First: If + present simple, will + base verb; Second: If + past simple, would + base verb",
+    "connection": "第一条件句的 if 从句即使谈将来也用一般现在时，不用 will；第二条件句使用过去式表达距离感，正式英语中 be 动词常对所有人称使用 were。",
+    "scenarios": [
+      "预测现实可行的未来结果",
+      "提出不太可能的设想",
+      "给出假想建议"
+    ],
+    "nuance": "第二条件句中的过去式不表示过去时间，而表示与现实的距离。if 从句放在句首时通常用逗号与主句分开；放在句末时通常不需要逗号。",
+    "examples": [
+      {
+        "text": "If it rains tomorrow, we will stay at home.",
+        "translationZh": "如果明天下雨，我们就待在家里。"
+      },
+      {
+        "text": "If I had more free time, I would learn another language.",
+        "translationZh": "如果我有更多空闲时间，我会再学一门语言。"
+      }
+    ],
+    "comparison": {
+      "japanese": "もし私があなただったら、その仕事を引き受けません。",
+      "english": "If I were you, I would not accept that job.",
+      "translationZh": "如果我是你，我不会接受那份工作。"
+    },
+    "commonErrors": [
+      "在第一条件句的 if 从句中使用 will，如「If it will rain」；通常应说「If it rains」。",
+      "混合两种结构，如「If I had time, I will help」；非现实假设应搭配 would help。"
+    ],
+    "confusables": [
+      "第一条件句认为条件有现实可能：If I see her, I will tell her；第二条件句认为情况较不现实：If I saw her, I would tell her。",
+      "零条件句使用一般现在时表示规律，如 If water reaches 100°C, it boils，不是在预测某一次未来事件。"
+    ],
+    "exercises": [
+      {
+        "id": "en-conditionals-q1",
+        "source": "grammar",
+        "sourceId": "en-conditionals",
+        "prompt": "If the weather ___ fine tomorrow, we will go hiking.",
+        "options": [
+          "will be",
+          "is",
+          "were",
+          "would be"
+        ],
+        "correctIndex": 1,
+        "explanation": "这是现实可能的未来条件，第一条件句的 if 从句使用一般现在时 is，不使用 will be。"
+      },
+      {
+        "id": "en-conditionals-q2",
+        "source": "grammar",
+        "sourceId": "en-conditionals",
+        "prompt": "If I ___ enough money, I would travel around the world.",
+        "options": [
+          "have",
+          "will have",
+          "had",
+          "had had"
+        ],
+        "correctIndex": 2,
+        "explanation": "主句 would travel 表明这是现在不太现实的设想，第二条件句 if 从句用过去式 had。"
+      },
+      {
+        "id": "en-conditionals-q3",
+        "source": "grammar",
+        "sourceId": "en-conditionals",
+        "prompt": "Choose the correct first conditional sentence.",
+        "options": [
+          "If she studies hard, she will pass the exam.",
+          "If she will study hard, she passes the exam.",
+          "If she studied hard, she will pass the exam.",
+          "If she studies hard, she would passed the exam."
+        ],
+        "correctIndex": 0,
+        "explanation": "第一条件句使用 If + 一般现在时 studies，主句使用 will + 动词原形 pass。"
+      },
+      {
+        "id": "en-conditionals-q4",
+        "source": "grammar",
+        "sourceId": "en-conditionals",
+        "prompt": "Which sentence gives a hypothetical suggestion?",
+        "options": [
+          "If I am you, I will apologize yesterday.",
+          "If I were you, I would apologize.",
+          "If I was you, I apologized.",
+          "If I will be you, I apologize."
+        ],
+        "correctIndex": 1,
+        "explanation": "固定表达 If I were you 使用第二条件句提出假想建议，主句与 would + 动词原形搭配。"
+      },
+      {
+        "id": "en-conditionals-q5",
+        "source": "grammar",
+        "sourceId": "en-conditionals",
+        "prompt": "What does 'If he had a car, he would drive to work' imply?",
+        "options": [
+          "He definitely owns a car.",
+          "He drove to work yesterday.",
+          "He probably does not have a car now.",
+          "He will certainly buy a car tomorrow."
+        ],
+        "correctIndex": 2,
+        "explanation": "第二条件句描述与当前事实有距离的假设，通常暗示他现在没有车或拥有车的可能性很低。"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-passive-voice",
+    "title": "Passive Voice：被动语态",
+    "language": "english",
+    "level": "高中基础／CET-4",
+    "explanation": "被动语态把动作承受者放在主语位置，适用于执行者未知、不重要，或需要突出结果和对象的情况。句子的时态由 be 动词体现，主要动词始终使用过去分词；必要时可用 by 引出动作执行者。",
+    "structure": "Subject + be (in the required tense) + past participle (+ by + agent)",
+    "connection": "一般现在时用 am/is/are done，一般过去时用 was/were done，现在完成时用 have/has been done，含情态动词时用 modal + be done。只有能带宾语的及物动词通常才能转成被动。",
+    "scenarios": [
+      "执行者未知或无需说明",
+      "突出动作结果或承受者",
+      "用于正式、客观的说明"
+    ],
+    "nuance": "被动并不等于过去时，时态仍要根据时间决定。by 表示动作执行者，with 常表示使用的工具或材料；若执行者显而易见，省略 by 短语更自然。",
+    "examples": [
+      {
+        "text": "The bridge was built more than one hundred years ago.",
+        "translationZh": "这座桥建于一百多年前。"
+      },
+      {
+        "text": "All applications must be submitted by Friday.",
+        "translationZh": "所有申请必须在星期五之前提交。"
+      }
+    ],
+    "comparison": {
+      "japanese": "この小説は多くの言語に翻訳されています。",
+      "english": "This novel has been translated into many languages.",
+      "translationZh": "这部小说已被翻译成多种语言。"
+    },
+    "commonErrors": [
+      "漏掉 be 动词，误写「The window broken yesterday」；完整被动应是「The window was broken yesterday」。",
+      "be 后使用过去式而不是过去分词，如「was wrote」；write 的过去分词是 written，应说「was written」。"
+    ],
+    "confusables": [
+      "主动句突出执行者：Someone stole my bike；被动句突出承受者或未知执行者：My bike was stolen。",
+      "by 后接动作执行者，with 后接工具，如 The window was broken by a boy with a stone。"
+    ],
+    "exercises": [
+      {
+        "id": "en-passive-voice-q1",
+        "source": "grammar",
+        "sourceId": "en-passive-voice",
+        "prompt": "Choose the correct answer: English ___ in many countries.",
+        "options": [
+          "speaks",
+          "is spoken",
+          "is speaking",
+          "has spoke"
+        ],
+        "correctIndex": 1,
+        "explanation": "English 是 speak 的承受对象，且句子描述一般事实，应使用一般现在时被动 is spoken。"
+      },
+      {
+        "id": "en-passive-voice-q2",
+        "source": "grammar",
+        "sourceId": "en-passive-voice",
+        "prompt": "The meeting ___ because of the storm yesterday.",
+        "options": [
+          "canceled",
+          "was canceled",
+          "is cancel",
+          "was canceling by"
+        ],
+        "correctIndex": 1,
+        "explanation": "会议被取消，yesterday 要求一般过去时，所以用 was + 过去分词 canceled。"
+      },
+      {
+        "id": "en-passive-voice-q3",
+        "source": "grammar",
+        "sourceId": "en-passive-voice",
+        "prompt": "Choose the correct passive form of 'They will announce the results tomorrow.'",
+        "options": [
+          "The results will announce tomorrow.",
+          "The results are announced tomorrow by them.",
+          "The results will be announced tomorrow.",
+          "The results will have announce tomorrow."
+        ],
+        "correctIndex": 2,
+        "explanation": "一般将来时被动结构是 will + be + 过去分词，因此为 will be announced。"
+      },
+      {
+        "id": "en-passive-voice-q4",
+        "source": "grammar",
+        "sourceId": "en-passive-voice",
+        "prompt": "The report has ___ by the manager.",
+        "options": [
+          "check",
+          "checked",
+          "been checked",
+          "being check"
+        ],
+        "correctIndex": 2,
+        "explanation": "现在完成时被动结构是 has/have been + 过去分词，完整形式为 has been checked。"
+      },
+      {
+        "id": "en-passive-voice-q5",
+        "source": "grammar",
+        "sourceId": "en-passive-voice",
+        "prompt": "Choose the correct prepositions: The picture was painted ___ Maya ___ a small brush.",
+        "options": [
+          "with; by",
+          "by; with",
+          "from; at",
+          "of; for"
+        ],
+        "correctIndex": 1,
+        "explanation": "Maya 是动作执行者，前用 by；a small brush 是工具，前用 with。"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-relative-clauses",
+    "title": "Relative Clauses：定语从句",
+    "language": "english",
+    "level": "高中基础／CET-4",
+    "explanation": "定语从句放在名词之后，对人或事物进行限定或补充说明。关系词在从句中承担主语、宾语或所属关系等成分，选择时既要看先行词，也要看从句中缺少什么成分。",
+    "structure": "noun + who/whom/whose/which/that + clause; place + where + clause; time + when + clause",
+    "connection": "who 常指人并作主语，whom 指人并作宾语，whose 表示所属；which 指物，that 可在限制性从句中指人或物。非限制性定语从句用逗号隔开，通常不用 that。",
+    "scenarios": [
+      "准确限定所谈的人或物",
+      "补充非必要背景信息",
+      "把相关信息合并成一句"
+    ],
+    "nuance": "限制性从句决定先行词具体指谁或什么，不能随意删除；非限制性从句只是补充信息，去掉后主句指代仍明确。关系词作限制性从句宾语时常可省略，作主语时不能省略。",
+    "examples": [
+      {
+        "text": "The woman who lives next door is a doctor.",
+        "translationZh": "住在隔壁的那位女士是一名医生。"
+      },
+      {
+        "text": "My laptop, which I bought last year, is already broken.",
+        "translationZh": "我的笔记本电脑是去年买的，现在已经坏了。"
+      }
+    ],
+    "comparison": {
+      "japanese": "昨日私を助けてくれた人は田中さんです。",
+      "english": "The person who helped me yesterday is Mr. Tanaka.",
+      "translationZh": "昨天帮助我的人是田中先生。"
+    },
+    "commonErrors": [
+      "关系词已经作从句宾语后又重复宾语，如「the book which I bought it」；应删除 it。",
+      "在非限制性定语从句中使用 that，如「My father, that is 60, ...」；应使用 who。"
+    ],
+    "confusables": [
+      "which 在从句中作主语或宾语；where 相当于 in/at which，在从句中作地点状语，因此要看从句是否缺成分。",
+      "what 本身含有“the thing(s) that”的意义，前面不能再接先行词；有先行词时通常用 that/which。"
+    ],
+    "exercises": [
+      {
+        "id": "en-relative-clauses-q1",
+        "source": "grammar",
+        "sourceId": "en-relative-clauses",
+        "prompt": "The student ___ won the prize is in my class.",
+        "options": [
+          "which",
+          "who",
+          "where",
+          "whose"
+        ],
+        "correctIndex": 1,
+        "explanation": "先行词 student 指人，关系词在从句中作 won 的主语，所以使用 who。"
+      },
+      {
+        "id": "en-relative-clauses-q2",
+        "source": "grammar",
+        "sourceId": "en-relative-clauses",
+        "prompt": "This is the house ___ I grew up.",
+        "options": [
+          "which",
+          "who",
+          "where",
+          "what"
+        ],
+        "correctIndex": 2,
+        "explanation": "从句 I grew up 成分完整，缺少的是地点状语“在这所房子里”，因此使用 where。"
+      },
+      {
+        "id": "en-relative-clauses-q3",
+        "source": "grammar",
+        "sourceId": "en-relative-clauses",
+        "prompt": "Choose the grammatically correct sentence.",
+        "options": [
+          "The book which I borrowed it was useful.",
+          "The book what I borrowed was useful.",
+          "The book which I borrowed was useful.",
+          "The book where I borrowed was useful."
+        ],
+        "correctIndex": 2,
+        "explanation": "which 指代 the book 并在从句中作 borrowed 的宾语，不能再加 it；what 前也不能另有先行词。"
+      },
+      {
+        "id": "en-relative-clauses-q4",
+        "source": "grammar",
+        "sourceId": "en-relative-clauses",
+        "prompt": "My aunt, ___ lives in Canada, is visiting us next month.",
+        "options": [
+          "that",
+          "who",
+          "where",
+          "what"
+        ],
+        "correctIndex": 1,
+        "explanation": "逗号表示非限制性定语从句，先行词为人且关系词作主语，应使用 who，不能使用 that。"
+      },
+      {
+        "id": "en-relative-clauses-q5",
+        "source": "grammar",
+        "sourceId": "en-relative-clauses",
+        "prompt": "The girl ___ bicycle was stolen called the police.",
+        "options": [
+          "who",
+          "whom",
+          "whose",
+          "which"
+        ],
+        "correctIndex": 2,
+        "explanation": "空格表示女孩与自行车的所属关系，即“她的自行车”，所以使用 whose。"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-gerunds-infinitives",
+    "title": "Gerunds & Infinitives：动名词与不定式",
+    "language": "english",
+    "level": "高中基础／CET-4",
+    "explanation": "动名词由动词加 -ing 构成，在句中起名词作用；不定式通常是 to + 动词原形。某些动词固定接动名词，某些固定接不定式，还有少数两者都能接但意义会变化，因此学习时应把搭配和含义一起掌握。",
+    "structure": "verb + gerund (doing); verb + infinitive (to do); preposition + gerund",
+    "connection": "enjoy、avoid、finish、suggest 等后接 doing；want、decide、hope、plan 等后接 to do；介词后必须用动名词。remember、stop、try 等接不同形式时意义可能改变。",
+    "scenarios": [
+      "表达喜好与避免的活动",
+      "表达计划、决定或愿望",
+      "区分形式变化带来的语义差别"
+    ],
+    "nuance": "动名词常把动作看作活动、经历或一般概念，不定式常带目标、意图或尚未发生的意味，但这只是倾向，固定搭配仍需记忆。否定形式分别是 not doing 与 not to do。",
+    "examples": [
+      {
+        "text": "She enjoys reading on the train.",
+        "translationZh": "她喜欢在火车上阅读。"
+      },
+      {
+        "text": "We decided to postpone the meeting until Friday.",
+        "translationZh": "我们决定把会议推迟到星期五。"
+      }
+    ],
+    "comparison": {
+      "japanese": "私は寝る前にドアに鍵をかけたことを覚えています。",
+      "english": "I remember locking the door before I went to bed.",
+      "translationZh": "我记得睡前锁过门。"
+    },
+    "commonErrors": [
+      "在介词后使用动词原形，如「without say goodbye」；介词后应说「without saying goodbye」。",
+      "忽略固定搭配，误说「enjoy to read」或「decide going」；应分别为 enjoy reading 和 decide to go。"
+    ],
+    "confusables": [
+      "remember doing 表示记得做过某事；remember to do 表示记得要去做某事。",
+      "stop doing 表示停止正在做的事；stop to do 表示停下当前动作，转而去做另一件事。"
+    ],
+    "exercises": [
+      {
+        "id": "en-gerunds-infinitives-q1",
+        "source": "grammar",
+        "sourceId": "en-gerunds-infinitives",
+        "prompt": "She avoided ___ about the problem.",
+        "options": [
+          "to talk",
+          "talk",
+          "talking",
+          "to talking"
+        ],
+        "correctIndex": 2,
+        "explanation": "avoid 后固定接动名词，所以使用 talking，意为她避免谈论这个问题。"
+      },
+      {
+        "id": "en-gerunds-infinitives-q2",
+        "source": "grammar",
+        "sourceId": "en-gerunds-infinitives",
+        "prompt": "We hope ___ you again soon.",
+        "options": [
+          "seeing",
+          "see",
+          "to see",
+          "to seeing"
+        ],
+        "correctIndex": 2,
+        "explanation": "hope 后接 to + 动词原形表达希望做某事，因此选 to see。"
+      },
+      {
+        "id": "en-gerunds-infinitives-q3",
+        "source": "grammar",
+        "sourceId": "en-gerunds-infinitives",
+        "prompt": "He left without ___ goodbye.",
+        "options": [
+          "say",
+          "to say",
+          "saying",
+          "said"
+        ],
+        "correctIndex": 2,
+        "explanation": "without 是介词，介词后动词要用 -ing 形式，因此是 without saying goodbye。"
+      },
+      {
+        "id": "en-gerunds-infinitives-q4",
+        "source": "grammar",
+        "sourceId": "en-gerunds-infinitives",
+        "prompt": "I remember ___ the email yesterday, so you should have it.",
+        "options": [
+          "to send",
+          "sending",
+          "send",
+          "to sending"
+        ],
+        "correctIndex": 1,
+        "explanation": "yesterday 和后半句表明发邮件已经发生；remember doing 表示记得做过某事。"
+      },
+      {
+        "id": "en-gerunds-infinitives-q5",
+        "source": "grammar",
+        "sourceId": "en-gerunds-infinitives",
+        "prompt": "On the way home, we stopped ___ some coffee.",
+        "options": [
+          "buying",
+          "to buy",
+          "buy",
+          "to buying"
+        ],
+        "correctIndex": 1,
+        "explanation": "stop to do 表示停下原来的行程，转而去做另一件事；此处是途中停下来买咖啡。"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-modal-deduction",
+    "title": "Modal Deduction：情态动词推测",
+    "language": "english",
+    "level": "CET-4 核心",
+    "explanation": "用 must、may、might、cannot 等表达不同确信程度。must 表示高度肯定，might 表示可能，cannot 表示认为不可能 使用时需要结合上下文判断说话人的立场，不能只按中文逐字替换。",
+    "structure": "modal verb + base verb / have + past participle",
+    "connection": "现在推测接动词原形；过去推测用 modal + have done",
+    "scenarios": [
+      "must 表示高度肯定，might 表示可能，cannot 表示认为不可能",
+      "用于表达“用 must、may、might、cannot 等表达不同确信程度”",
+      "用于正式或中性说明"
+    ],
+    "nuance": "must 表示高度肯定，might 表示可能，cannot 表示认为不可能",
+    "examples": [
+      {
+        "text": "He must have forgotten the meeting.",
+        "translationZh": "他一定是忘了会议。"
+      },
+      {
+        "text": "The lights are on. She must be at home.",
+        "translationZh": "该例句用于确认“用 must、may、might、cannot 等表达不同确信程度”的结构。"
+      }
+    ],
+    "comparison": {
+      "japanese": "同类语义：用 must、may、might、cannot 等表达不同确信程度",
+      "english": "彼は会議を忘れたに違いない。",
+      "translationZh": "他一定是忘了会议。"
+    },
+    "commonErrors": [
+      "must have done 是对过去的推测，不表示过去的义务。",
+      "不要忽略接续要求：现在推测接动词原形；过去推测用 modal + have done"
+    ],
+    "confusables": [
+      "近义表达需要按语气强度和事实性区分；本项重点是“用 must、may、might、cannot 等表达不同确信程度”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-modal-deduction-q1",
+        "source": "grammar",
+        "sourceId": "en-modal-deduction",
+        "prompt": "选择最自然的形式：The lights are on. She ___ be at home.",
+        "options": [
+          "must to",
+          "would have",
+          "must",
+          "should to"
+        ],
+        "correctIndex": 2,
+        "explanation": "must符合该句的接续和“用 must、may、might、cannot 等表达不同确信程度”这一语义。",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-modal-deduction-q2",
+        "source": "grammar",
+        "sourceId": "en-modal-deduction",
+        "prompt": "“Modal Deduction：情态动词推测”最核心的含义是什么？",
+        "options": [
+          "表示动作正在同时进行",
+          "用 must、may、might、cannot 等表达不同确信程度",
+          "表示单纯原因",
+          "表示完全否定"
+        ],
+        "correctIndex": 1,
+        "explanation": "must 表示高度肯定，might 表示可能，cannot 表示认为不可能",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-modal-deduction-q3",
+        "source": "grammar",
+        "sourceId": "en-modal-deduction",
+        "prompt": "选择正确的基本结构。",
+        "options": [
+          "modal verb + base verb / have + past participle",
+          "名词＋だけで",
+          "动词命令形＋と",
+          "形容词词干＋さえ"
+        ],
+        "correctIndex": 0,
+        "explanation": "现在推测接动词原形；过去推测用 modal + have done",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-modal-deduction-q4",
+        "source": "grammar",
+        "sourceId": "en-modal-deduction",
+        "prompt": "哪一项最符合这个语法的使用场景或语气？",
+        "options": [
+          "只适合陈述客观数字",
+          "只用于直接命令",
+          "只用于儿童口语",
+          "must 表示高度肯定，might 表示可能，cannot 表示认为不可能"
+        ],
+        "correctIndex": 3,
+        "explanation": "must 表示高度肯定，might 表示可能，cannot 表示认为不可能 常见误区：must have done 是对过去的推测，不表示过去的义务。",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-modal-deduction-q5",
+        "source": "grammar",
+        "sourceId": "en-modal-deduction",
+        "prompt": "例句“He must have forgotten the meeting.”最接近哪一项英语表达？",
+        "options": [
+          "Do it immediately.",
+          "It happened by accident.",
+          "彼は会議を忘れたに違いない。",
+          "There is no relationship."
+        ],
+        "correctIndex": 2,
+        "explanation": "他一定是忘了会议。；对应表达是 彼は会議を忘れたに違いない。",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-wish-subjunctive",
+    "title": "Wish & Subjunctive：愿望与虚拟",
+    "language": "english",
+    "level": "CET-6 过渡",
+    "explanation": "表达与现在或过去事实相反的愿望。形式上的过去时表达距离现实，而不只是时间 使用时需要结合上下文判断说话人的立场，不能只按中文逐字替换。",
+    "structure": "wish + past simple / wish + past perfect",
+    "connection": "现在相反用过去式；过去后悔用 had + 过去分词",
+    "scenarios": [
+      "形式上的过去时表达距离现实，而不只是时间",
+      "用于表达“表达与现在或过去事实相反的愿望”",
+      "用于正式或中性说明"
+    ],
+    "nuance": "形式上的过去时表达距离现实，而不只是时间",
+    "examples": [
+      {
+        "text": "I wish I had studied harder last year.",
+        "translationZh": "我真希望去年学习得更努力些。"
+      },
+      {
+        "text": "I wish I had more time now.",
+        "translationZh": "该例句用于确认“表达与现在或过去事实相反的愿望”的结构。"
+      }
+    ],
+    "comparison": {
+      "japanese": "同类语义：表达与现在或过去事实相反的愿望",
+      "english": "去年もっと勉強していればよかった。",
+      "translationZh": "我真希望去年学习得更努力些。"
+    },
+    "commonErrors": [
+      "谈现在愿望时不用一般现在时。",
+      "不要忽略接续要求：现在相反用过去式；过去后悔用 had + 过去分词"
+    ],
+    "confusables": [
+      "近义表达需要按语气强度和事实性区分；本项重点是“表达与现在或过去事实相反的愿望”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-wish-subjunctive-q1",
+        "source": "grammar",
+        "sourceId": "en-wish-subjunctive",
+        "prompt": "选择最自然的形式：I wish I ___ more time now.",
+        "options": [
+          "had had",
+          "had",
+          "have",
+          "will have"
+        ],
+        "correctIndex": 1,
+        "explanation": "had符合该句的接续和“表达与现在或过去事实相反的愿望”这一语义。",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-wish-subjunctive-q2",
+        "source": "grammar",
+        "sourceId": "en-wish-subjunctive",
+        "prompt": "“Wish & Subjunctive：愿望与虚拟”最核心的含义是什么？",
+        "options": [
+          "表达与现在或过去事实相反的愿望",
+          "表示单纯原因",
+          "表示完全否定",
+          "表示动作正在同时进行"
+        ],
+        "correctIndex": 0,
+        "explanation": "形式上的过去时表达距离现实，而不只是时间",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-wish-subjunctive-q3",
+        "source": "grammar",
+        "sourceId": "en-wish-subjunctive",
+        "prompt": "选择正确的基本结构。",
+        "options": [
+          "名词＋だけで",
+          "动词命令形＋と",
+          "形容词词干＋さえ",
+          "wish + past simple / wish + past perfect"
+        ],
+        "correctIndex": 3,
+        "explanation": "现在相反用过去式；过去后悔用 had + 过去分词",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-wish-subjunctive-q4",
+        "source": "grammar",
+        "sourceId": "en-wish-subjunctive",
+        "prompt": "哪一项最符合这个语法的使用场景或语气？",
+        "options": [
+          "只用于直接命令",
+          "只用于儿童口语",
+          "形式上的过去时表达距离现实，而不只是时间",
+          "只适合陈述客观数字"
+        ],
+        "correctIndex": 2,
+        "explanation": "形式上的过去时表达距离现实，而不只是时间 常见误区：谈现在愿望时不用一般现在时。",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-wish-subjunctive-q5",
+        "source": "grammar",
+        "sourceId": "en-wish-subjunctive",
+        "prompt": "例句“I wish I had studied harder last year.”最接近哪一项英语表达？",
+        "options": [
+          "It happened by accident.",
+          "去年もっと勉強していればよかった。",
+          "There is no relationship.",
+          "Do it immediately."
+        ],
+        "correctIndex": 1,
+        "explanation": "我真希望去年学习得更努力些。；对应表达是 去年もっと勉強していればよかった。",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-participle-clauses",
+    "title": "Participle Clauses：分词从句",
+    "language": "english",
+    "level": "CET-6 过渡",
+    "explanation": "用现在分词或过去分词压缩状语从句。分词逻辑主语应与主句主语一致 使用时需要结合上下文判断说话人的立场，不能只按中文逐字替换。",
+    "structure": "V-ing / past participle, main clause",
+    "connection": "主动关系用 V-ing，被动或完成状态常用过去分词",
+    "scenarios": [
+      "分词逻辑主语应与主句主语一致",
+      "用于表达“用现在分词或过去分词压缩状语从句”",
+      "用于正式或中性说明"
+    ],
+    "nuance": "分词逻辑主语应与主句主语一致",
+    "examples": [
+      {
+        "text": "Having finished the report, he went home.",
+        "translationZh": "完成报告后，他回家了。"
+      },
+      {
+        "text": "Surprised by the news, she called her family.",
+        "translationZh": "该例句用于确认“用现在分词或过去分词压缩状语从句”的结构。"
+      }
+    ],
+    "comparison": {
+      "japanese": "同类语义：用现在分词或过去分词压缩状语从句",
+      "english": "報告書を書き終えてから、彼は帰宅した。",
+      "translationZh": "完成报告后，他回家了。"
+    },
+    "commonErrors": [
+      "避免悬垂分词，即分词动作主体与主句主语不一致。",
+      "不要忽略接续要求：主动关系用 V-ing，被动或完成状态常用过去分词"
+    ],
+    "confusables": [
+      "近义表达需要按语气强度和事实性区分；本项重点是“用现在分词或过去分词压缩状语从句”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-participle-clauses-q1",
+        "source": "grammar",
+        "sourceId": "en-participle-clauses",
+        "prompt": "选择最自然的形式：___ by the news, she called her family.",
+        "options": [
+          "Surprising",
+          "Surprise",
+          "To surprising",
+          "Surprised"
+        ],
+        "correctIndex": 3,
+        "explanation": "Surprised符合该句的接续和“用现在分词或过去分词压缩状语从句”这一语义。",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-participle-clauses-q2",
+        "source": "grammar",
+        "sourceId": "en-participle-clauses",
+        "prompt": "“Participle Clauses：分词从句”最核心的含义是什么？",
+        "options": [
+          "表示完全否定",
+          "表示动作正在同时进行",
+          "用现在分词或过去分词压缩状语从句",
+          "表示单纯原因"
+        ],
+        "correctIndex": 2,
+        "explanation": "分词逻辑主语应与主句主语一致",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-participle-clauses-q3",
+        "source": "grammar",
+        "sourceId": "en-participle-clauses",
+        "prompt": "选择正确的基本结构。",
+        "options": [
+          "形容词词干＋さえ",
+          "V-ing / past participle, main clause",
+          "名词＋だけで",
+          "动词命令形＋と"
+        ],
+        "correctIndex": 1,
+        "explanation": "主动关系用 V-ing，被动或完成状态常用过去分词",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-participle-clauses-q4",
+        "source": "grammar",
+        "sourceId": "en-participle-clauses",
+        "prompt": "哪一项最符合这个语法的使用场景或语气？",
+        "options": [
+          "分词逻辑主语应与主句主语一致",
+          "只适合陈述客观数字",
+          "只用于直接命令",
+          "只用于儿童口语"
+        ],
+        "correctIndex": 0,
+        "explanation": "分词逻辑主语应与主句主语一致 常见误区：避免悬垂分词，即分词动作主体与主句主语不一致。",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-participle-clauses-q5",
+        "source": "grammar",
+        "sourceId": "en-participle-clauses",
+        "prompt": "例句“Having finished the report, he went home.”最接近哪一项英语表达？",
+        "options": [
+          "There is no relationship.",
+          "Do it immediately.",
+          "It happened by accident.",
+          "報告書を書き終えてから、彼は帰宅した。"
+        ],
+        "correctIndex": 3,
+        "explanation": "完成报告后，他回家了。；对应表达是 報告書を書き終えてから、彼は帰宅した。",
+        "language": "english",
+        "difficulty": "CET-6 过渡",
+        "category": "grammar"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-reported-speech",
+    "title": "Reported Speech：间接引语",
+    "language": "english",
+    "level": "CET-4 核心",
+    "explanation": "转述他人话语并按语境调整时态和指示词。是否后移取决于转述时间和事实是否仍成立 使用时需要结合上下文判断说话人的立场，不能只按中文逐字替换。",
+    "structure": "reporting verb + (that) clause",
+    "connection": "过去转述常发生时态后移；客观真理可不后移",
+    "scenarios": [
+      "是否后移取决于转述时间和事实是否仍成立",
+      "用于表达“转述他人话语并按语境调整时态和指示词”",
+      "用于正式或中性说明"
+    ],
+    "nuance": "是否后移取决于转述时间和事实是否仍成立",
+    "examples": [
+      {
+        "text": "He told me that he had finished the task.",
+        "translationZh": "他告诉我他已经完成了任务。"
+      },
+      {
+        "text": "She said that she was tired.",
+        "translationZh": "该例句用于确认“转述他人话语并按语境调整时态和指示词”的结构。"
+      }
+    ],
+    "comparison": {
+      "japanese": "同类语义：转述他人话语并按语境调整时态和指示词",
+      "english": "彼は仕事を終えたと私に言った。",
+      "translationZh": "他告诉我他已经完成了任务。"
+    },
+    "commonErrors": [
+      "tell 后通常需要人作宾语，而 say 不直接接人。",
+      "不要忽略接续要求：过去转述常发生时态后移；客观真理可不后移"
+    ],
+    "confusables": [
+      "近义表达需要按语气强度和事实性区分；本项重点是“转述他人话语并按语境调整时态和指示词”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-reported-speech-q1",
+        "source": "grammar",
+        "sourceId": "en-reported-speech",
+        "prompt": "选择最自然的形式：She said that she ___ tired.",
+        "options": [
+          "has be",
+          "will been",
+          "was",
+          "is always"
+        ],
+        "correctIndex": 2,
+        "explanation": "was符合该句的接续和“转述他人话语并按语境调整时态和指示词”这一语义。",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-reported-speech-q2",
+        "source": "grammar",
+        "sourceId": "en-reported-speech",
+        "prompt": "“Reported Speech：间接引语”最核心的含义是什么？",
+        "options": [
+          "表示动作正在同时进行",
+          "转述他人话语并按语境调整时态和指示词",
+          "表示单纯原因",
+          "表示完全否定"
+        ],
+        "correctIndex": 1,
+        "explanation": "是否后移取决于转述时间和事实是否仍成立",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-reported-speech-q3",
+        "source": "grammar",
+        "sourceId": "en-reported-speech",
+        "prompt": "选择正确的基本结构。",
+        "options": [
+          "reporting verb + (that) clause",
+          "名词＋だけで",
+          "动词命令形＋と",
+          "形容词词干＋さえ"
+        ],
+        "correctIndex": 0,
+        "explanation": "过去转述常发生时态后移；客观真理可不后移",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-reported-speech-q4",
+        "source": "grammar",
+        "sourceId": "en-reported-speech",
+        "prompt": "哪一项最符合这个语法的使用场景或语气？",
+        "options": [
+          "只适合陈述客观数字",
+          "只用于直接命令",
+          "只用于儿童口语",
+          "是否后移取决于转述时间和事实是否仍成立"
+        ],
+        "correctIndex": 3,
+        "explanation": "是否后移取决于转述时间和事实是否仍成立 常见误区：tell 后通常需要人作宾语，而 say 不直接接人。",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-reported-speech-q5",
+        "source": "grammar",
+        "sourceId": "en-reported-speech",
+        "prompt": "例句“He told me that he had finished the task.”最接近哪一项英语表达？",
+        "options": [
+          "Do it immediately.",
+          "It happened by accident.",
+          "彼は仕事を終えたと私に言った。",
+          "There is no relationship."
+        ],
+        "correctIndex": 2,
+        "explanation": "他告诉我他已经完成了任务。；对应表达是 彼は仕事を終えたと私に言った。",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-comparatives",
+    "title": "Advanced Comparatives：进阶比较结构",
+    "language": "english",
+    "level": "CET-4 核心",
+    "explanation": "使用倍数、相关比较和强调成分表达精确差异。比较对象必须逻辑一致，可用 much/far/even 强调比较级 使用时需要结合上下文判断说话人的立场，不能只按中文逐字替换。",
+    "structure": "the + comparative..., the + comparative...",
+    "connection": "两个比较级分句表示一方变化带动另一方变化",
+    "scenarios": [
+      "比较对象必须逻辑一致，可用 much/far/even 强调比较级",
+      "用于表达“使用倍数、相关比较和强调成分表达精确差异”",
+      "用于正式或中性说明"
+    ],
+    "nuance": "比较对象必须逻辑一致，可用 much/far/even 强调比较级",
+    "examples": [
+      {
+        "text": "The earlier we start, the sooner we will finish.",
+        "translationZh": "开始得越早，完成得越快。"
+      },
+      {
+        "text": "The more you practice, the more confident you become.",
+        "translationZh": "该例句用于确认“使用倍数、相关比较和强调成分表达精确差异”的结构。"
+      }
+    ],
+    "comparison": {
+      "japanese": "同类语义：使用倍数、相关比较和强调成分表达精确差异",
+      "english": "早く始めれば始めるほど、早く終わる。",
+      "translationZh": "开始得越早，完成得越快。"
+    },
+    "commonErrors": [
+      "不能在比较级前使用 very；应使用 much 或 far。",
+      "不要忽略接续要求：两个比较级分句表示一方变化带动另一方变化"
+    ],
+    "confusables": [
+      "近义表达需要按语气强度和事实性区分；本项重点是“使用倍数、相关比较和强调成分表达精确差异”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-comparatives-q1",
+        "source": "grammar",
+        "sourceId": "en-comparatives",
+        "prompt": "选择最自然的形式：The more you practice, the ___ you become.",
+        "options": [
+          "confidently",
+          "more confident",
+          "most confident",
+          "confidence"
+        ],
+        "correctIndex": 1,
+        "explanation": "more confident符合该句的接续和“使用倍数、相关比较和强调成分表达精确差异”这一语义。",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-comparatives-q2",
+        "source": "grammar",
+        "sourceId": "en-comparatives",
+        "prompt": "“Advanced Comparatives：进阶比较结构”最核心的含义是什么？",
+        "options": [
+          "使用倍数、相关比较和强调成分表达精确差异",
+          "表示单纯原因",
+          "表示完全否定",
+          "表示动作正在同时进行"
+        ],
+        "correctIndex": 0,
+        "explanation": "比较对象必须逻辑一致，可用 much/far/even 强调比较级",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-comparatives-q3",
+        "source": "grammar",
+        "sourceId": "en-comparatives",
+        "prompt": "选择正确的基本结构。",
+        "options": [
+          "名词＋だけで",
+          "动词命令形＋と",
+          "形容词词干＋さえ",
+          "the + comparative..., the + comparative..."
+        ],
+        "correctIndex": 3,
+        "explanation": "两个比较级分句表示一方变化带动另一方变化",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-comparatives-q4",
+        "source": "grammar",
+        "sourceId": "en-comparatives",
+        "prompt": "哪一项最符合这个语法的使用场景或语气？",
+        "options": [
+          "只用于直接命令",
+          "只用于儿童口语",
+          "比较对象必须逻辑一致，可用 much/far/even 强调比较级",
+          "只适合陈述客观数字"
+        ],
+        "correctIndex": 2,
+        "explanation": "比较对象必须逻辑一致，可用 much/far/even 强调比较级 常见误区：不能在比较级前使用 very；应使用 much 或 far。",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      },
+      {
+        "id": "en-comparatives-q5",
+        "source": "grammar",
+        "sourceId": "en-comparatives",
+        "prompt": "例句“The earlier we start, the sooner we will finish.”最接近哪一项英语表达？",
+        "options": [
+          "It happened by accident.",
+          "早く始めれば始めるほど、早く終わる。",
+          "There is no relationship.",
+          "Do it immediately."
+        ],
+        "correctIndex": 1,
+        "explanation": "开始得越早，完成得越快。；对应表达是 早く始めれば始めるほど、早く終わる。",
+        "language": "english",
+        "difficulty": "CET-4 核心",
+        "category": "grammar"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-causatives",
+    "title": "Causatives：使役结构",
+    "language": "english",
+    "level": "CET-4・CET-6 过渡",
+    "explanation": "表达让、使或请别人完成某动作。make 偏强制，have/get done 常表示安排服务 使用时需要结合上下文判断说话人的立场，不能只按中文逐字替换。",
+    "structure": "make + object + base verb; have/get + object + past participle",
+    "connection": "make 后接原形；服务由他人完成时用 have/get something done",
+    "scenarios": [
+      "make 偏强制，have/get done 常表示安排服务",
+      "用于表达“表达让、使或请别人完成某动作”",
+      "用于正式或中性说明"
+    ],
+    "nuance": "make 偏强制，have/get done 常表示安排服务",
+    "examples": [
+      {
+        "text": "The teacher made us rewrite the report.",
+        "translationZh": "老师让我们重写报告。"
+      },
+      {
+        "text": "I had my computer repaired yesterday.",
+        "translationZh": "该例句用于确认“表达让、使或请别人完成某动作”的结构。"
+      }
+    ],
+    "comparison": {
+      "japanese": "同类语义：表达让、使或请别人完成某动作",
+      "english": "先生は私たちに報告書を書き直させた。",
+      "translationZh": "老师让我们重写报告。"
+    },
+    "commonErrors": [
+      "主动使役 make 后不加 to；被动形式则是 be made to do。",
+      "不要忽略接续要求：make 后接原形；服务由他人完成时用 have/get something done"
+    ],
+    "confusables": [
+      "近义表达需要按语气强度和事实性区分；本项重点是“表达让、使或请别人完成某动作”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-causatives-q1",
+        "source": "grammar",
+        "sourceId": "en-causatives",
+        "prompt": "选择最自然的形式：I had my computer ___ yesterday.",
+        "options": [
+          "repair",
+          "repairing",
+          "to repair",
+          "repaired"
+        ],
+        "correctIndex": 3,
+        "explanation": "repaired符合该句的接续和“表达让、使或请别人完成某动作”这一语义。",
+        "language": "english",
+        "difficulty": "CET-4・CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-causatives-q2",
+        "source": "grammar",
+        "sourceId": "en-causatives",
+        "prompt": "“Causatives：使役结构”最核心的含义是什么？",
+        "options": [
+          "表示完全否定",
+          "表示动作正在同时进行",
+          "表达让、使或请别人完成某动作",
+          "表示单纯原因"
+        ],
+        "correctIndex": 2,
+        "explanation": "make 偏强制，have/get done 常表示安排服务",
+        "language": "english",
+        "difficulty": "CET-4・CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-causatives-q3",
+        "source": "grammar",
+        "sourceId": "en-causatives",
+        "prompt": "选择正确的基本结构。",
+        "options": [
+          "形容词词干＋さえ",
+          "make + object + base verb; have/get + object + past participle",
+          "名词＋だけで",
+          "动词命令形＋と"
+        ],
+        "correctIndex": 1,
+        "explanation": "make 后接原形；服务由他人完成时用 have/get something done",
+        "language": "english",
+        "difficulty": "CET-4・CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-causatives-q4",
+        "source": "grammar",
+        "sourceId": "en-causatives",
+        "prompt": "哪一项最符合这个语法的使用场景或语气？",
+        "options": [
+          "make 偏强制，have/get done 常表示安排服务",
+          "只适合陈述客观数字",
+          "只用于直接命令",
+          "只用于儿童口语"
+        ],
+        "correctIndex": 0,
+        "explanation": "make 偏强制，have/get done 常表示安排服务 常见误区：主动使役 make 后不加 to；被动形式则是 be made to do。",
+        "language": "english",
+        "difficulty": "CET-4・CET-6 过渡",
+        "category": "grammar"
+      },
+      {
+        "id": "en-causatives-q5",
+        "source": "grammar",
+        "sourceId": "en-causatives",
+        "prompt": "例句“The teacher made us rewrite the report.”最接近哪一项英语表达？",
+        "options": [
+          "There is no relationship.",
+          "Do it immediately.",
+          "It happened by accident.",
+          "先生は私たちに報告書を書き直させた。"
+        ],
+        "correctIndex": 3,
+        "explanation": "老师让我们重写报告。；对应表达是 先生は私たちに報告書を書き直させた。",
+        "language": "english",
+        "difficulty": "CET-4・CET-6 过渡",
+        "category": "grammar"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-articles",
+    "title": "Articles：冠词的语义选择",
+    "language": "english",
+    "level": "高中・CET-4",
+    "explanation": "根据可数性、特指性和首次提及选择 a/an、the 或零冠词。冠词表达听者能否识别对象，不只是语法装饰 使用时需要结合上下文判断说话人的立场，不能只按中文逐字替换。",
+    "structure": "a/an + singular count noun; the + specific noun",
+    "connection": "首次提及常用不定冠词，再次指代用 the",
+    "scenarios": [
+      "冠词表达听者能否识别对象，不只是语法装饰",
+      "用于表达“根据可数性、特指性和首次提及选择 a/an、the 或零冠词”",
+      "用于正式或中性说明"
+    ],
+    "nuance": "冠词表达听者能否识别对象，不只是语法装饰",
+    "examples": [
+      {
+        "text": "Education plays an important role in society.",
+        "translationZh": "教育在社会中发挥重要作用。"
+      },
+      {
+        "text": "I saw an unusual bird, and the bird had a red tail.",
+        "translationZh": "该例句用于确认“根据可数性、特指性和首次提及选择 a/an、the 或零冠词”的结构。"
+      }
+    ],
+    "comparison": {
+      "japanese": "同类语义：根据可数性、特指性和首次提及选择 a/an、the 或零冠词",
+      "english": "教育は社会で重要な役割を果たす。",
+      "translationZh": "教育在社会中发挥重要作用。"
+    },
+    "commonErrors": [
+      "不可数抽象名词泛指时通常不用 a/an。",
+      "不要忽略接续要求：首次提及常用不定冠词，再次指代用 the"
+    ],
+    "confusables": [
+      "近义表达需要按语气强度和事实性区分；本项重点是“根据可数性、特指性和首次提及选择 a/an、the 或零冠词”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-articles-q1",
+        "source": "grammar",
+        "sourceId": "en-articles",
+        "prompt": "选择最自然的形式：I saw ___ unusual bird, and the bird had a red tail.",
+        "options": [
+          "no article",
+          "an",
+          "a",
+          "the first"
+        ],
+        "correctIndex": 1,
+        "explanation": "an符合该句的接续和“根据可数性、特指性和首次提及选择 a/an、the 或零冠词”这一语义。",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      },
+      {
+        "id": "en-articles-q2",
+        "source": "grammar",
+        "sourceId": "en-articles",
+        "prompt": "“Articles：冠词的语义选择”最核心的含义是什么？",
+        "options": [
+          "根据可数性、特指性和首次提及选择 a/an、the 或零冠词",
+          "表示单纯原因",
+          "表示完全否定",
+          "表示动作正在同时进行"
+        ],
+        "correctIndex": 0,
+        "explanation": "冠词表达听者能否识别对象，不只是语法装饰",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      },
+      {
+        "id": "en-articles-q3",
+        "source": "grammar",
+        "sourceId": "en-articles",
+        "prompt": "选择正确的基本结构。",
+        "options": [
+          "名词＋だけで",
+          "动词命令形＋と",
+          "形容词词干＋さえ",
+          "a/an + singular count noun; the + specific noun"
+        ],
+        "correctIndex": 3,
+        "explanation": "首次提及常用不定冠词，再次指代用 the",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      },
+      {
+        "id": "en-articles-q4",
+        "source": "grammar",
+        "sourceId": "en-articles",
+        "prompt": "哪一项最符合这个语法的使用场景或语气？",
+        "options": [
+          "只用于直接命令",
+          "只用于儿童口语",
+          "冠词表达听者能否识别对象，不只是语法装饰",
+          "只适合陈述客观数字"
+        ],
+        "correctIndex": 2,
+        "explanation": "冠词表达听者能否识别对象，不只是语法装饰 常见误区：不可数抽象名词泛指时通常不用 a/an。",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      },
+      {
+        "id": "en-articles-q5",
+        "source": "grammar",
+        "sourceId": "en-articles",
+        "prompt": "例句“Education plays an important role in society.”最接近哪一项英语表达？",
+        "options": [
+          "It happened by accident.",
+          "教育は社会で重要な役割を果たす。",
+          "There is no relationship.",
+          "Do it immediately."
+        ],
+        "correctIndex": 1,
+        "explanation": "教育在社会中发挥重要作用。；对应表达是 教育は社会で重要な役割を果たす。",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-subject-verb",
+    "title": "Subject–Verb Agreement：主谓一致",
+    "language": "english",
+    "level": "高中・CET-4",
+    "explanation": "谓语形式与真正的语法主语在人称和数上保持一致。重点识别中心名词，而不是离谓语最近的名词 使用时需要结合上下文判断说话人的立场，不能只按中文逐字替换。",
+    "structure": "singular subject + singular verb",
+    "connection": "介词短语和插入语不改变中心主语的数",
+    "scenarios": [
+      "重点识别中心名词，而不是离谓语最近的名词",
+      "用于表达“谓语形式与真正的语法主语在人称和数上保持一致”",
+      "用于正式或中性说明"
+    ],
+    "nuance": "重点识别中心名词，而不是离谓语最近的名词",
+    "examples": [
+      {
+        "text": "Neither of the answers is correct.",
+        "translationZh": "两个答案都不正确。"
+      },
+      {
+        "text": "The quality of these products has improved.",
+        "translationZh": "该例句用于确认“谓语形式与真正的语法主语在人称和数上保持一致”的结构。"
+      }
+    ],
+    "comparison": {
+      "japanese": "同类语义：谓语形式与真正的语法主语在人称和数上保持一致",
+      "english": "どちらの答えも正しくない。",
+      "translationZh": "两个答案都不正确。"
+    },
+    "commonErrors": [
+      "the number of 接单数谓语，a number of 接复数谓语。",
+      "不要忽略接续要求：介词短语和插入语不改变中心主语的数"
+    ],
+    "confusables": [
+      "近义表达需要按语气强度和事实性区分；本项重点是“谓语形式与真正的语法主语在人称和数上保持一致”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-subject-verb-q1",
+        "source": "grammar",
+        "sourceId": "en-subject-verb",
+        "prompt": "选择最自然的形式：The quality of these products ___ improved.",
+        "options": [
+          "were",
+          "has",
+          "have",
+          "are"
+        ],
+        "correctIndex": 1,
+        "explanation": "has符合该句的接续和“谓语形式与真正的语法主语在人称和数上保持一致”这一语义。",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      },
+      {
+        "id": "en-subject-verb-q2",
+        "source": "grammar",
+        "sourceId": "en-subject-verb",
+        "prompt": "“Subject–Verb Agreement：主谓一致”最核心的含义是什么？",
+        "options": [
+          "谓语形式与真正的语法主语在人称和数上保持一致",
+          "表示单纯原因",
+          "表示完全否定",
+          "表示动作正在同时进行"
+        ],
+        "correctIndex": 0,
+        "explanation": "重点识别中心名词，而不是离谓语最近的名词",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      },
+      {
+        "id": "en-subject-verb-q3",
+        "source": "grammar",
+        "sourceId": "en-subject-verb",
+        "prompt": "选择正确的基本结构。",
+        "options": [
+          "名词＋だけで",
+          "动词命令形＋と",
+          "形容词词干＋さえ",
+          "singular subject + singular verb"
+        ],
+        "correctIndex": 3,
+        "explanation": "介词短语和插入语不改变中心主语的数",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      },
+      {
+        "id": "en-subject-verb-q4",
+        "source": "grammar",
+        "sourceId": "en-subject-verb",
+        "prompt": "哪一项最符合这个语法的使用场景或语气？",
+        "options": [
+          "只用于直接命令",
+          "只用于儿童口语",
+          "重点识别中心名词，而不是离谓语最近的名词",
+          "只适合陈述客观数字"
+        ],
+        "correctIndex": 2,
+        "explanation": "重点识别中心名词，而不是离谓语最近的名词 常见误区：the number of 接单数谓语，a number of 接复数谓语。",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      },
+      {
+        "id": "en-subject-verb-q5",
+        "source": "grammar",
+        "sourceId": "en-subject-verb",
+        "prompt": "例句“Neither of the answers is correct.”最接近哪一项英语表达？",
+        "options": [
+          "It happened by accident.",
+          "どちらの答えも正しくない。",
+          "There is no relationship.",
+          "Do it immediately."
+        ],
+        "correctIndex": 1,
+        "explanation": "两个答案都不正确。；对应表达是 どちらの答えも正しくない。",
+        "language": "english",
+        "difficulty": "高中・CET-4",
+        "category": "grammar"
+      }
+    ],
+    "source": "curated"
+  },
+  {
+    "id": "en-inversion",
+    "title": "Inversion & Emphasis：倒装与强调",
+    "language": "english",
+    "level": "CET-6・TOEIC 进阶",
+    "explanation": "否定副词前置时使用部分倒装以加强正式语气。多见于正式写作和演讲，强调限制或罕见程度 使用时需要结合上下文判断说话人的立场，不能只按中文逐字替换。",
+    "structure": "negative adverb + auxiliary + subject + verb",
+    "connection": "never、rarely、only then 等置于句首会触发助动词倒装",
+    "scenarios": [
+      "多见于正式写作和演讲，强调限制或罕见程度",
+      "用于表达“否定副词前置时使用部分倒装以加强正式语气”",
+      "用于正式或中性说明"
+    ],
+    "nuance": "多见于正式写作和演讲，强调限制或罕见程度",
+    "examples": [
+      {
+        "text": "Only then did I understand the problem.",
+        "translationZh": "直到那时我才理解这个问题。"
+      },
+      {
+        "text": "Never have I heard such a clear explanation.",
+        "translationZh": "该例句用于确认“否定副词前置时使用部分倒装以加强正式语气”的结构。"
+      }
+    ],
+    "comparison": {
+      "japanese": "同类语义：否定副词前置时使用部分倒装以加强正式语气",
+      "english": "その時になって初めて、問題が分かった。",
+      "translationZh": "直到那时我才理解这个问题。"
+    },
+    "commonErrors": [
+      "倒装使用助动词后，实义动词要回到原形。",
+      "不要忽略接续要求：never、rarely、only then 等置于句首会触发助动词倒装"
+    ],
+    "confusables": [
+      "近义表达需要按语气强度和事实性区分；本项重点是“否定副词前置时使用部分倒装以加强正式语气”。"
+    ],
+    "exercises": [
+      {
+        "id": "en-inversion-q1",
+        "source": "grammar",
+        "sourceId": "en-inversion",
+        "prompt": "选择最自然的形式：Never ___ such a clear explanation.",
+        "options": [
+          "have I heard",
+          "I have heard",
+          "did I heard",
+          "I heard have"
+        ],
+        "correctIndex": 0,
+        "explanation": "have I heard符合该句的接续和“否定副词前置时使用部分倒装以加强正式语气”这一语义。",
+        "language": "english",
+        "difficulty": "CET-6・TOEIC 进阶",
+        "category": "grammar"
+      },
+      {
+        "id": "en-inversion-q2",
+        "source": "grammar",
+        "sourceId": "en-inversion",
+        "prompt": "“Inversion & Emphasis：倒装与强调”最核心的含义是什么？",
+        "options": [
+          "表示单纯原因",
+          "表示完全否定",
+          "表示动作正在同时进行",
+          "否定副词前置时使用部分倒装以加强正式语气"
+        ],
+        "correctIndex": 3,
+        "explanation": "多见于正式写作和演讲，强调限制或罕见程度",
+        "language": "english",
+        "difficulty": "CET-6・TOEIC 进阶",
+        "category": "grammar"
+      },
+      {
+        "id": "en-inversion-q3",
+        "source": "grammar",
+        "sourceId": "en-inversion",
+        "prompt": "选择正确的基本结构。",
+        "options": [
+          "动词命令形＋と",
+          "形容词词干＋さえ",
+          "negative adverb + auxiliary + subject + verb",
+          "名词＋だけで"
+        ],
+        "correctIndex": 2,
+        "explanation": "never、rarely、only then 等置于句首会触发助动词倒装",
+        "language": "english",
+        "difficulty": "CET-6・TOEIC 进阶",
+        "category": "grammar"
+      },
+      {
+        "id": "en-inversion-q4",
+        "source": "grammar",
+        "sourceId": "en-inversion",
+        "prompt": "哪一项最符合这个语法的使用场景或语气？",
+        "options": [
+          "只用于儿童口语",
+          "多见于正式写作和演讲，强调限制或罕见程度",
+          "只适合陈述客观数字",
+          "只用于直接命令"
+        ],
+        "correctIndex": 1,
+        "explanation": "多见于正式写作和演讲，强调限制或罕见程度 常见误区：倒装使用助动词后，实义动词要回到原形。",
+        "language": "english",
+        "difficulty": "CET-6・TOEIC 进阶",
+        "category": "grammar"
+      },
+      {
+        "id": "en-inversion-q5",
+        "source": "grammar",
+        "sourceId": "en-inversion",
+        "prompt": "例句“Only then did I understand the problem.”最接近哪一项英语表达？",
+        "options": [
+          "その時になって初めて、問題が分かった。",
+          "There is no relationship.",
+          "Do it immediately.",
+          "It happened by accident."
+        ],
+        "correctIndex": 0,
+        "explanation": "直到那时我才理解这个问题。；对应表达是 その時になって初めて、問題が分かった。",
+        "language": "english",
+        "difficulty": "CET-6・TOEIC 进阶",
+        "category": "grammar"
+      }
+    ],
+    "source": "curated"
+  }
+]

@@ -1,5 +1,8 @@
+import { grammarInCourse } from "./grammar-courses";
+import { STANDALONE_TESTS_ENABLED } from "./features";
 import { endOfLocalDayTimestamp, startOfLocalDayTimestamp } from "./date";
 import { wordInGoal } from "./study-goals";
+import { shuffled } from "./shuffle";
 import { getWordModeState } from "./learning";
 import { isReviewDue, isReviewOverdue, reviewUrgency } from "./spaced-repetition";
 import type {
@@ -33,6 +36,7 @@ export interface DailyPlanInput {
 }
 
 export function generateDailyPlan(input: DailyPlanInput): DailyPlan {
+  const inScope = new Set(input.words.map((word) => word.id));
   const nowDate = new Date(input.now);
   const nowTimestamp = nowDate.getTime();
   const startOfToday = startOfLocalDayTimestamp(nowDate);
@@ -45,6 +49,7 @@ export function generateDailyPlan(input: DailyPlanInput): DailyPlan {
    * meeting today's quota, and the quota returns as the backlog clears.
    */
   const dueBacklog = input.wordProgress.filter((progress) => {
+    if (!inScope.has(progress.wordId)) return false;
     const state = getWordModeState(progress, input.settings.defaultStudyMode);
     if (!state?.nextReviewAt) return false;
     const due = Date.parse(state.nextReviewAt);
@@ -58,7 +63,7 @@ export function generateDailyPlan(input: DailyPlanInput): DailyPlan {
   );
   const reviewLimit = Math.max(1, Math.round(input.settings.dailyReviewLimit * factor));
   const grammarLimit = Math.max(0, Math.round(input.settings.dailyGrammarCount * factor));
-  const testTarget = Math.max(1, Math.round(input.settings.dailyTestQuestions * factor));
+  const testTarget = STANDALONE_TESTS_ENABLED ? Math.max(1, Math.round(input.settings.dailyTestQuestions * factor)) : 0;
   const progressByWord = new Map(
     input.wordProgress.map((progress) => [progress.wordId, progress]),
   );
@@ -77,15 +82,19 @@ export function generateDailyPlan(input: DailyPlanInput): DailyPlan {
     ]),
   ];
   const wordById = new Map(input.words.map((word) => [word.id, word]));
-  const newWordIds = orderedWords
+  const newCandidates = orderedWords
     .map((wordId) => wordById.get(wordId))
     .filter((word): word is WordPair => Boolean(word))
     .filter((word) => wordInGoal(word, input.settings))
-    .filter((word) => !getWordModeState(progressByWord.get(word.id), selectedMode))
+    .filter((word) => !getWordModeState(progressByWord.get(word.id), selectedMode));
+  let seed = [...`${input.date}:${input.settings.studyWordBook ?? ""}`].reduce((value, character) => Math.imul(value ^ character.charCodeAt(0), 16777619) >>> 0, 2166136261);
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const newWordIds = (input.settings.wordStudyOrder === "random" ? shuffled(newCandidates, random) : newCandidates)
     .slice(0, newLimit)
     .map((word) => word.id);
 
   const reviewCandidates = input.wordProgress
+    .filter((progress) => inScope.has(progress.wordId))
     .map((progress) => ({
       progress,
       state: getWordModeState(progress, selectedMode),
@@ -125,19 +134,23 @@ export function generateDailyPlan(input: DailyPlanInput): DailyPlan {
         .filter((grammarId) => !learnedGrammarIds.has(grammarId))
     : [];
   const grammarById = new Map(input.grammar.map((point) => [point.id, point]));
-  const grammarIds = [...new Set([
+  const grammarCandidates = [...new Set([
     ...unfinishedGrammarIds,
     ...input.grammar.map((point) => point.id),
   ])]
     .map((grammarId) => grammarById.get(grammarId))
     .filter((point): point is GrammarPoint => Boolean(point))
-    .filter((point) => input.settings.defaultStudyMode === "combined" || point.language === input.settings.defaultStudyMode)
-    .filter((point) => !input.settings.primaryGoal || input.settings.primaryGoal === "general" || point.level.includes(input.settings.primaryGoal))
-    .filter((point) => !learnedGrammarIds.has(point.id))
+    .filter((point) => input.settings.grammarCourse ? grammarInCourse(point, input.settings.grammarCourse) : input.settings.defaultStudyMode === "combined" || point.language === input.settings.defaultStudyMode)
+    .filter((point) => input.settings.grammarCourse || !input.settings.primaryGoal || input.settings.primaryGoal === "general" || point.level.includes(input.settings.primaryGoal))
+    .filter((point) => !learnedGrammarIds.has(point.id));
+  const grammarIds = (input.settings.grammarStudyOrder === "random" ? shuffled(grammarCandidates) : grammarCandidates)
     .slice(0, grammarLimit)
     .map((point) => point.id);
 
   const plan: DailyPlan = {
+    grammarCourse: input.settings.grammarCourse,
+    wordBookId: input.settings.studyWordBook,
+    wordStudyOrder: input.settings.wordStudyOrder,
     date: input.date, generatedAt: input.now, newWordIds, reviewWordIds, overdueWordIds,
     mistakeIds: input.settings.prioritizeMistakes ? mistakeIds : [], grammarIds, testTarget, studyMode: selectedMode,
   };
@@ -205,15 +218,16 @@ export function calculateDailyPlanProgress(
     plan.grammarIds.length,
     Math.max(0, (record?.grammarStudied ?? 0) - (plan.completedBeforePlan?.grammar ?? 0)),
   );
+  const testTarget = STANDALONE_TESTS_ENABLED ? plan.testTarget : 0;
   const testCompleted = Math.min(
-    plan.testTarget,
+    testTarget,
     Math.max(0, (record?.questionsAnswered ?? 0) - (plan.completedBeforePlan?.test ?? 0)),
   );
   const total =
     plan.newWordIds.length +
     plan.reviewWordIds.length +
     plan.grammarIds.length +
-    plan.testTarget;
+    testTarget;
   const completed =
     newCompleted + reviewCompleted + grammarCompleted + testCompleted;
   return {

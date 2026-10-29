@@ -1,151 +1,56 @@
 "use client";
-
-import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Check, RotateCcw, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useLearning } from "@/context/learning";
-import { dateKey, isAnswerCorrect } from "@/lib/learning";
-import { getNextLearningAction } from "@/lib/learning-flow";
+import { isAnswerCorrect } from "@/lib/learning";
+import { matchesTypedAnswer } from "@/lib/training";
 import type { GrammarPoint, TestAnswer } from "@/lib/models";
-import { Button, ProgressBar } from "@/components/ui";
 
-export function GrammarPractice({
-  point,
-  onClose,
-}: {
-  point: GrammarPoint;
-  onClose: () => void;
+export function GrammarPractice({ point, onClose, onNext, nextLabel = "返回语法" }: {
+  point: GrammarPoint; onClose: () => void; onNext?: () => void; nextLabel?: string;
 }) {
-  const { snapshot, settings, completeGrammar, setFocusMode } = useLearning();
-  const questions = useMemo(
-    () => point.exercises.slice(0, settings.grammarExerciseCount),
-    [point.exercises, settings.grammarExerciseCount],
-  );
+  const { settings, completeGrammar, setFocusMode } = useLearning();
+  const questions = point.exercises.slice(0, Math.max(1, settings.grammarExerciseCount));
   const [index, setIndex] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [choice, setChoice] = useState<number | null>(null);
+  const [typed, setTyped] = useState("");
   const [answers, setAnswers] = useState<TestAnswer[]>([]);
   const [finished, setFinished] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const submittingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const savingRef = useRef(false);
   const question = questions[index];
-
+  useEffect(() => { setFocusMode(true); return () => setFocusMode(false); }, [setFocusMode]);
   useEffect(() => {
-    setFocusMode(true);
-    return () => setFocusMode(false);
-  }, [setFocusMode]);
-
-  useEffect(() => {
-    const handleKey = (event: KeyboardEvent) => {
-      if (selectedIndex !== null || finished) return;
-      const number = Number(event.key);
-      if (number >= 1 && number <= 4) setSelectedIndex(number - 1);
+    const key = (event: KeyboardEvent) => {
+      if ((event.target as HTMLElement)?.closest("input,textarea,select,[contenteditable=true]")) return;
+      if (event.key === "Escape") { onClose(); return; }
+      if (!question?.acceptedAnswers && !finished && choice === null && /^[1-4]$/.test(event.key)) setChoice(Number(event.key)-1);
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [finished, selectedIndex]);
-
-  if (!question) return null;
-  const correct =
-    selectedIndex !== null && isAnswerCorrect(question, selectedIndex);
-
-  const next = async () => {
-    if (selectedIndex === null || submittingRef.current) return;
-    submittingRef.current = true;
-    setSubmitting(true);
-    const answer: TestAnswer = {
-      question,
-      selectedIndex,
-      isCorrect: correct,
-    };
-    const nextAnswers = [...answers, answer];
+    window.addEventListener("keydown",key); return () => window.removeEventListener("keydown",key);
+  }, [choice,finished,onClose,question]);
+  const submit = async () => {
+    if (!question || choice === null || savingRef.current) return;
+    savingRef.current = true; setSaving(true); setError("");
+    const next = [...answers,{question,selectedIndex:choice,isCorrect:isAnswerCorrect(question,choice),...(question.acceptedAnswers ? {typedAnswer:typed} : {})}];
     try {
-      if (index >= questions.length - 1) {
-        await completeGrammar(point.id, nextAnswers);
-        setAnswers(nextAnswers);
-        setFinished(true);
-        setFocusMode(false);
-      } else {
-        setAnswers(nextAnswers);
-        setIndex((value) => value + 1);
-        setSelectedIndex(null);
-      }
-    } finally {
-      submittingRef.current = false;
-      setSubmitting(false);
-    }
+      if (index === questions.length-1) {
+        await completeGrammar(point.id,next); setAnswers(next); setFinished(true); setFocusMode(false);
+      } else { setAnswers(next); setIndex(index+1); setChoice(null); setTyped(""); }
+    } catch { setError("保存失败，请重试。"); }
+    finally { savingRef.current=false; setSaving(false); }
   };
-
-  if (finished) {
-    const score = answers.filter((answer) => answer.isCorrect).length;
-    const percent = Math.round((score / Math.max(1, answers.length)) * 100);
-    const nextAction = getNextLearningAction(snapshot, dateKey(new Date()));
-    return (
-      <section className="session-summary card">
-        <span className="summary-icon"><CheckCircle2 size={28} /></span>
-        <span className="section-kicker">PRACTICE COMPLETE</span>
-        <h1>语法练习完成</h1>
-        <p>“{point.title}”已记录为本次学习内容，错题也已自动整理。</p>
-        <div className="big-score"><strong>{score}</strong><span>/ {answers.length} 正确</span></div>
-        <ProgressBar value={percent} label="本次正确率" />
-        <div className="summary-actions">
-          <Link className="button button-primary" href={nextAction.href}><ArrowRight size={18} />{nextAction.label}</Link>
-          <Button variant="secondary" onClick={() => {
-            setIndex(0);
-            setSelectedIndex(null);
-            setAnswers([]);
-            setFinished(false);
-            setFocusMode(true);
-          }}><RotateCcw size={18} />再练一次</Button>
-          <Button variant="secondary" onClick={onClose}>返回语法讲解</Button>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="quiz-session grammar-quiz">
-      <div className="session-topline">
-        <span>{point.title} · 配套练习</span>
-        <div className="session-top-actions"><strong>{index + 1} / {questions.length}</strong><button className="text-button" onClick={onClose}><ArrowLeft size={16} />退出练习</button></div>
-      </div>
-      <div className="session-progress"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
-      <article className="question-card card">
-        <span className="question-type">单项选择</span>
-        {question.context && <p className="question-context">{question.context}</p>}
-        <h1>{question.prompt}</h1>
-        <div className="option-list">
-          {question.options.map((option, optionIndex) => {
-            const selected = selectedIndex === optionIndex;
-            const showCorrect = selectedIndex !== null && optionIndex === question.correctIndex;
-            const showWrong = selected && !correct;
-            return (
-              <button
-                className={`quiz-option${selected ? " selected" : ""}${showCorrect ? " correct" : ""}${showWrong ? " wrong" : ""}`}
-                key={option}
-                onClick={() => selectedIndex === null && setSelectedIndex(optionIndex)}
-                disabled={selectedIndex !== null}
-              >
-                <span className="option-letter">{String.fromCharCode(65 + optionIndex)}</span>
-                <span>{option}</span>
-                {showCorrect && <CheckCircle2 size={20} />}
-                {showWrong && <XCircle size={20} />}
-              </button>
-            );
-          })}
-        </div>
-        {selectedIndex !== null && (
-          <div className={`answer-explanation ${correct ? "correct" : "wrong"}`}>
-            <strong>{correct ? "回答正确" : "再留意一下"}</strong>
-            <p>{question.explanation}</p>
-          </div>
-        )}
-        <div className="question-footer">
-          <span>按 1–4 选择答案</span>
-          <Button onClick={() => void next()} disabled={selectedIndex === null || submitting}>
-            {index >= questions.length - 1 ? "完成练习" : "下一题"}<ArrowRight size={18} />
-          </Button>
-        </div>
-      </article>
-    </section>
-  );
+  const restart = () => { setIndex(0); setChoice(null); setTyped(""); setAnswers([]); setFinished(false); setError(""); setFocusMode(true); };
+  if (!question) return <section className="grammar-workspace"><p>暂无配套练习。</p><button className="button button-secondary" onClick={onClose}>返回语法讲解</button></section>;
+  if (finished) return <section className="grammar-workspace grammar-complete"><h1>练习完成</h1><p>{point.structure}</p><strong>{answers.filter((answer) => answer.isCorrect).length}<span> / {answers.length}</span></strong><div className="grammar-complete-actions"><button className="button button-primary" onClick={onNext ?? onClose}>{nextLabel}<ArrowRight size={18} /></button><button className="button button-secondary" onClick={restart}><RotateCcw size={17} />再练一次</button><button className="text-button" onClick={onClose}>返回语法讲解</button></div></section>;
+  const correct = choice !== null && isAnswerCorrect(question,choice);
+  return <section className="grammar-workspace grammar-practice">
+    <header className="grammar-reading-header"><button className="text-button" onClick={onClose}><ArrowLeft size={17} />退出练习</button><span>{index+1} / {questions.length}</span></header>
+    <div className="grammar-question-progress" role="progressbar" aria-label="语法练习进度" aria-valuenow={index} aria-valuemin={0} aria-valuemax={questions.length}><span style={{width:`${index/questions.length*100}%`}} /></div>
+    <article className="grammar-reading-card"><h1>{question.prompt}</h1>{question.acceptedAnswers ? <form className="grammar-typed-answer" onSubmit={(event) => { event.preventDefault(); if (choice === null && typed.trim()) setChoice(matchesTypedAnswer(typed,question.acceptedAnswers!) ? question.correctIndex : 1); }}><label htmlFor="grammar-recall">回忆原句中的表达</label><input id="grammar-recall" autoComplete="off" value={typed} disabled={choice !== null} onChange={(event) => setTyped(event.target.value)} /><div><button className="button button-secondary" disabled={choice !== null || !typed.trim()} type="submit">核对答案</button><button type="button" className="text-button" disabled={choice !== null} onClick={() => setChoice(2)}>查看原句</button></div></form> : <div className="grammar-answer-options">{question.options.map((option,optionIndex) => <button type="button" disabled={choice !== null} key={option} className={choice === null ? "" : optionIndex === question.correctIndex ? "correct" : optionIndex === choice ? "incorrect" : ""} onClick={() => setChoice(optionIndex)}><span>{String.fromCharCode(65+optionIndex)}</span><b>{option}</b>{choice !== null && optionIndex === question.correctIndex && <Check size={18} />}{optionIndex === choice && !correct && <X size={18} />}</button>)}</div>}
+    {choice !== null && <div className={`grammar-answer-feedback ${correct ? "correct" : "incorrect"}`} role="status"><strong>{question.acceptedAnswers ? correct ? "与原句一致" : "与原句不同" : correct ? "回答正确" : "回答错误"}</strong><p style={{whiteSpace:"pre-line"}}>{question.explanation}</p></div>}
+    </article>
+    {error && <p role="alert">{error}</p>}
+    <button className="button button-primary grammar-main-action" disabled={choice === null || saving} onClick={() => void submit()}>{saving ? "保存中…" : index === questions.length-1 ? "完成练习" : "下一题"}<ArrowRight size={18} /></button>
+  </section>;
 }

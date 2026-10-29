@@ -51,7 +51,7 @@ export function FilterPanel({
         aria-label={ariaLabel}
       >
         <div className="filter-drawer-heading">
-          <div><span className="section-kicker">FILTERS</span><h2>搜索与筛选</h2></div>
+          <div><h2>搜索与筛选</h2></div>
           <button className="icon-button" type="button" aria-label="关闭筛选" onClick={() => setOpen(false)}><X size={18} /></button>
         </div>
         {children}

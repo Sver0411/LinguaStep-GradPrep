@@ -143,7 +143,7 @@ export function FavoritesView() {
         eyebrow="收藏"
         title="集中学习收藏内容"
         description={`当前收藏 ${snapshot.favorites.length} 项，可按语言、难度和关键词筛选。`}
-        actions={<div className="page-actions"><Link className="button button-secondary" href="/words?favorites=1&study=1"><Play size={17} />学习收藏单词</Link><Link className="button button-primary" href="/test?source=favorites&start=1"><Languages size={17} />练习收藏内容</Link></div>}
+        actions={<div className="page-actions"><Link className="button button-secondary" href="/words?favorites=1&study=1"><Play size={17} />学习收藏单词</Link></div>}
       />
 
       <details className="advanced-panel compact-details">
@@ -164,7 +164,7 @@ export function FavoritesView() {
         <>
           {favoriteWords.length > 0 && (
             <section>
-              <div className="section-title-row"><div><span className="section-kicker">WORDS</span><h2>收藏单词</h2></div><span className="count-label">{favoriteWords.length} 组</span></div>
+              <div className="section-title-row"><div><h2>收藏单词</h2></div><span className="count-label">{favoriteWords.length} 组</span></div>
               <div className="favorite-word-grid">
                 {favoriteWords.map((word) => {
                   const key = `word:${word.id}`;
@@ -184,7 +184,7 @@ export function FavoritesView() {
           )}
           {favoriteGrammar.length > 0 && (
             <section>
-              <div className="section-title-row"><div><span className="section-kicker">GRAMMAR</span><h2>收藏语法</h2></div><span className="count-label">{favoriteGrammar.length} 个</span></div>
+              <div className="section-title-row"><div><h2>收藏语法</h2></div><span className="count-label">{favoriteGrammar.length} 个</span></div>
               <div className="favorite-grammar-list">
                 {favoriteGrammar.map((point) => {
                   const key = `grammar:${point.id}`;
@@ -202,7 +202,7 @@ export function FavoritesView() {
           )}
           {favoriteVocab.length > 0 && (
             <section>
-              <div className="section-title-row"><div><span className="section-kicker">BOOK VOCAB</span><h2>收藏词书词汇</h2></div><span className="count-label">{favoriteVocab.length} 条</span></div>
+              <div className="section-title-row"><div><h2>收藏词书词汇</h2></div><span className="count-label">{favoriteVocab.length} 条</span></div>
               <div className="favorite-word-grid">
                 {favoriteVocab.map((word) => {
                   const key = `vocab:${word.id}`;
@@ -222,7 +222,7 @@ export function FavoritesView() {
           )}
           {favoriteComparisons.length > 0 && (
             <section>
-              <div className="section-title-row"><div><span className="section-kicker">COMPARISONS</span><h2>收藏日英对比</h2></div><span className="count-label">{favoriteComparisons.length} 个</span></div>
+              <div className="section-title-row"><div><h2>收藏日英对比</h2></div><span className="count-label">{favoriteComparisons.length} 个</span></div>
               <div className="favorite-grammar-list">
                 {favoriteComparisons.map((item) => {
                   const key = `comparison:${item.id}`;

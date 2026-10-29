@@ -144,7 +144,7 @@ export function ReferenceView() {
       ) : (
         <section className="reference-topic-list">
           <div className="section-title-row">
-            <div><span className="section-kicker">DAILY JAPANESE</span><h2>日常日语</h2></div>
+            <div><h2>日常日语</h2></div>
             <span className="count-label">{filteredTopics.length} 组资料</span>
           </div>
           {filteredTopics.map((topic) => (
@@ -181,7 +181,7 @@ function KanaTable({
   return (
     <section className="card reference-kana-table">
       <div className="section-title-row">
-        <div><span className="section-kicker">KANA</span><h2>{title}</h2></div>
+        <div><h2>{title}</h2></div>
         <span className="count-label">{caption}</span>
       </div>
       <div className="reference-kana-grid">

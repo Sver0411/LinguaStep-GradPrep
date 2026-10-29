@@ -174,7 +174,7 @@ export function AIView() {
 
           {tab === "words" && (
             <div className="ai-generator-form">
-              <div><span className="section-kicker">WORD GENERATOR</span><h2>生成日英对应词卡</h2><p>同时生成词义、读音、词性、例句、搭配、等级和学习说明。</p></div>
+              <div><h2>生成日英对应词卡</h2><p>同时生成词义、读音、词性、例句、搭配、等级和学习说明。</p></div>
               <div className="ai-form-grid">
                 <label><span>数量</span><select value={wordCount} onChange={(event) => setWordCount(Number(event.target.value) as 1 | 5 | 10)}><option value={1}>1 组</option><option value={5}>5 组</option><option value={10}>10 组</option></select></label>
                 <label><span>JLPT</span><select value={japaneseLevel} onChange={(event) => setJapaneseLevel(event.target.value as typeof japaneseLevel)}><option>N3</option><option>N2</option><option>N1</option></select></label>
@@ -187,7 +187,7 @@ export function AIView() {
 
           {tab === "grammar" && (
             <div className="ai-generator-form">
-              <div><span className="section-kicker">GRAMMAR GENERATOR</span><h2>生成语法知识点或日英对比</h2><p>对比模式与 N1 内容会自动使用质量模型和思考模式。</p></div>
+              <div><h2>生成语法知识点或日英对比</h2><p>对比模式与 N1 内容会自动使用质量模型和思考模式。</p></div>
               <div className="ai-form-grid">
                 <label><span>类型</span><select value={grammarLanguage} onChange={(event) => setGrammarLanguage(event.target.value as typeof grammarLanguage)}><option value="japanese">日语语法</option><option value="english">英语语法</option><option value="comparison">日英语义对比</option></select></label>
                 <label><span>数量</span><input aria-label="语法生成数量" type="number" min={10} max={30} value={grammarCount} onChange={(event) => setGrammarCount(Math.max(10, Math.min(30, Number(event.target.value) || 10)))} /></label>
@@ -199,7 +199,7 @@ export function AIView() {
 
           {tab === "quiz" && (
             <div className="ai-generator-form">
-              <div><span className="section-kicker">QUIZ GENERATOR</span><h2>根据已学内容生成四选一练习</h2><p>只发送最小化的内容摘要，不上传完整学习历史。</p></div>
+              <div><h2>根据已学内容生成四选一练习</h2><p>只发送最小化的内容摘要，不上传完整学习历史。</p></div>
               <div className="ai-form-grid">
                 <label><span>题数</span><input type="number" min={1} max={30} value={quizCount} onChange={(event) => setQuizCount(Math.max(1, Math.min(30, Number(event.target.value) || 1)))} /></label>
                 <label><span>语言</span><select value={quizMode} onChange={(event) => setQuizMode(event.target.value as TestMode)}><option value="mixed">日英混合</option><option value="japanese">日语</option><option value="english">英语</option></select></label>
@@ -224,7 +224,7 @@ export function AIView() {
         </article>
 
         <aside className="ai-usage-column">
-          <article className="card ai-usage-card"><span className="section-kicker">USAGE</span><h2>AI 使用概览</h2><div className="ai-usage-grid"><div><span>今日请求</span><strong>{usageSummary.todayRequests}</strong></div><div><span>本月请求</span><strong>{usageSummary.monthRequests}</strong></div><div><span>今日 token</span><strong>{usageSummary.todayTokens}</strong></div><div><span>成功率</span><strong>{usageSummary.successRate}%</strong></div></div><p>平均耗时 {usageSummary.averageDurationMs} ms{usageSummary.lastError ? ` · 最近错误：${usageSummary.lastError}` : ""}</p></article>
+          <article className="card ai-usage-card"><h2>AI 使用概览</h2><div className="ai-usage-grid"><div><span>今日请求</span><strong>{usageSummary.todayRequests}</strong></div><div><span>本月请求</span><strong>{usageSummary.monthRequests}</strong></div><div><span>今日 token</span><strong>{usageSummary.todayTokens}</strong></div><div><span>成功率</span><strong>{usageSummary.successRate}%</strong></div></div><p>平均耗时 {usageSummary.averageDurationMs} ms{usageSummary.lastError ? ` · 最近错误：${usageSummary.lastError}` : ""}</p></article>
           <article className="card ai-privacy-card"><BrainCircuit size={24} /><h3>发送什么？</h3><p>生成词汇和语法只发送表单参数与去重摘要；出题只发送最多 100 条相关学习内容摘要；密钥仅随加密的单次服务端动作传输，不进入学习数据库。</p><Link href="/settings#deepseek-ai">查看连接与密钥设置</Link></article>
         </aside>
       </section>
@@ -234,7 +234,7 @@ export function AIView() {
 
       {result && result.kind === tab && (
         <section className="ai-result-section">
-          <div className="section-title-row"><div><span className="section-kicker">VALIDATED RESULT</span><h2>{result.kind === "words" ? `本次新增 ${result.payload.words?.length ?? 0} 组词汇` : result.kind === "grammar" ? `本次新增 ${(result.payload.grammar?.length ?? 0) + (result.payload.comparisons?.length ?? 0)} 个语法内容` : result.payload.generation.status === "partial" ? "部分内容通过校验" : "生成与校验已完成"}</h2><p>{result.payload.generation.acceptedCount} 项通过 · {result.payload.generation.rejectedCount} 项拒绝 · {result.payload.generation.model}{result.kind === "words" ? ` · 当前总词库 ${allWords.length} 组（AI ${snapshot.aiWords.length}）` : result.kind === "grammar" ? ` · 当前语法库 ${allGrammar.length + allComparisons.length} 项（AI ${snapshot.aiGrammar.length + snapshot.aiComparisons.length}）` : ""}</p></div><div className="page-actions">{!result.saved && result.kind !== "quiz" && <Button onClick={() => void saveTransient()}><Save size={17} />保存到学习库</Button>}{result.saved && result.kind === "words" && <Link className="button button-secondary" href="/words"><Play size={17} />去背新增单词</Link>}{result.saved && result.kind === "grammar" && <Link className="button button-secondary" href="/grammar"><Play size={17} />去学新增语法</Link>}{result.saved && result.kind !== "quiz" && <Button variant="secondary" onClick={() => void undoLastSave()}><Undo2 size={17} />撤销本批新增</Button>}</div></div>
+          <div className="section-title-row"><div><h2>{result.kind === "words" ? `本次新增 ${result.payload.words?.length ?? 0} 组词汇` : result.kind === "grammar" ? `本次新增 ${(result.payload.grammar?.length ?? 0) + (result.payload.comparisons?.length ?? 0)} 个语法内容` : result.payload.generation.status === "partial" ? "部分内容通过校验" : "生成与校验已完成"}</h2><p>{result.payload.generation.acceptedCount} 项通过 · {result.payload.generation.rejectedCount} 项拒绝 · {result.payload.generation.model}{result.kind === "words" ? ` · 当前总词库 ${allWords.length} 组（AI ${snapshot.aiWords.length}）` : result.kind === "grammar" ? ` · 当前语法库 ${allGrammar.length + allComparisons.length} 项（AI ${snapshot.aiGrammar.length + snapshot.aiComparisons.length}）` : ""}</p></div><div className="page-actions">{!result.saved && result.kind !== "quiz" && <Button onClick={() => void saveTransient()}><Save size={17} />保存到学习库</Button>}{result.saved && result.kind === "words" && <Link className="button button-secondary" href="/words"><Play size={17} />去背新增单词</Link>}{result.saved && result.kind === "grammar" && <Link className="button button-secondary" href="/grammar"><Play size={17} />去学新增语法</Link>}{result.saved && result.kind !== "quiz" && <Button variant="secondary" onClick={() => void undoLastSave()}><Undo2 size={17} />撤销本批新增</Button>}</div></div>
 
           {result.payload.rejectedReasons && result.payload.rejectedReasons.length > 0 && <details className="ai-rejection-details"><summary><AlertTriangle size={16} />查看未通过项的原因</summary><ul>{result.payload.rejectedReasons.map((reason, index) => <li key={`${reason}-${index}`}>{reason}</li>)}</ul></details>}
 

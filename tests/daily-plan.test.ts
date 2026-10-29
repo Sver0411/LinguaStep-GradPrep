@@ -34,7 +34,7 @@ describe("daily plan generation", () => {
     expect(plan.overdueWordIds).toEqual(["word-1"]);
     expect(plan.mistakeIds).toHaveLength(1);
     expect(plan.grammarIds).toEqual(["grammar-1"]);
-    expect(plan.testTarget).toBe(10);
+    expect(plan.testTarget).toBe(0);
   });
 
   it("does not generate a duplicate plan for the same local date", () => {
@@ -133,7 +133,7 @@ describe("daily plan generation", () => {
     const progress = calculateDailyPlanProgress(plan, record);
     expect(progress.newCompleted).toBe(2);
     expect(progress.reviewCompleted).toBe(1);
-    expect(progress.testCompleted).toBe(5);
+    expect(progress.testCompleted).toBe(0);
     expect(progress.percent).toBeLessThanOrEqual(100);
   });
 });

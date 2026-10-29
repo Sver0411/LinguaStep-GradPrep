@@ -242,7 +242,7 @@ export function MistakesView() {
     return (
       <section className="session-summary card">
         <span className="summary-icon"><CheckCircle2 size={28} /></span>
-        <span className="section-kicker">ROUND COMPLETE</span>
+
         <h1>本轮错题巩固完成</h1>
         <p>
           {remaining > 0
@@ -295,7 +295,7 @@ export function MistakesView() {
       </details>
 
       {visible.length === 0 ? (
-        <EmptyState title="这个分类暂时没有错题" description="继续学习或切换筛选条件，新的薄弱点会自动整理到这里。" action={<Link className="button button-primary" href="/test">去做测试</Link>} />
+        <EmptyState title="这个分类暂时没有错题" description="继续学习或切换筛选条件，新的薄弱点会自动整理到这里。" action={<Link className="button button-primary" href="/words">去背单词</Link>} />
       ) : (
         <div className="mistake-list">
           {visible.map((mistake) => (

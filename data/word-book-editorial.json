@@ -1,0 +1,3461 @@
+{
+  "bw-4e3b4581d12b8623": {
+    "exampleJp": "この荷物はEMSで海外に送りました。"
+  },
+  "bw-768ba13b382ba706": {
+    "exampleJp": "食後に温かいウーロン茶を飲みました。"
+  },
+  "bw-1b7502c7d495f81d": {
+    "english": "kindergarten principal",
+    "exampleJp": "園長先生が子どもたちに挨拶しました。"
+  },
+  "bw-faca1d3dafc863bd": {
+    "english": "honorific plural suffix",
+    "exampleJp": "先生方は会議室に集まっています。"
+  },
+  "bw-8ac351f1c11c38f9": {
+    "term": "餃子",
+    "reading": "ぎょうざ",
+    "english": "dumplings",
+    "exampleJp": "夕食に焼きたての餃子を食べました。"
+  },
+  "bw-23c5621eb964ee82": {
+    "term": "今晩",
+    "reading": "こんばん",
+    "english": "tonight",
+    "exampleJp": "今晩は友達と映画を見る予定です。"
+  },
+  "bw-3804cc7a97f72d1d": {
+    "meaningZh": "立春的前一天；节分",
+    "exampleJp": "節分には家族みんなで豆まきをします。"
+  },
+  "bw-d4b71ad3c2cc73ed": {
+    "term": "蕎麦",
+    "reading": "そば",
+    "english": "soba noodles",
+    "exampleJp": "昼ご飯に温かい蕎麦を注文しました。"
+  },
+  "bw-8554fbb339f44ef8": {
+    "exampleJp": "横浜の中華街で食事を楽しみました。"
+  },
+  "bw-37dcdfbb0b348c80": {
+    "term": "DVD",
+    "reading": "ディーブイディー",
+    "english": "DVD",
+    "exampleJp": "週末に借りたDVDを見ました。"
+  },
+  "bw-739061af0fa61be3": {
+    "term": "プール",
+    "reading": "プール",
+    "english": "swimming pool",
+    "exampleJp": "夏休みは毎日プールで泳ぎました。"
+  },
+  "bw-6ca5a990876d6cf3": {
+    "term": "家賃",
+    "reading": "やちん",
+    "english": "rent",
+    "exampleJp": "毎月の家賃は銀行から振り込みます。"
+  },
+  "bw-293679abc7421cdf": {
+    "exampleJp": "古いラジカセで音楽を聞きました。"
+  },
+  "bw-e1d2103851120b65": {
+    "exampleJp": "鍵を探して部屋のあっちこっちを見ました。"
+  },
+  "bw-972f3d677165b8cd": {
+    "exampleJp": "あれえ、ここに置いた本がありません。"
+  },
+  "bw-8f53ef49a36b51b5": {
+    "exampleJp": "あれっ、今日は休みではなかったのですか。"
+  },
+  "bw-e4dc72d0f32f1ae2": {
+    "term": "インク",
+    "reading": "インク",
+    "english": "ink",
+    "exampleJp": "ペンのインクがなくなってしまいました。"
+  },
+  "bw-607bc5d4d11e6937": {
+    "term": "看護師",
+    "reading": "かんごし",
+    "english": "nurse",
+    "meaningZh": "护士",
+    "exampleJp": "看護師が患者の体温を測りました。"
+  },
+  "bw-3865bc2e57bb979d": {
+    "exampleJp": "旅行に持っていく着る物を準備しました。"
+  },
+  "bw-72e21e0745647ed4": {
+    "english": "honorific prefix",
+    "meaningZh": "表示尊敬或郑重的接头词",
+    "exampleJp": "こちらに御住所をお書きください。"
+  },
+  "bw-68ba76c72a7c00da": {
+    "exampleJp": "工場長が新しい設備について説明しました。"
+  },
+  "bw-9e58953c119d427b": {
+    "exampleJp": "東京から大阪まで高速バスで移動しました。"
+  },
+  "bw-94bcb332fed6a805": {
+    "exampleJp": "大学で写真のサークルに入りました。"
+  },
+  "bw-d0fb5642531af571": {
+    "exampleJp": "さきおとといから雨が降り続いています。"
+  },
+  "bw-20f689e8f1868581": {
+    "english": "three years ago",
+    "exampleJp": "この写真はさきおととしの旅行で撮りました。"
+  },
+  "bw-4ed58a253783bf24": {
+    "exampleJp": "春節には多くの人が故郷に帰ります。"
+  },
+  "bw-005ad169c0ff2b0a": {
+    "term": "小学校",
+    "reading": "しょうがっこう",
+    "english": "elementary school",
+    "exampleJp": "妹は来年小学校に入学します。"
+  },
+  "bw-f270f46ff9c83ed8": {
+    "term": "たいてい",
+    "reading": "たいてい",
+    "meaningZh": "大多；通常；大概",
+    "english": "usually",
+    "exampleJp": "日曜日はたいてい家で休んでいます。"
+  },
+  "bw-6c563e20a93ebf96": {
+    "term": "中学校",
+    "reading": "ちゅうがっこう",
+    "english": "junior high school",
+    "exampleJp": "弟は今年から中学校に通っています。"
+  },
+  "bw-a0d7097e2a6f568a": {
+    "term": "出入り口",
+    "reading": "でいりぐち",
+    "meaningZh": "出入口",
+    "english": "entrance and exit",
+    "exampleJp": "建物の出入り口をふさがないでください。"
+  },
+  "bw-0fc9b980f350efd4": {
+    "exampleJp": "みそ汁に刻んだ長ネギを入れました。"
+  },
+  "bw-68e297e9bfc24013": {
+    "term": "木曜日",
+    "reading": "もくようび",
+    "english": "Thursday",
+    "exampleJp": "木曜日の午後に打ち合わせがあります。"
+  },
+  "bw-82429648aa353f1e": {
+    "exampleJp": "この会社は食品の輸出入を行っています。"
+  },
+  "bw-dadcc366345956bc": {
+    "english": "key money",
+    "exampleJp": "この物件は礼金が必要ありません。"
+  },
+  "bw-03211cda64e4705e": {
+    "meaningZh": "冷暖气设备",
+    "exampleJp": "新しい教室には冷暖房が完備されています。"
+  },
+  "bw-ac04b8c2eee06a58": {
+    "english": "institution suffix",
+    "exampleJp": "駅の近くに新しい病院ができました。"
+  },
+  "bw-f52499a10cbefc7d": {
+    "exampleJp": "物語の中で鬼が村に現れました。"
+  },
+  "bw-a4a26901852ab04c": {
+    "term": "カーペット",
+    "reading": "カーペット",
+    "english": "carpet",
+    "exampleJp": "居間に柔らかいカーペットを敷きました。"
+  },
+  "bw-ffcbf0b1ce3f21f1": {
+    "term": "掻く",
+    "reading": "かく",
+    "english": "scratch",
+    "exampleJp": "蚊に刺されたところを強く掻かないでください。"
+  },
+  "bw-5ac3dc4427c05e9a": {
+    "meaningZh": "闻；嗅",
+    "exampleJp": "花に顔を近づけて香りを嗅ぎました。"
+  },
+  "bw-81862f71e5b433df": {
+    "exampleJp": "約束を破るなんてかっこ悪いと思います。"
+  },
+  "bw-568b6659dfaad825": {
+    "exampleJp": "新しい剃刀でひげをそりました。"
+  },
+  "bw-e0359154b49eb178": {
+    "exampleJp": "料理の後は窓を開けて換気します。"
+  },
+  "bw-e98c6571d5de0517": {
+    "exampleJp": "煙が充満していて部屋の中が煙いです。"
+  },
+  "bw-789c12d2739f0936": {
+    "term": "下着",
+    "reading": "したぎ",
+    "english": "underwear",
+    "exampleJp": "旅行用の下着をかばんに入れました。"
+  },
+  "bw-f979ab5ae38db87d": {
+    "exampleJp": "次男は来月から高校生になります。"
+  },
+  "bw-2dd26b3cc554d5d3": {
+    "term": "ショー",
+    "reading": "ショー",
+    "english": "show",
+    "exampleJp": "文化祭でダンスのショーを見ました。"
+  },
+  "bw-607a246c3812c085": {
+    "english": "waiting at a traffic light",
+    "exampleJp": "交差点で信号待ちをしていました。"
+  },
+  "bw-19e7e697c51acdff": {
+    "exampleJp": "授業の進度に合わせて復習しています。"
+  },
+  "bw-016befff954dc9f0": {
+    "term": "すっきり",
+    "reading": "すっきり",
+    "english": "refreshed",
+    "exampleJp": "部屋を片付けたら気分がすっきりしました。"
+  },
+  "bw-0354765e978cc256": {
+    "term": "贅沢",
+    "reading": "ぜいたく",
+    "english": "luxury",
+    "exampleJp": "今日は少し贅沢な夕食を楽しみました。"
+  },
+  "bw-688afbf8caf11acc": {
+    "exampleJp": "大学のゼミナールで研究成果を発表しました。"
+  },
+  "bw-19c2e58abaa92999": {
+    "term": "頼み",
+    "reading": "たのみ",
+    "english": "request",
+    "exampleJp": "友人の頼みを断ることはできませんでした。"
+  },
+  "bw-1274bd5515855fa5": {
+    "exampleJp": "旅行先でツインルームを予約しました。"
+  },
+  "bw-4a33cb834a6264c2": {
+    "exampleJp": "机の上にティッシュペーパーがあります。"
+  },
+  "bw-d6fd78f5e15337e1": {
+    "exampleJp": "海外で使う前に電圧を確認してください。"
+  },
+  "bw-a46a93c0ea30b328": {
+    "exampleJp": "来月から都内の会社で働きます。"
+  },
+  "bw-bfb6353eb48f513d": {
+    "exampleJp": "新商品のネーミングをみんなで考えました。"
+  },
+  "bw-cb793959d81f549e": {
+    "exampleJp": "年頭に一年の目標を立てました。"
+  },
+  "bw-a92cd1fbc3cf521c": {
+    "exampleJp": "玄関で履物をそろえてください。"
+  },
+  "bw-37f24dce417474f7": {
+    "term": "パチンコ",
+    "reading": "パチンコ",
+    "english": "pachinko",
+    "meaningZh": "弹珠游戏；弹珠机",
+    "exampleJp": "駅前の店でパチンコを楽しみました。"
+  },
+  "bw-f90a31137869f91d": {
+    "term": "広場",
+    "reading": "ひろば",
+    "english": "square",
+    "exampleJp": "駅前の広場で友達を待ちました。"
+  },
+  "bw-d627712fa7589873": {
+    "term": "頬",
+    "reading": "ほお",
+    "english": "cheek",
+    "exampleJp": "冷たい風で頬が赤くなりました。"
+  },
+  "bw-d54e88ffe94bfae9": {
+    "exampleJp": "春になったので畑に種を蒔きました。"
+  },
+  "bw-36d5befe19fbae7d": {
+    "english": "son-in-law",
+    "exampleJp": "娘の婿は料理がとても上手です。"
+  },
+  "bw-4ca43c19d68b17af": {
+    "term": "麺類",
+    "reading": "めんるい",
+    "english": "noodles",
+    "exampleJp": "この店ではいろいろな麺類が食べられます。"
+  },
+  "bw-de7a0ccb024c8090": {
+    "exampleJp": "新しい家には広い洋室があります。"
+  },
+  "bw-afc25917414fab2b": {
+    "exampleJp": "夕食後は家族とリビングルームで過ごします。"
+  },
+  "bw-194037ed1fad2de7": {
+    "exampleJp": "このまんじゅうには甘い餡が入っています。"
+  },
+  "bw-716460e4e83a4b8e": {
+    "exampleJp": "地図を見てその町の緯度を調べました。"
+  },
+  "bw-369563801769f91f": {
+    "exampleJp": "授業で学んだ内容を演習で確認しました。"
+  },
+  "bw-fe89b6e76fd57022": {
+    "exampleJp": "この漢字の送り仮名を確認してください。"
+  },
+  "bw-7eb63994b6b677b4": {
+    "exampleJp": "彼は時間も努力も惜しまず研究を続けました。"
+  },
+  "bw-d994dd3d0f8d3c85": {
+    "exampleJp": "カーナビの案内に従ってホテルへ向かいました。"
+  },
+  "bw-d444cd90a05157ff": {
+    "term": "火口",
+    "reading": "かこう",
+    "english": "volcanic crater",
+    "meaningZh": "火山口",
+    "exampleJp": "安全な場所から火口を見学しました。"
+  },
+  "bw-35987aa6e7a23c0b": {
+    "exampleJp": "大きな釜でご飯を炊きました。"
+  },
+  "bw-b522f90bf49e51c3": {
+    "exampleJp": "祖母の家には昔ながらのかまどがあります。"
+  },
+  "bw-791502f65d0dccf9": {
+    "english": "upper; first part",
+    "exampleJp": "この小説は上巻と下巻に分かれています。"
+  },
+  "bw-cbf55ae735acd605": {
+    "exampleJp": "強い風で屋根の瓦が落ちました。"
+  },
+  "bw-78efaf9f23c0e8bf": {
+    "english": "publication frequency suffix",
+    "exampleJp": "この雑誌は月刊で発行されています。"
+  },
+  "bw-6d923862a60d02ac": {
+    "term": "キーホルダー",
+    "reading": "キーホルダー",
+    "english": "key ring",
+    "exampleJp": "旅行のお土産にキーホルダーを買いました。"
+  },
+  "bw-afb193d950a58c6b": {
+    "term": "機関車",
+    "reading": "きかんしゃ",
+    "english": "locomotive",
+    "exampleJp": "博物館に古い蒸気機関車が展示されています。"
+  },
+  "bw-47cfb449fc6df5fb": {
+    "exampleJp": "けが人がいなかったのは奇跡的なことです。"
+  },
+  "bw-578c9824ccc1abcb": {
+    "exampleJp": "会場には百人強の人が集まりました。"
+  },
+  "bw-4fd74836f06ce0c9": {
+    "exampleJp": "書類を提出するために県庁へ行きました。"
+  },
+  "bw-9ef4dd2ceb022119": {
+    "english": "total",
+    "exampleJp": "出席者は合わせて三十人になりました。"
+  },
+  "bw-9347e4c8877a1047": {
+    "exampleJp": "工員たちが工場で機械を点検しています。"
+  },
+  "bw-ef86ede82aca3424": {
+    "exampleJp": "川の近くには広い耕地が広がっています。"
+  },
+  "bw-e16e5a36f42d2b89": {
+    "exampleJp": "母に電話するよう妹に言付けました。"
+  },
+  "bw-b087c42fa8a82a50": {
+    "exampleJp": "港には大きなコンテナが並んでいます。"
+  },
+  "bw-5fc420b9d0a1c226": {
+    "exampleJp": "商店街は歳末の買い物客でにぎわっています。"
+  },
+  "bw-6abf90c084fce4c5": {
+    "exampleJp": "春になると桜並木が満開になります。"
+  },
+  "bw-aacf42a9512bf364": {
+    "exampleJp": "山でのサバイバル技術を学びました。"
+  },
+  "bw-a2f1d4a52cb98abf": {
+    "term": "錆",
+    "reading": "さび",
+    "english": "rust",
+    "exampleJp": "自転車のチェーンについた錆を落としました。"
+  },
+  "bw-09e652de9866f75c": {
+    "term": "錆びる",
+    "reading": "さびる",
+    "english": "rust",
+    "exampleJp": "雨にぬれたまま放置したので金具が錆びました。"
+  },
+  "bw-cdb6396aa4281d51": {
+    "meaningZh": "营养补充剂；补品；增刊",
+    "exampleJp": "食事を基本にしてサプリメントを利用しています。"
+  },
+  "bw-3e07be73bbad13b1": {
+    "exampleJp": "市町村ごとの人口を表にまとめました。"
+  },
+  "bw-da6fff7a4456d95f": {
+    "exampleJp": "この駅では私鉄から地下鉄に乗り換えられます。"
+  },
+  "bw-3b771e9a6b6a0141": {
+    "english": "ENT clinic",
+    "exampleJp": "耳が痛むので耳鼻科を受診しました。"
+  },
+  "bw-95a94e0775bc3052": {
+    "english": "double; heavy",
+    "exampleJp": "旅館では二重に鍵をかけてください。"
+  },
+  "bw-d2a4922b764cf917": {
+    "english": "layer counter",
+    "exampleJp": "安全のため、荷物を二重に包みました。"
+  },
+  "bw-479ee8be5f3a16a7": {
+    "exampleJp": "係の人が会費の集金に来ました。"
+  },
+  "bw-5b1889c6b50ea649": {
+    "exampleJp": "列車は間もなく終着駅に到着します。"
+  },
+  "bw-149fc0dce351eda1": {
+    "exampleJp": "この病院には常勤の医師が三人います。"
+  },
+  "bw-24069ff7d218eb06": {
+    "exampleJp": "壁を落ち着いた青色に塗りました。"
+  },
+  "bw-ff54633b018a529a": {
+    "exampleJp": "来月の初旬に引っ越す予定です。"
+  },
+  "bw-9a74253776460f9d": {
+    "exampleJp": "子どもたちはお腹を空かせて帰ってきました。"
+  },
+  "bw-d4d9dc259513dd27": {
+    "meaningZh": "澡堂；公共浴池",
+    "exampleJp": "近所の銭湯でゆっくりお風呂に入りました。"
+  },
+  "bw-a62ef15cc8e7d123": {
+    "exampleJp": "この町では昔から造船が盛んです。"
+  },
+  "bw-ea327544e060b49b": {
+    "exampleJp": "お中元やお歳暮には贈答用の商品が並びます。"
+  },
+  "bw-bec58e6755239786": {
+    "exampleJp": "浴衣に合わせて草履を履きました。"
+  },
+  "bw-3af9ed1cbdaa3f2b": {
+    "english": "all consisting of",
+    "exampleJp": "会場には専門家揃いのチームが集まりました。"
+  },
+  "bw-d8fe2b36d93a4bca": {
+    "exampleJp": "祖父に算盤の使い方を教わりました。"
+  },
+  "bw-0e4825dfe93f01fb": {
+    "exampleJp": "着物を着る前に白い足袋を履きました。"
+  },
+  "bw-aa24c29dc29d6673": {
+    "english": "short-; brief",
+    "exampleJp": "短時間でも毎日勉強を続けることが大切です。"
+  },
+  "bw-bcbea08b5ad3e1c4": {
+    "english": "singular",
+    "exampleJp": "この単語の単数と複数の形を覚えました。"
+  },
+  "bw-72e0a0327c88ab40": {
+    "exampleJp": "パンを小さくちぎって皿に分けました。"
+  },
+  "bw-c02b9e8b65a957c4": {
+    "exampleJp": "この装置は直流の電気で動きます。"
+  },
+  "bw-a5500a0eb0475dd7": {
+    "exampleJp": "天井から大きな照明を吊りました。"
+  },
+  "bw-bf3c5ccb179772bc": {
+    "exampleJp": "汗を拭くために手拭いを持ってきました。"
+  },
+  "bw-1c561461779fa9dc": {
+    "term": "〜棟",
+    "reading": "〜とう",
+    "english": "building counter",
+    "exampleJp": "この通りには新しい住宅が三棟建ちました。"
+  },
+  "bw-ee8f1230cd908852": {
+    "term": "床の間",
+    "reading": "とこのま",
+    "english": "alcove",
+    "exampleJp": "床の間に季節の花が飾ってあります。"
+  },
+  "bw-c42268c61f1646dd": {
+    "meaningZh": "被……；遭受……",
+    "english": "passive or affected prefix",
+    "exampleJp": "被災地に救援物資が届きました。"
+  },
+  "bw-86aee4ce8866a5cd": {
+    "english": "vice-; deputy",
+    "exampleJp": "副社長が会議に出席しました。"
+  },
+  "bw-d3c5e2de4a888729": {
+    "exampleJp": "地図に使われている符号の意味を調べました。"
+  },
+  "bw-fe40cb7c13a57853": {
+    "english": "thing; object suffix",
+    "exampleJp": "この店には珍しい置物が並んでいます。"
+  },
+  "bw-dca61390e77a61ee": {
+    "term": "振り仮名",
+    "reading": "ふりがな",
+    "english": "furigana",
+    "exampleJp": "難しい漢字には振り仮名が付いています。"
+  },
+  "bw-beafe317dbbe5450": {
+    "exampleJp": "彼は料理の腕を振るって客をもてなしました。"
+  },
+  "bw-98e19eef5d132233": {
+    "meaningZh": "肚脐；中心；关键部分",
+    "exampleJp": "赤ちゃんのおへそを優しく拭きました。"
+  },
+  "bw-124f7ab1a89a7714": {
+    "exampleJp": "空のペットボトルを回収箱に入れました。"
+  },
+  "bw-84e34fb5df8a24c0": {
+    "english": "section; volume",
+    "exampleJp": "この作品は短編小説を集めたものです。"
+  },
+  "bw-9692973a5c0396c1": {
+    "term": "堀",
+    "reading": "ほり",
+    "english": "moat",
+    "exampleJp": "城の周りには深い堀があります。"
+  },
+  "bw-9c418805449756eb": {
+    "english": "full-",
+    "exampleJp": "満員の電車に乗って会社へ向かいました。"
+  },
+  "bw-a50909d8839b080d": {
+    "exampleJp": "地域のお祭りで昔から伝わる民謡を歌いました。"
+  },
+  "bw-b1a4bb4d2bc9e962": {
+    "exampleJp": "目的のない長時間の会議は無意義だと思います。"
+  },
+  "bw-839a96fd664ef4b1": {
+    "exampleJp": "舞台に立つ前に相方と打ち合わせをしました。"
+  },
+  "bw-dd667640756a10f9": {
+    "meaningZh": "入室盗窃；无人看守的住宅",
+    "english": "burglary",
+    "exampleJp": "この地域では留守の家を狙う空き巣が増えています。"
+  },
+  "bw-fba6bae8dcf6e345": {
+    "english": "linen; hemp",
+    "exampleJp": "夏には涼しい麻の服をよく着ます。"
+  },
+  "bw-aa05bdb3a5c99df9": {
+    "exampleJp": "物語の主人公は父の仇を探し続けました。"
+  },
+  "bw-1fbd55319f5b69bf": {
+    "exampleJp": "この会社はアットホームな雰囲気です。"
+  },
+  "bw-38eac075607d1f37": {
+    "exampleJp": "彼女は最後まで危なげない演技を見せました。"
+  },
+  "bw-75e44bdca8c6ed56": {
+    "exampleJp": "授業では安楽死をめぐる倫理的な問題を議論しました。"
+  },
+  "bw-9eb100ccaf41934f": {
+    "exampleJp": "交通機関が止まっているので、遅れるのも致し方ないと思います。"
+  },
+  "bw-32241840a52db9e5": {
+    "exampleJp": "彼は伝統にとらわれない異端児として注目されました。"
+  },
+  "bw-97f36aa20af8e109": {
+    "exampleJp": "旅行のために一眼レフを買いました。"
+  },
+  "bw-3389276a540fcc05": {
+    "term": "インフォメーション",
+    "reading": "インフォメーション",
+    "english": "information",
+    "exampleJp": "駅のインフォメーションで道を尋ねました。"
+  },
+  "bw-2b4dda869312324e": {
+    "meaningZh": "高速公路出入口；立交桥",
+    "exampleJp": "次のインターチェンジで高速道路を降ります。"
+  },
+  "bw-2fb7620a83f7d6be": {
+    "exampleJp": "この店はウイークデーの昼間は比較的空いています。"
+  },
+  "bw-976a003f5ec35f7e": {
+    "exampleJp": "彼のウイットに富んだ話で会場が和みました。"
+  },
+  "bw-3b44290ca59a1d0a": {
+    "english": "sentimental",
+    "exampleJp": "彼は意外にウエットな性格で、人との別れに弱いです。"
+  },
+  "bw-871bf6e528a27a65": {
+    "exampleJp": "日本語の打ち消しの表現について勉強しました。"
+  },
+  "bw-f9a58d9c7a930b5a": {
+    "exampleJp": "運送会社に荷物の配達を頼みました。"
+  },
+  "bw-50414fd1172ac7e3": {
+    "exampleJp": "鍋の柄が熱くなっているので気を付けてください。"
+  },
+  "bw-91083acb1f1ac881": {
+    "exampleJp": "この店にはエキゾチックな雰囲気があります。"
+  },
+  "bw-25da543abd975212": {
+    "term": "SF小説",
+    "reading": "エスエフしょうせつ",
+    "english": "science fiction",
+    "exampleJp": "子どものころからSF小説を読むのが好きです。"
+  },
+  "bw-f50146c8d7d36c88": {
+    "exampleJp": "彼女はエレガントな服装で会場に現れました。"
+  },
+  "bw-8ceb14ff85b6397c": {
+    "exampleJp": "親戚から縁談の話を持ちかけられました。"
+  },
+  "bw-b4189b1b1e030d89": {
+    "exampleJp": "その作家は文学界の大御所として知られています。"
+  },
+  "bw-dd95dcd85d38511c": {
+    "exampleJp": "まずはオーソドックスな方法で作ってみましょう。"
+  },
+  "bw-57d8cfe5644953f0": {
+    "exampleJp": "自分の体に合うオーダーメイドの服を作りました。"
+  },
+  "bw-a23449dace7da0b9": {
+    "exampleJp": "初めてオートマチックの車を運転しました。"
+  },
+  "bw-b8f54c174bc4df2f": {
+    "exampleJp": "彼女はおおらかな性格で、細かいことを気にしません。"
+  },
+  "bw-ea4593c985ac6649": {
+    "exampleJp": "今日は遅番なので、昼過ぎに出勤します。"
+  },
+  "bw-6d8f9f1e261ea3ec": {
+    "exampleJp": "検査の結果はあまり思わしくありませんでした。"
+  },
+  "bw-fa39afd20b95e236": {
+    "english": "parent; chief",
+    "exampleJp": "この会社は親会社から支援を受けています。"
+  },
+  "bw-dc90847ebc2bd18e": {
+    "exampleJp": "このバスは回送なので乗車できません。"
+  },
+  "bw-125121199b06a287": {
+    "exampleJp": "悩みがあるときは学校のカウンセラーに相談します。"
+  },
+  "bw-eb79a845e4c08d5f": {
+    "exampleJp": "小さな入り口を通るために身を屈めました。"
+  },
+  "bw-cf9fdb4325c74538": {
+    "exampleJp": "運動不足を解消するため、隔日で散歩しています。"
+  },
+  "bw-b829cb561031bbec": {
+    "exampleJp": "窓の外では鳥たちが姦しく鳴いていました。"
+  },
+  "bw-0f14639fdb4c7425": {
+    "exampleJp": "彼は頑なに自分の意見を変えようとしませんでした。"
+  },
+  "bw-5925976dc671b4af": {
+    "exampleJp": "この大会では努力を重ねたチームが勝ち組になりました。"
+  },
+  "bw-60cba0df22c5be90": {
+    "english": "infatuation with",
+    "meaningZh": "痴迷于……；深受……影响",
+    "exampleJp": "海外の流行にかぶれすぎないようにしています。"
+  },
+  "bw-e8ad06baf17ab04d": {
+    "exampleJp": "大声で応援したため、声が嗄れてしまいました。"
+  },
+  "bw-cc577616381680d9": {
+    "exampleJp": "冠婚葬祭では場に合った服装を選ぶことが大切です。"
+  },
+  "bw-d5c08ba89a8720c1": {
+    "exampleJp": "車が止まっても体は慣性で前に動こうとします。"
+  },
+  "bw-9f7756f9b5cf598e": {
+    "exampleJp": "この建物は昭和元年に建てられました。"
+  },
+  "bw-ab3ddaa0c7039170": {
+    "exampleJp": "この地域では春に祭りを開くのが慣例です。"
+  },
+  "bw-6b8d6a92724018e7": {
+    "exampleJp": "この雑誌は季刊なので、一年に四冊出ます。"
+  },
+  "bw-6aefd849f91011bb": {
+    "exampleJp": "炒め物に木耳を加えました。"
+  },
+  "bw-bcd8ada873446551": {
+    "exampleJp": "自由に意見を言える気風がこの学校にはあります。"
+  },
+  "bw-ec1d364857e34270": {
+    "term": "ギフト券",
+    "reading": "ギフトけん",
+    "english": "gift certificate",
+    "exampleJp": "誕生日のお祝いにギフト券をもらいました。"
+  },
+  "bw-5611429847899a1c": {
+    "exampleJp": "暗い廊下で物音がして気味悪く感じました。"
+  },
+  "bw-fe003d877c7adb81": {
+    "exampleJp": "この物語には個性的なキャラクターが登場します。"
+  },
+  "bw-47e94bac9ff2bdf7": {
+    "exampleJp": "会場で旧知の友人に再会しました。"
+  },
+  "bw-906a9143a8ba14ce": {
+    "english": "bridge",
+    "exampleJp": "川に新しい橋が架かりました。"
+  },
+  "bw-b5e7e0019d19f17d": {
+    "exampleJp": "決勝戦では強敵と対戦します。"
+  },
+  "bw-ab5e58662276e2ce": {
+    "meaningZh": "正规教师；教师",
+    "exampleJp": "姉は小学校の教諭として働いています。"
+  },
+  "bw-91e7ec85694d03b0": {
+    "exampleJp": "海沿いの小さな漁村で生まれ育ちました。"
+  },
+  "bw-3a8820a4daf306e1": {
+    "exampleJp": "会場には煌びやかな照明が輝いていました。"
+  },
+  "bw-61b4bc7c5e701cc2": {
+    "exampleJp": "彼は義理堅く、毎年欠かさず挨拶に来ます。"
+  },
+  "bw-f3d9d41359511a63": {
+    "exampleJp": "会計の前に割引クーポンを見せました。"
+  },
+  "bw-302780cd59459593": {
+    "english": "first-class train carriage",
+    "exampleJp": "長い移動なのでグリーン車の席を予約しました。"
+  },
+  "bw-175ce49b7a9380f7": {
+    "exampleJp": "駅前の店で激安の商品を見つけました。"
+  },
+  "bw-b2cd373c9fc992dd": {
+    "exampleJp": "欠員が出たため、新しい社員を募集しています。"
+  },
+  "bw-285cfda785b85b75": {
+    "term": "〜圏",
+    "reading": "〜けん",
+    "english": "area; sphere",
+    "exampleJp": "この町は東京の通勤圏に入っています。"
+  },
+  "bw-087a740f0f30060d": {
+    "exampleJp": "需要の減少に合わせて工場は減産を決めました。"
+  },
+  "bw-c812ddc045e6189c": {
+    "exampleJp": "展示会では故田中先生の作品を紹介しています。"
+  },
+  "bw-bd7a494b905bbe2a": {
+    "exampleJp": "地域の興業を支えるため、新しい会社が設立されました。"
+  },
+  "bw-3d2b1c92ea82dd51": {
+    "exampleJp": "鉱山から採れた鉱石を調べました。"
+  },
+  "bw-d7ff20fe57478077": {
+    "exampleJp": "先生が講壇に立って話し始めました。"
+  },
+  "bw-5b3f0bb0b548e4e0": {
+    "exampleJp": "焦げ茶色の靴を買いました。"
+  },
+  "bw-fe770b9d75ef22fc": {
+    "exampleJp": "小さな誤解から話が拗れてしまいました。"
+  },
+  "bw-f4834f6de7733493": {
+    "exampleJp": "二人は祝いの杯を交わしました。"
+  },
+  "bw-ed241f21c2a381ac": {
+    "exampleJp": "渡航する前に査証を取得しました。"
+  },
+  "bw-9539a91941872e28": {
+    "exampleJp": "出張の雑費をまとめて精算しました。"
+  },
+  "bw-eaf9c7382b03c77a": {
+    "exampleJp": "家具がなくて殺風景な部屋です。"
+  },
+  "bw-81e143100a323bea": {
+    "meaningZh": "面貌大变；情况改变",
+    "exampleJp": "駅前の風景はすっかり様変わりしました。"
+  },
+  "bw-794cf5dbe7f718ff": {
+    "exampleJp": "川底にたまった泥を浚いました。"
+  },
+  "bw-321097d8d43b82fb": {
+    "exampleJp": "その会社は大企業の傘下に入りました。"
+  },
+  "bw-ae0b45eab8737757": {
+    "exampleJp": "健康への影響を軽視してはいけません。"
+  },
+  "bw-6972fcd1d2a365e5": {
+    "exampleJp": "委員会に新しい試案を提出しました。"
+  },
+  "bw-75aca9c2be6e9a06": {
+    "term": "CM",
+    "reading": "シーエム",
+    "english": "commercial",
+    "exampleJp": "テレビで新商品のCMを見ました。"
+  },
+  "bw-08dadc3d927b9f35": {
+    "exampleJp": "野菜を自給する生活に憧れています。"
+  },
+  "bw-045023f0adbd9ee9": {
+    "exampleJp": "上司は下役の意見にも耳を傾けました。"
+  },
+  "bw-61bbfc3a331effae": {
+    "exampleJp": "不規則な生活で体の機能に失調を来しました。"
+  },
+  "bw-8775c71ffb88850e": {
+    "exampleJp": "終発の電車に間に合いました。"
+  },
+  "bw-e2a806222c2a828e": {
+    "exampleJp": "医師がその症候群の特徴を説明しました。"
+  },
+  "bw-66c3494884e22932": {
+    "exampleJp": "今年の冬は賞与が支給されました。"
+  },
+  "bw-b103e8da1f23f954": {
+    "exampleJp": "日本の選手陣に大きな声援が送られました。"
+  },
+  "bw-384d51bf059b8eb4": {
+    "english": "emerging",
+    "exampleJp": "新興企業が次々と新製品を発表しています。"
+  },
+  "bw-dcbc38f751863ac9": {
+    "exampleJp": "毎週の会議で作業の進捗を確認します。"
+  },
+  "bw-e98e4f38d6b333d6": {
+    "exampleJp": "部下から厚い信任を得ている上司です。"
+  },
+  "bw-e42b7ebbb3d7e789": {
+    "exampleJp": "環境問題をテーマにシンポジウムが開かれました。"
+  },
+  "bw-b43038cc79ac73a7": {
+    "exampleJp": "職業だけで人のステータスを判断しないでください。"
+  },
+  "bw-a053fe70ac5096a1": {
+    "exampleJp": "この包丁はステンレス製です。"
+  },
+  "bw-d2500e6421e1931a": {
+    "exampleJp": "椅子のスプリングが壊れてしまいました。"
+  },
+  "bw-5e57a0870347655e": {
+    "exampleJp": "製菓を学ぶために専門学校に通っています。"
+  },
+  "bw-1da869b4d83efd59": {
+    "exampleJp": "この機械では画像を精細に表示できます。"
+  },
+  "bw-c55dd7bb25dd5f75": {
+    "exampleJp": "改札を出る前に精算機で不足分を払いました。"
+  },
+  "bw-35727db4c9bef425": {
+    "exampleJp": "彼女は清純な印象を与える人です。"
+  },
+  "bw-a37db73e2e53aaf1": {
+    "exampleJp": "開会のセレモニーが始まりました。"
+  },
+  "bw-a8da6261afae43a1": {
+    "exampleJp": "仏壇に線香を供えました。"
+  },
+  "bw-a6a25069ae76d92f": {
+    "exampleJp": "大学では日本文学を専修しています。"
+  },
+  "bw-0ab19f66138f76b7": {
+    "english": "miscellaneous trees",
+    "exampleJp": "庭に生えていた雑木を整理しました。"
+  },
+  "bw-aaf862422a0b54e1": {
+    "exampleJp": "夕食のおかずに惣菜を買いました。"
+  },
+  "bw-8604694b7723402c": {
+    "exampleJp": "需要が増えたため工場は増産を決めました。"
+  },
+  "bw-5aa3c59959d62b99": {
+    "english": "university president; secretary-general",
+    "exampleJp": "大学の総長が式典で挨拶しました。"
+  },
+  "bw-dcfb0bbccebfe9eb": {
+    "exampleJp": "今日は営業の外回りに出かけます。"
+  },
+  "bw-d56b782f71cffec8": {
+    "meaningZh": "翘曲；向后弯曲；挺胸",
+    "exampleJp": "乾燥すると木の板が反ることがあります。"
+  },
+  "bw-6a18b1ab9b17d10b": {
+    "meaningZh": "冲撞；全力以赴",
+    "exampleJp": "彼は新しい仕事に体当たりで取り組みました。"
+  },
+  "bw-ad1b6ffcb6e28a08": {
+    "exampleJp": "彼女はこの作品を「春」と題しました。"
+  },
+  "bw-ac39ee3dc81b6515": {
+    "exampleJp": "タイムサービスで野菜が安くなっています。"
+  },
+  "bw-8e13d8af0658ba66": {
+    "exampleJp": "会社は脱炭素に向けた計画を発表しました。"
+  },
+  "bw-658a1a182fc93841": {
+    "exampleJp": "使い続けるうちにベルトが弛みました。"
+  },
+  "bw-091fd98058405591": {
+    "exampleJp": "地面から大きな団塊状の岩が見つかりました。"
+  },
+  "bw-ff6e9bb6be45f18f": {
+    "exampleJp": "卵や魚には蛋白質が含まれています。"
+  },
+  "bw-e71265df4ab81673": {
+    "exampleJp": "模型を切って内部の断面を見ました。"
+  },
+  "bw-3916b7126d056101": {
+    "exampleJp": "この玩具は子どもの知育に役立ちます。"
+  },
+  "bw-46a8aa0b07af149c": {
+    "exampleJp": "チープな印象にならないように工夫しました。"
+  },
+  "bw-6004d1dbcc05f8bc": {
+    "exampleJp": "日本の茶の湯の文化に興味があります。"
+  },
+  "bw-5afbb059c12277c6": {
+    "exampleJp": "会社の中期計画を見直しました。"
+  },
+  "bw-63f46cc4a0d0e105": {
+    "exampleJp": "ほうきと塵取りで床を掃除しました。"
+  },
+  "bw-0a9d94199054a4ed": {
+    "exampleJp": "会社から賃下げの提案がありました。"
+  },
+  "bw-1867bde3b81da564": {
+    "meaningZh": "筒；圆管",
+    "english": "tube",
+    "exampleJp": "ポスターを丸めて筒に入れました。"
+  },
+  "bw-bb6122704b218ad1": {
+    "exampleJp": "小犬がつぶらな瞳でこちらを見ています。"
+  },
+  "bw-16d9501a7db8f6d8": {
+    "exampleJp": "店のディスプレーが春らしく変わりました。"
+  },
+  "bw-c2f8cb5c444ed244": {
+    "exampleJp": "彼は手堅い方法で事業を広げました。"
+  },
+  "bw-1e66ad33d46d5ca5": {
+    "exampleJp": "ケーキのデコレーションを楽しみました。"
+  },
+  "bw-24187db35f131715": {
+    "exampleJp": "この手引きを読んでから機械を使ってください。"
+  },
+  "bw-6ccc0d5a7ec94182": {
+    "exampleJp": "転居したので住所変更の手続きをしました。"
+  },
+  "bw-e97235d28abda4e3": {
+    "exampleJp": "子どものころから近所の道場で柔道を習っています。"
+  },
+  "bw-6dac4a1e82fe5151": {
+    "english": "something saved for a special occasion",
+    "exampleJp": "今日はとっておきのお菓子を用意しました。"
+  },
+  "bw-af24493a7d6140c4": {
+    "meaningZh": "中途加入；临时参加",
+    "english": "impromptu participation",
+    "exampleJp": "彼は飛び入りで演奏に参加しました。"
+  },
+  "bw-74ab8f8a8bb65dd6": {
+    "exampleJp": "大学では土木工学を専攻しています。"
+  },
+  "bw-a7eb6a8784e1ac5c": {
+    "exampleJp": "チョコレートが口の中でとろけました。"
+  },
+  "bw-bc073f6d4a1a49f6": {
+    "exampleJp": "結婚式で仲人に感謝の言葉を述べました。"
+  },
+  "bw-d6a2a7f528f1968c": {
+    "exampleJp": "彼女は困った人を放っておけない情け深い人です。"
+  },
+  "bw-2044dcef288fd94d": {
+    "exampleJp": "魚を切った包丁が少し生臭いです。"
+  },
+  "bw-53490c79aebc74e3": {
+    "exampleJp": "生温い水より冷たい水が飲みたいです。"
+  },
+  "bw-01fc1f079cab935c": {
+    "exampleJp": "そのブランドには高いネームバリューがあります。"
+  },
+  "bw-c9805a36fea245cd": {
+    "exampleJp": "写真を焼き増しするためにネガを探しました。"
+  },
+  "bw-79ff170d50e0e846": {
+    "exampleJp": "弟は寝相が悪く、すぐ布団を蹴ってしまいます。"
+  },
+  "bw-82278a22055be722": {
+    "exampleJp": "彼は環境保護の大切さについて熱弁を振るいました。"
+  },
+  "bw-020cbd3da58184b5": {
+    "exampleJp": "このテープは粘着力が強いです。"
+  },
+  "bw-cf4ee85f0ac1adf0": {
+    "exampleJp": "ハイビジョンの映像で試合を楽しみました。"
+  },
+  "bw-7f5fee75ff07fd49": {
+    "term": "恥じらう",
+    "reading": "はじらう",
+    "exampleJp": "褒められた彼女は少し恥じらっていました。"
+  },
+  "bw-37fcd74bfec62f9b": {
+    "english": "battery-powered vehicle",
+    "exampleJp": "広い公園の中をバッテリーカーで移動しました。"
+  },
+  "bw-b64b4c5060c662b6": {
+    "english": "completely; utterly",
+    "exampleJp": "一日中歩き続けて疲れ果てました。"
+  },
+  "bw-cfaa88c6dad7d922": {
+    "exampleJp": "その計画は大きな問題を孕んでいます。"
+  },
+  "bw-c9026b30b9bbc5a7": {
+    "english": "accessible; barrier-free",
+    "exampleJp": "この建物はバリアフリーに対応しています。"
+  },
+  "bw-893a3daa6803f8dd": {
+    "exampleJp": "試験を終えて晴れ晴れしい気分になりました。"
+  },
+  "bw-b2b69cded406bb9c": {
+    "term": "PR",
+    "reading": "ピーアール",
+    "english": "public relations",
+    "exampleJp": "観光地の魅力をPRする映像を作りました。"
+  },
+  "bw-5f5c0aa1feb9420d": {
+    "exampleJp": "大学で非常勤の講師として働いています。"
+  },
+  "bw-8b450dca5094bd4c": {
+    "exampleJp": "重い荷物を載せたため棚が歪みました。"
+  },
+  "bw-0798dbd43d7752e4": {
+    "exampleJp": "異なる意見を一括りに扱わないでください。"
+  },
+  "bw-a05823298b1ded35": {
+    "exampleJp": "展示室で氷河期の生き物について学びました。"
+  },
+  "bw-a0a549c5738d6c22": {
+    "exampleJp": "看護師が病棟を巡回しています。"
+  },
+  "bw-79362469c112158c": {
+    "exampleJp": "帰り道で新しいアイデアが閃きました。"
+  },
+  "bw-490806f246740c8e": {
+    "exampleJp": "空気清浄機のフィルターを交換しました。"
+  },
+  "bw-978ec4422d59c9c9": {
+    "exampleJp": "予算には備品などの物件費も含まれています。"
+  },
+  "bw-0075b4ae7080f3c7": {
+    "exampleJp": "彼は実績を誇らず、いつも謙って話します。"
+  },
+  "bw-248e52b044e93043": {
+    "exampleJp": "報道の偏向について授業で議論しました。"
+  },
+  "bw-1e0ebdeed68ec2a7": {
+    "exampleJp": "本文を読む前に前書きに目を通しました。"
+  },
+  "bw-ce2861a93041f807": {
+    "exampleJp": "二つの名前は似ていて紛らわしいです。"
+  },
+  "bw-0e32976af57afe86": {
+    "exampleJp": "姉にマタニティー用の服を贈りました。"
+  },
+  "bw-36562258aa46b8f3": {
+    "exampleJp": "文化祭で友達と漫才を披露しました。"
+  },
+  "bw-d9bcef8b8e7f613b": {
+    "exampleJp": "空に真ん丸い月が浮かんでいます。"
+  },
+  "bw-7c2a310adeed3706": {
+    "english": "body; position suffix",
+    "exampleJp": "相手の身になって考えることが大切です。"
+  },
+  "bw-46f328b1253b79c7": {
+    "exampleJp": "ミクロの視点から物質の構造を調べました。"
+  },
+  "bw-dce045440d987520": {
+    "exampleJp": "彼は軽い身ごなしで階段を駆け上がりました。"
+  },
+  "bw-eff943e3ed579f87": {
+    "exampleJp": "野菜の水気をよく切ってください。"
+  },
+  "bw-d85e701679796460": {
+    "exampleJp": "この祭りには昔ながらの見世物が出ています。"
+  },
+  "bw-14e74b624bbaafea": {
+    "exampleJp": "この映画の見所は最後の対決です。"
+  },
+  "bw-85c07b46a7be8fcc": {
+    "exampleJp": "部屋がむさ苦しいので窓を開けました。"
+  },
+  "bw-f351af4a771d2cc0": {
+    "exampleJp": "彼女は黙々と資料を整理しています。"
+  },
+  "bw-171973b0dba9baa9": {
+    "exampleJp": "こんな雨の日に釣りに行くとは物好きですね。"
+  },
+  "bw-d825b2edc51a7899": {
+    "exampleJp": "遊興にお金を使いすぎないようにしています。"
+  },
+  "bw-eb21940fbdf905bd": {
+    "term": "ゆとり",
+    "reading": "ゆとり",
+    "english": "room to spare",
+    "exampleJp": "朝は時間にゆとりを持って出かけます。"
+  },
+  "bw-14dd64b1410c250e": {
+    "exampleJp": "個人情報の流出はゆゆしい問題です。"
+  },
+  "bw-a8a1a6058635b43b": {
+    "exampleJp": "忘年会の余興で手品を披露しました。"
+  },
+  "bw-c2753961067a5975": {
+    "exampleJp": "理由もなく叱られるのは理不尽です。"
+  },
+  "bw-a3aa72d86477fb59": {
+    "exampleJp": "申込者が定員のリミットに達しました。"
+  },
+  "bw-fe349fabf6cdf477": {
+    "exampleJp": "その船は日本の領海を出ました。"
+  },
+  "bw-bd934e2f1176044e": {
+    "exampleJp": "この店は家電の量販で知られています。"
+  },
+  "bw-5cea7704581fc7dd": {
+    "exampleJp": "この小説には類型的な人物が多く登場します。"
+  },
+  "bw-734173e5a39c83de": {
+    "exampleJp": "今夜は和風のパスタを作ります。"
+  },
+  "bw-3731465f4e70fce9": {
+    "term": "〜方",
+    "reading": "〜がた",
+    "meaningZh": "（敬称复数后缀）各位；们",
+    "english": "honorific plural suffix",
+    "exampleJp": "参加される方々に資料を配りました。"
+  },
+  "bw-0117885701ed7b71": {
+    "exampleJp": "とてもおいしかったです。ご馳走様でした。"
+  },
+  "bw-bc596bea4cc0559f": {
+    "english": "person; people",
+    "exampleJp": "私のクラスには留学生が三人います。"
+  },
+  "bw-4a9cab76acda31b5": {
+    "english": "counter for books",
+    "exampleJp": "図書館で本を二冊借りました。"
+  },
+  "bw-3154d0c3ff56174b": {
+    "term": "そして",
+    "reading": "そして",
+    "meaningZh": "然后；而且",
+    "english": "and then",
+    "exampleJp": "朝食を食べました。そして、学校へ行きました。"
+  },
+  "bw-5faa2411fd049144": {
+    "exampleJp": "御免ください。田中さんはいらっしゃいますか。"
+  },
+  "bw-eae45526aa2d0980": {
+    "exampleJp": "駅で友達にさよならを言いました。"
+  },
+  "bw-20d5f674e81b3215": {
+    "english": "monzonite",
+    "exampleJp": "モンゾニ岩の標本を顕微鏡で観察しました。"
+  },
+  "bw-aad880421d5c2a91": {
+    "meaningZh": "请多关照；妥善地",
+    "english": "kind regards; suitably",
+    "exampleJp": "明日からお世話になります。宜しくお願いします。"
+  },
+  "bw-4d8d62cccf7f5cb5": {
+    "exampleJp": "お名前をこちらにお書きください。"
+  },
+  "bw-dcdf7e9376d14f42": {
+    "exampleJp": "店員は客の前で畏まりました。"
+  },
+  "bw-1d8b377c5a8efac8": {
+    "exampleJp": "寒いのでオーバーコートを着て出かけます。"
+  },
+  "bw-454cece589773e00": {
+    "english": "mountainside",
+    "exampleJp": "山辺の小さな村に祖父母が住んでいます。"
+  },
+  "bw-85d69523fb9a7204": {
+    "exampleJp": "面接には黒い革靴を履いて行きました。"
+  },
+  "bw-e1b25c3b5c0b58a4": {
+    "meaningZh": "下面；下方",
+    "english": "below",
+    "exampleJp": "机の下にかばんを置きました。"
+  },
+  "bw-45912194cdb5c80f": {
+    "exampleJp": "使い終わった農具を小屋に片付けました。"
+  },
+  "bw-4b95ed35d57b63c2": {
+    "exampleJp": "声が届くようにマイクロホンを使いました。"
+  },
+  "bw-9fd1b655951616be": {
+    "meaningZh": "耳钉；耳饰",
+    "exampleJp": "誕生日に小さなピアスをもらいました。"
+  },
+  "bw-69657e8edc9fe4fe": {
+    "exampleJp": "姉はファッションショーに出演します。"
+  },
+  "bw-865bbe7da0e6d7a4": {
+    "term": "〜際に",
+    "reading": "〜さいに",
+    "meaningZh": "在……的时候",
+    "english": "on the occasion of",
+    "exampleJp": "お帰りの際に受付へお寄りください。"
+  },
+  "bw-1f9ad38f6f643e58": {
+    "meaningZh": "图表；列车运行图",
+    "exampleJp": "列車のダイヤグラムを見て運行を確認しました。"
+  },
+  "bw-43cf61bc20bca382": {
+    "exampleJp": "今日の作業はこれで仕舞いです。"
+  },
+  "bw-29e73de664eeb2b6": {
+    "exampleJp": "眠くて瞼が重くなってきました。"
+  },
+  "bw-29f10582124bfe3c": {
+    "exampleJp": "彼はフリーターとして複数の店で働いています。"
+  },
+  "bw-936ddabf5c943e66": {
+    "exampleJp": "プロジェクターで写真を壁に映しました。"
+  },
+  "bw-e329db7de13fc241": {
+    "exampleJp": "先々月、京都へ旅行しました。"
+  },
+  "bw-ea5c6b412a41be49": {
+    "exampleJp": "赤ちゃんのお腹には小さな臍があります。"
+  },
+  "bw-8548aea2792b2537": {
+    "meaningZh": "（滅多に＋否定）不常；很少",
+    "english": "rarely",
+    "exampleJp": "この地域では雪は滅多に降りません。"
+  },
+  "bw-634267ca2cb92299": {
+    "exampleJp": "空港まではモノレールで行けます。"
+  },
+  "bw-9e4217bc11d01646": {
+    "exampleJp": "作文の仮名遣いを先生に直してもらいました。"
+  },
+  "bw-70649326f0f4b17d": {
+    "exampleJp": "戸の透きから冷たい風が入ってきます。"
+  },
+  "bw-0a64ce6b4abf880b": {
+    "exampleJp": "コーチャーが選手に声をかけました。"
+  },
+  "bw-2cd9dd90575031e3": {
+    "exampleJp": "何何が必要か、具体的に書いてください。"
+  },
+  "bw-152a94c7b25d78f2": {
+    "exampleJp": "祖父は演歌を聞くのが好きです。"
+  },
+  "bw-3f786aad857c8cb5": {
+    "exampleJp": "次女は今年、小学校に入学しました。"
+  },
+  "bw-2bc89a59a9adad34": {
+    "exampleJp": "肩が凝ったのでマッサージを受けました。"
+  },
+  "bw-378935504034f368": {
+    "exampleJp": "温かい饅頭をお茶と一緒に食べました。"
+  },
+  "bw-60f863dfddeb37af": {
+    "exampleJp": "弟は負けて拗ねてしまいました。"
+  },
+  "bw-a698083abfcb55c6": {
+    "exampleJp": "明々後日の朝、実家へ帰ります。"
+  },
+  "bw-ba52f62d256cbc90": {
+    "term": "振り仮名",
+    "reading": "ふりがな",
+    "meaningZh": "汉字旁标注读音的假名",
+    "exampleJp": "難しい漢字には振り仮名を付けてください。"
+  },
+  "bw-33fe45894ac50338": {
+    "exampleJp": "謙譲の気持ちを忘れずに人と接したいです。"
+  },
+  "bw-4e0ee2f2844b8dff": {
+    "exampleJp": "空が俄かに暗くなりました。"
+  },
+  "bw-67fca1b58d5821e0": {
+    "english": "lower body",
+    "exampleJp": "下半身を鍛えるためにスクワットをしています。"
+  },
+  "bw-b13c54794734ee00": {
+    "exampleJp": "駅前に新しいビルディングが建ちました。"
+  },
+  "bw-88a783db3217d210": {
+    "meaningZh": "播撒；播种",
+    "exampleJp": "春になったので畑に種を播きました。"
+  },
+  "bw-a577e3fde7b6799b": {
+    "exampleJp": "ガスレンジの火を消したか確認しました。"
+  },
+  "bw-726e44c35c10388f": {
+    "exampleJp": "城の濠には水が張られています。"
+  },
+  "bw-1e4b47528838f4c5": {
+    "exampleJp": "堀に沿って桜の木が並んでいます。"
+  },
+  "bw-8329dc1fbf2b9601": {
+    "exampleJp": "床の間に季節の花を飾りました。"
+  },
+  "bw-3de0aeaee33e1c1d": {
+    "exampleJp": "隣の部屋との間に襖があります。"
+  },
+  "bw-9cc06b842c4d6e2f": {
+    "english": "Chinese characters and Japanese",
+    "exampleJp": "漢和辞典で漢字の意味を調べました。"
+  },
+  "bw-5c1734b9e3b2881a": {
+    "exampleJp": "姉は先月、元気な赤ちゃんを産みました。"
+  },
+  "bw-277f6a7c59376bd6": {
+    "exampleJp": "手伝ってくれてサンキュー。"
+  },
+  "bw-86cadde6c82ea3d7": {
+    "term": "オーバーコート",
+    "reading": "オーバーコート",
+    "exampleJp": "冬物のオーバーコートをクリーニングに出しました。"
+  },
+  "bw-10196a418108e380": {
+    "exampleJp": "来年からこの学校の正教員として働きます。"
+  },
+  "bw-158c62e1b16885db": {
+    "exampleJp": "食物繊維は腸の働きを助けます。"
+  },
+  "bw-3a14d45c9333f8bf": {
+    "meaningZh": "浪人；失去主君的武士",
+    "exampleJp": "その時代には主君を失った浪人が多くいました。"
+  },
+  "bw-3b2f4f54d20d9090": {
+    "exampleJp": "道路には木の根が剥き出しになっています。"
+  },
+  "bw-a4ae21af9b3d51ea": {
+    "exampleJp": "式典には多くの来賓が招かれました。"
+  },
+  "bw-4faae9c2c8ea4900": {
+    "exampleJp": "旅先で地元の焼き物を買いました。"
+  },
+  "bw-3d2a9e83b6dd6dcf": {
+    "exampleJp": "掃除のときは便器のふたも拭いてください。"
+  },
+  "bw-047c83757dfaedd5": {
+    "exampleJp": "料理中におかずを摘み食いしました。"
+  },
+  "bw-77cf863e19e07606": {
+    "exampleJp": "彼は寝室からのそのそと出てきました。"
+  },
+  "bw-639494a72196589a": {
+    "exampleJp": "寝巻きに着替えてから本を読みます。"
+  },
+  "bw-24a8ead0cc8a0197": {
+    "exampleJp": "新しい寝間着は肌触りがいいです。"
+  },
+  "bw-04f40b0936cc45e1": {
+    "exampleJp": "手にのりが付いてねとねとしています。"
+  },
+  "bw-7cc2f3653df1d464": {
+    "meaningZh": "病情或伤势严重",
+    "english": "serious condition",
+    "exampleJp": "事故で重症の患者が病院に運ばれました。"
+  },
+  "bw-039769548be688dd": {
+    "exampleJp": "日本の都道府県の名前を覚えています。"
+  },
+  "bw-41a19c262e4cc33f": {
+    "meaningZh": "还差一点；不太；再一个",
+    "english": "not quite",
+    "exampleJp": "説明を聞いても今ひとつ分かりません。"
+  },
+  "bw-71c662389ea2a448": {
+    "exampleJp": "昼食に豚肉のカツレツを食べました。"
+  },
+  "bw-aabf37c107637555": {
+    "exampleJp": "この花は両性の特徴を持っています。"
+  },
+  "bw-7e754ef05e8f5463": {
+    "exampleJp": "ナースが患者の体温を測りました。"
+  },
+  "bw-8431883f6caccd00": {
+    "english": "editor",
+    "exampleJp": "エディターが原稿の誤字を確認しました。"
+  },
+  "bw-f0180c6a67546fc1": {
+    "exampleJp": "駅のコインロッカーに荷物を預けました。"
+  },
+  "bw-d7cb63d34e8d74db": {
+    "exampleJp": "電車のシルバーシートを高齢の方に譲りました。"
+  },
+  "bw-5a331977c252af32": {
+    "exampleJp": "レンズ用のクリーナーで眼鏡を拭きました。"
+  },
+  "bw-2cafaa9d3c183c77": {
+    "exampleJp": "祖父はアナログの時計を愛用しています。"
+  },
+  "bw-1fe9009ee69f7586": {
+    "exampleJp": "俳優たちは撮影前にスクリプトを読み合わせました。"
+  },
+  "bw-cfdb8d6260e2d719": {
+    "meaningZh": "在；于（书面语）",
+    "exampleJp": "会議は東京に於いて開催されました。"
+  },
+  "bw-b1ff4a0859ca2836": {
+    "exampleJp": "肌寒くなったのでカーディガンを羽織りました。"
+  },
+  "bw-c5205fe6c4b4b35f": {
+    "exampleJp": "窓の外で鳥が頻りに鳴いています。"
+  },
+  "bw-b6427c78339c4c78": {
+    "exampleJp": "かばんに猫のキーホルダーを付けています。"
+  },
+  "bw-c3ef053c3b4cc3bf": {
+    "exampleJp": "円周は直径に円周率を掛けて求めます。"
+  },
+  "bw-5b5429bd12cdc51a": {
+    "english": "here and there",
+    "exampleJp": "山の斜面には小さな家が点々と見えます。"
+  },
+  "bw-2e1bce78fbcb0ee3": {
+    "exampleJp": "ピンセットで小さな破片を取り除きました。"
+  },
+  "bw-1d0096c2e9dbbe47": {
+    "exampleJp": "贈り物をきれいな紙で包みました。"
+  },
+  "bw-9c36ecff2efbd465": {
+    "meaningZh": "不就业、不上学也不接受职业培训的年轻人",
+    "exampleJp": "ニートの若者を支援する相談窓口があります。"
+  },
+  "bw-44a51da9e402965e": {
+    "exampleJp": "寒帯では冬の寒さが特に厳しくなります。"
+  },
+  "bw-0e45835b643d4053": {
+    "exampleJp": "火山の火口から白い煙が上がっています。"
+  },
+  "bw-ac304e3ac6396de5": {
+    "exampleJp": "漢字の部首を手掛かりに辞書を引きました。"
+  },
+  "bw-e6922cd71ea67562": {
+    "exampleJp": "日本語の授業で五十音を覚えました。"
+  },
+  "bw-0d3e2a6aebf2f254": {
+    "meaningZh": "下一个；次日的",
+    "exampleJp": "明くる朝、二人は旅に出ました。"
+  },
+  "bw-1540bd8357bec236": {
+    "exampleJp": "母に、帰りが遅くなると言づけてください。"
+  },
+  "bw-a41c7f306bdcee9c": {
+    "meaningZh": "十字路口；四个角",
+    "english": "crossroads",
+    "exampleJp": "次の四つ角を右に曲がってください。"
+  },
+  "bw-954c71ad2cc81328": {
+    "exampleJp": "この町では水産加工業が盛んです。"
+  },
+  "bw-444dcc167e9b5d20": {
+    "exampleJp": "新駅ができて利用者が激増しました。"
+  },
+  "bw-336a93403fb0a6cc": {
+    "exampleJp": "句読点を適切に入れると文章が読みやすくなります。"
+  },
+  "bw-c58f24ac48daabf7": {
+    "exampleJp": "答えは小数ではなく整数で書いてください。"
+  },
+  "bw-056d06c142424b19": {
+    "exampleJp": "その主張には興味深いパラドックスがあります。"
+  },
+  "bw-923ada2f1f4bfb27": {
+    "exampleJp": "出先から会社に電話をかけました。"
+  },
+  "bw-8ae5e9ce4e67047f": {
+    "exampleJp": "祖母は駅前の洋品店で服を買っています。"
+  },
+  "bw-aef47a9c35efb258": {
+    "exampleJp": "けがは軽症で、すぐに帰宅できました。"
+  },
+  "bw-9a4d2e5371b2d56c": {
+    "exampleJp": "この町には公営の体育館があります。"
+  },
+  "bw-bb61613b1a51eac5": {
+    "term": "ゆらゆら",
+    "reading": "ゆらゆら",
+    "exampleJp": "水面に木の影が揺ら揺らと映っています。"
+  },
+  "bw-c67c7f6ac1841b24": {
+    "exampleJp": "来春の新卒採用に応募しました。"
+  },
+  "bw-a5bd6919b696e1ff": {
+    "exampleJp": "父は洋酒のラベルを集めています。"
+  },
+  "bw-7605997e8310054e": {
+    "english": "imprint; burn in",
+    "exampleJp": "旅先の美しい景色を心に焼き付けました。"
+  },
+  "bw-5ba199bcffc39395": {
+    "exampleJp": "猫の目が暗闇で爛爛と光っています。"
+  },
+  "bw-bba197bec8fa836f": {
+    "exampleJp": "処理の流れをフローチャートにまとめました。"
+  },
+  "bw-45ec7e80020d8b49": {
+    "exampleJp": "困ったときは相談ホットラインに電話してください。"
+  },
+  "bw-642a19068a9481e7": {
+    "exampleJp": "カーテンを閉めないと部屋の中が丸見えです。"
+  },
+  "bw-8c146d07c9b6ae88": {
+    "exampleJp": "この制度では子育て世帯が優遇されます。"
+  },
+  "bw-048a83d85deedfa7": {
+    "exampleJp": "この店は今年で創業百年を迎えます。"
+  },
+  "bw-534da9603adcbde9": {
+    "exampleJp": "旅館の女将が玄関で迎えてくれました。"
+  },
+  "bw-6be3f6af64783e1c": {
+    "exampleJp": "押し入れは通風をよくして湿気を防ぎます。"
+  },
+  "bw-379fd074fe7a5b2e": {
+    "exampleJp": "春になると桜の開花前線が北上します。"
+  },
+  "bw-ada5cd6af264f9c2": {
+    "meaningZh": "绞痛；迅速旋转；吱吱作响",
+    "english": "with a sharp twisting pain",
+    "exampleJp": "緊張で胃がきりきりと痛みます。"
+  },
+  "bw-d1585b835604d475": {
+    "meaningZh": "康复训练；恢复",
+    "exampleJp": "退院後もリハビリテーションを続けています。"
+  },
+  "bw-3a78505f872afd55": {
+    "exampleJp": "サラダに新鮮なレタスを使いました。"
+  },
+  "bw-f6d31ea1e3b332e6": {
+    "exampleJp": "祖父の告別式は昨日行われました。"
+  },
+  "bw-d9b8257920071409": {
+    "exampleJp": "新商品の売り込みのために店を訪問しました。"
+  },
+  "bw-3ce8288f3bacfcaa": {
+    "exampleJp": "祭りでは大勢の人が御輿を担ぎます。"
+  },
+  "bw-fdb17a5924495797": {
+    "term": "恐る恐る",
+    "reading": "おそるおそる",
+    "exampleJp": "子供は恐恐と犬に手を伸ばしました。"
+  },
+  "bw-6e0674927698dbd7": {
+    "exampleJp": "悠久の歴史を感じさせる建物です。"
+  },
+  "bw-0a09cba86e4bc8be": {
+    "exampleJp": "ゆでた枝豆に塩を振りました。"
+  },
+  "bw-32d76880b8dfa8a4": {
+    "exampleJp": "長年の功績が認められ、彼は部長に栄進しました。"
+  },
+  "bw-01cd12d96dcdc289": {
+    "exampleJp": "添乗員が集合時間を知らせました。"
+  },
+  "bw-b25bdc09629c5c87": {
+    "exampleJp": "暑い日は熱中症を防ぐために水分を取りましょう。"
+  },
+  "bw-b0a3f2e284f1ae7f": {
+    "exampleJp": "笑うと母の目尻にしわが寄ります。"
+  },
+  "bw-5de2881568402dd0": {
+    "exampleJp": "この山には薬草が多く生えています。"
+  },
+  "bw-c832b67a4dce33fe": {
+    "exampleJp": "昨夜の番組は高い視聴率を記録しました。"
+  },
+  "bw-b0adf44e36ba6aa3": {
+    "exampleJp": "新聞やテレビはマスコミュニケーションの手段です。"
+  },
+  "bw-e936bb1bdb87f6f0": {
+    "exampleJp": "この装置は電気ではなく人力で動きます。"
+  },
+  "bw-56c463bc021b10a2": {
+    "exampleJp": "何処やらで聞いたことのある声です。"
+  },
+  "bw-a41fad5cd58911f8": {
+    "exampleJp": "夜空に大きな打ち上げ花火が開きました。"
+  },
+  "bw-023b32ca40d34ec1": {
+    "exampleJp": "漢字の上に振り仮名を付けました。"
+  },
+  "bw-99f2c1fe2173380f": {
+    "exampleJp": "決勝戦の様子を生放送で見ました。"
+  },
+  "bw-d7a1c6ee9948915e": {
+    "exampleJp": "野菜と果物を合わせて青果と総称します。"
+  },
+  "bw-a783184463ff56a2": {
+    "english": "snoring loudly",
+    "exampleJp": "父はソファーでぐうぐう寝ています。"
+  },
+  "bw-bd4764bdc0463b17": {
+    "exampleJp": "指定されたゴミ捨て場に袋を運びました。"
+  },
+  "bw-f26c0f38416896e3": {
+    "exampleJp": "長年の夢を簡単に打ち捨てることはできません。"
+  },
+  "bw-430f5dd4534e69bc": {
+    "exampleJp": "俳優の熱演に観客が拍手を送りました。"
+  },
+  "bw-f0910f2259da88c9": {
+    "exampleJp": "転勤に伴って社宅に引っ越しました。"
+  },
+  "bw-004c76c1448c3a51": {
+    "exampleJp": "運転中の脇見は危険です。"
+  },
+  "bw-7158005b78881716": {
+    "exampleJp": "五月の公園は青葉が鮮やかです。"
+  },
+  "bw-68a6144db8740e71": {
+    "exampleJp": "海沿いの市場で新鮮な魚介を買いました。"
+  },
+  "bw-798717a64bebc13a": {
+    "exampleJp": "池の周りをぐるりと一周しました。"
+  },
+  "bw-f59db6e87f619b91": {
+    "term": "PTA",
+    "reading": "ピーティーエー",
+    "exampleJp": "来週、PTAの集まりがあります。"
+  },
+  "bw-51db10ef0709a539": {
+    "exampleJp": "リサイクルショップで机を買いました。"
+  },
+  "bw-874bcddaa123c279": {
+    "exampleJp": "雨の日はレインシューズを履きます。"
+  },
+  "bw-e19c96faaa187d08": {
+    "exampleJp": "国民年金の手続きを窓口で確認しました。"
+  },
+  "bw-d59ad8ca51440532": {
+    "exampleJp": "小麦粉に水を加えて生地を捏ねます。"
+  },
+  "bw-8f05bd52f63c49c7": {
+    "exampleJp": "夜遅くに油っこい物を食べるのは控えています。"
+  },
+  "bw-4b78dc7cfdead0e5": {
+    "exampleJp": "古いソファーを粗大ごみとして出しました。"
+  },
+  "bw-005702a655dfbeb4": {
+    "meaningZh": "近世（日本史通常指安土桃山时代至江户时代）",
+    "english": "early modern period",
+    "exampleJp": "授業で日本の近世の歴史を学びました。"
+  },
+  "bw-50d149030d15da64": {
+    "exampleJp": "大阪で焼きたてのたこ焼きを食べました。"
+  },
+  "bw-7a73dd29e97008f5": {
+    "english": "with a start",
+    "exampleJp": "呼ばれてハッと顔を上げました。"
+  },
+  "bw-54bf31ff64d63db4": {
+    "exampleJp": "公害病の被害について資料館で学びました。"
+  },
+  "bw-1c28f47b64982b2c": {
+    "exampleJp": "台風は島の南西にあります。"
+  },
+  "bw-6488199932bd1f11": {
+    "exampleJp": "選手たちはネットを挟んでボールを打ち合いました。"
+  },
+  "bw-2e62f7fb75d75733": {
+    "exampleJp": "目に異物が入ったので水で洗いました。"
+  },
+  "bw-e9f2864ab6f31f06": {
+    "term": "しわしわ",
+    "reading": "しわしわ",
+    "exampleJp": "かばんの中でシャツが皺皺になりました。"
+  },
+  "bw-d0a44eff907c616e": {
+    "exampleJp": "結婚して同じ籍に入りました。"
+  },
+  "bw-2cc2accb330fd337": {
+    "exampleJp": "健康のために薄味の料理を心掛けています。"
+  },
+  "bw-cfd8028f4e9434c8": {
+    "exampleJp": "英語のヒアリングを毎日練習しています。"
+  },
+  "bw-b430f500233bf725": {
+    "exampleJp": "今日は算数で割り算を習いました。"
+  },
+  "bw-396413777093a75a": {
+    "exampleJp": "寒さを避けて鳥の群れが南下します。"
+  },
+  "bw-66c472ae8d933b76": {
+    "exampleJp": "翻訳ではなく原著を読んでみたいです。"
+  },
+  "bw-c4fef656cb1cefc2": {
+    "exampleJp": "同好の仲間と週末に写真を撮っています。"
+  },
+  "bw-5c95401c35f70db7": {
+    "exampleJp": "二人は再会を固く契りました。"
+  },
+  "bw-664a27fe6a5941b3": {
+    "exampleJp": "月の満ち欠けを一か月観察しました。"
+  },
+  "bw-8ac1ad373d81fbe5": {
+    "exampleJp": "ベランダの物干しに洗濯物を掛けました。"
+  },
+  "bw-cfa2ef3477c903c2": {
+    "exampleJp": "この唐辛子は辛みが強いです。"
+  },
+  "bw-0cb42b42779444a8": {
+    "exampleJp": "鮪の刺身を夕食に食べました。"
+  },
+  "bw-b128ac1b84260669": {
+    "exampleJp": "参加者をランダムに二つの組に分けました。"
+  },
+  "bw-10c335ac64def0b6": {
+    "exampleJp": "授業中の不真面目な態度を注意されました。"
+  },
+  "bw-45e27c9567c86c9c": {
+    "meaningZh": "本金；本钱",
+    "exampleJp": "毎月少しずつ借金の元金を返しています。"
+  },
+  "bw-3a1dafcdeeb42858": {
+    "exampleJp": "車の加速度を測定しました。"
+  },
+  "bw-1fd50a4ceef2db16": {
+    "exampleJp": "煮物に味醂を少し加えました。"
+  },
+  "bw-5b9b65467525df20": {
+    "english": "Yamato",
+    "exampleJp": "大和は現在の奈良県に当たる地域です。"
+  },
+  "bw-a8ba308f6f69110d": {
+    "exampleJp": "抹茶を点てて客に出しました。"
+  },
+  "bw-35762c4a5fe8fd84": {
+    "exampleJp": "入口で押し合うのはやめてください。"
+  },
+  "bw-91f191b11917f9bd": {
+    "exampleJp": "公園を通るのが駅への早道です。"
+  },
+  "bw-a3074e1f199aebb1": {
+    "exampleJp": "にんじんを細い棒状に切ってください。"
+  },
+  "bw-72d46df47bb05e7f": {
+    "exampleJp": "強い力が加わって枠に歪みが生じました。"
+  },
+  "bw-a992e4d6a951e488": {
+    "exampleJp": "若手社員を責任者に登用しました。"
+  },
+  "bw-8059d20df359f830": {
+    "english": "yes, yes",
+    "exampleJp": "彼はへいへいと返事をしただけで動きませんでした。"
+  },
+  "bw-91593f5481a58421": {
+    "exampleJp": "ネガティブな考えから抜け出したいです。"
+  },
+  "bw-b97ee6c9b9027dbc": {
+    "exampleJp": "打ち合わせが終わり次第、帰社します。"
+  },
+  "bw-6ac2b0c885064b50": {
+    "exampleJp": "川沿いに黄色い菜の花が咲いています。"
+  },
+  "bw-48dd85a0c85ac82c": {
+    "exampleJp": "節分の日に家族で豆撒きをしました。"
+  },
+  "bw-4eaea1593a8dc951": {
+    "term": "元",
+    "reading": "もと",
+    "meaningZh": "根源；起源；基础",
+    "english": "origin; source",
+    "exampleJp": "この湖が川の元になっています。"
+  },
+  "bw-8dce7f165db8fe6c": {
+    "exampleJp": "分数の足し算を練習しました。"
+  },
+  "bw-12abd74a7d7dde7f": {
+    "meaningZh": "厚生年金（面向公司职员等的日本公共养老金）",
+    "english": "employees pension",
+    "exampleJp": "就職後、厚生年金に加入しました。"
+  },
+  "bw-136389be51dbca97": {
+    "exampleJp": "新郎は緊張した様子で挨拶しました。"
+  },
+  "bw-471c91d9613e1e95": {
+    "exampleJp": "刺身の盛り合わせを注文しました。"
+  },
+  "bw-98642d5c2a039942": {
+    "exampleJp": "この漢字の音読みは「セン」です。"
+  },
+  "bw-c14cf4d5be3fcc0e": {
+    "exampleJp": "うつ状態について医師に相談しました。"
+  },
+  "bw-7d8bdf36ff4b0a29": {
+    "exampleJp": "商品についてのお問い合わせはメールでお願いします。"
+  },
+  "bw-8cbcc8c57a059258": {
+    "exampleJp": "注意されて子供はしゅんとしていました。"
+  },
+  "bw-eaea81fbdb38e1eb": {
+    "exampleJp": "猫が椅子からすとんと降りました。"
+  },
+  "bw-124620bcee74dc67": {
+    "term": "だらだら",
+    "reading": "だらだら",
+    "english": "in a continuous stream",
+    "exampleJp": "汗が額からだらだらと流れます。"
+  },
+  "bw-d70ff0de19f85246": {
+    "exampleJp": "おいしくてついつい食べすぎました。"
+  },
+  "bw-82d33ee93820382a": {
+    "exampleJp": "季節の野菜をふんだんに使った料理です。"
+  },
+  "bw-8d4857cb0201a823": {
+    "exampleJp": "この施設では様々なエンターテインメントを楽しめます。"
+  },
+  "bw-6af5cd7db5f07c69": {
+    "exampleJp": "パンフレットはオフセット印刷で作りました。"
+  },
+  "bw-173cf2740803d414": {
+    "exampleJp": "この部品にはカーボン素材が使われています。"
+  },
+  "bw-da476551c9ede1bc": {
+    "exampleJp": "グローバル化に伴って海外との取引が増えました。"
+  },
+  "bw-6037b0819fa60741": {
+    "exampleJp": "センサーが人の動きを感知して照明が付きます。"
+  },
+  "bw-e249ee5560380cac": {
+    "exampleJp": "工場は注文に応えるためにフル稼働しています。"
+  },
+  "bw-c6e68086e76c93a4": {
+    "exampleJp": "失敗してもプラス思考で次に挑戦します。"
+  },
+  "bw-d9dd3c532321ed37": {
+    "exampleJp": "水族館でペンギンが泳ぐ姿を見ました。"
+  },
+  "bw-b3d1c51a8d6ae9f5": {
+    "meaningZh": "积极的；正面的",
+    "exampleJp": "彼女はいつもポジティブに物事を考えます。"
+  },
+  "bw-fc5e5ef13579b08d": {
+    "exampleJp": "ポリバケツに水をくんで掃除に使いました。"
+  },
+  "bw-0c7d500468dd58b3": {
+    "exampleJp": "マイナス思考になりすぎないようにしています。"
+  },
+  "bw-3e5a42075e500bea": {
+    "exampleJp": "この書類には世帯主の名前を記入してください。"
+  },
+  "bw-1ebbbe3904e1c898": {
+    "exampleJp": "意味を理解せずに丸暗記するのは大変です。"
+  },
+  "bw-efd9db0aa6db6e7e": {
+    "exampleJp": "冬になると庭の木は葉が落ちて丸裸になります。"
+  },
+  "bw-4002a40e44e9bcfe": {
+    "term": "多民族",
+    "reading": "たみんぞく",
+    "english": "multiethnic",
+    "exampleJp": "この国は多民族が共に暮らす社会です。"
+  },
+  "bw-2b17175f3432fc05": {
+    "exampleJp": "少し褒めると彼はすぐに付け上がります。"
+  },
+  "bw-1f05295c96de2124": {
+    "meaningZh": "住民票；居民登记证明",
+    "exampleJp": "引っ越しの手続きで住民票の写しを取りました。"
+  },
+  "bw-dcabb248e2a26848": {
+    "exampleJp": "入居者には鍵を二本渡します。"
+  },
+  "bw-9cc3739a0b27416e": {
+    "exampleJp": "調査によって事件の全容が明らかになりました。"
+  },
+  "bw-db984b54ca3c1538": {
+    "exampleJp": "公共心を持って公園をきれいに使いましょう。"
+  },
+  "bw-2fc6faa3aa1bdd9e": {
+    "exampleJp": "初めて作った料理ですが、其れなりにおいしいです。"
+  },
+  "bw-93566b0a249eefdc": {
+    "english": "resource recycling project",
+    "exampleJp": "自治体が資源の再生事業を進めています。"
+  },
+  "bw-e7ba38f8564baf23": {
+    "exampleJp": "出入国の手続きに時間がかかりました。"
+  },
+  "bw-6046e285968e0730": {
+    "exampleJp": "道の分岐点に案内板があります。"
+  },
+  "bw-19678bc768fc16f5": {
+    "exampleJp": "初場所の取組をテレビで見ました。"
+  },
+  "bw-c1fde3adc253272d": {
+    "exampleJp": "原材料が値上がりして利幅が小さくなりました。"
+  },
+  "bw-9e4b9b7cb345f03d": {
+    "exampleJp": "父は長年、勤め人として働いてきました。"
+  },
+  "bw-30165402d57b472b": {
+    "english": "harm; kill",
+    "exampleJp": "人を危めるような行為は許されません。"
+  },
+  "bw-136c80602d5563d5": {
+    "english": "cost ratio",
+    "exampleJp": "売上に対する原価率を計算しました。"
+  },
+  "bw-c5252b7853c36e8b": {
+    "exampleJp": "申請内容を原票と照合しました。"
+  },
+  "bw-8eacafa051a91547": {
+    "meaningZh": "反社会的",
+    "exampleJp": "反社会的な行動が問題になっています。"
+  },
+  "bw-4fa6a081e4dd08d4": {
+    "exampleJp": "放送の受信料を口座振替で支払っています。"
+  },
+  "bw-a6584ae18502ec77": {
+    "meaningZh": "领取补助、养老金等款项",
+    "exampleJp": "給付金の受給には申請が必要です。"
+  },
+  "bw-ed7f16caa1608f11": {
+    "exampleJp": "大学で写真の同好会に入りました。"
+  },
+  "bw-62deb63b027750fb": {
+    "exampleJp": "今年度の営業利益は前年を上回りました。"
+  },
+  "bw-9cdc94be418a710a": {
+    "exampleJp": "アンケートの回答者は三百人でした。"
+  },
+  "bw-136f599d373d655a": {
+    "exampleJp": "入学祝いに図書券をもらいました。"
+  },
+  "bw-9a235fc6759d2c3c": {
+    "exampleJp": "この研究は国費で支援されています。"
+  },
+  "bw-176da4f580ae3133": {
+    "exampleJp": "在外の日本人にも知らせが届きました。"
+  },
+  "bw-9fdddc7ddb5fb181": {
+    "exampleJp": "在校生が新入生を案内しました。"
+  },
+  "bw-09936fe72a8dc4d7": {
+    "exampleJp": "子供たちは地べたに座って遊んでいます。"
+  },
+  "bw-ccfce68275d31fa0": {
+    "meaningZh": "基础疾病",
+    "exampleJp": "診察時に基礎疾患の有無を確認されました。"
+  },
+  "bw-90eeee1793dcf39c": {
+    "exampleJp": "厚い壁が外界の音を遮っています。"
+  },
+  "bw-f8c555c46dff8240": {
+    "english": "major premise; prerequisite",
+    "exampleJp": "安全を確保することが計画の大前提です。"
+  },
+  "bw-937111f4d1fb53a6": {
+    "exampleJp": "丁寧な挨拶が好印象を与えました。"
+  },
+  "bw-7329ef899fddf78a": {
+    "meaningZh": "委托书；授权书",
+    "english": "power of attorney",
+    "exampleJp": "代理人が手続きをする場合は委任状が必要です。"
+  },
+  "bw-d1b63b75b596a815": {
+    "exampleJp": "学芸会で子供たちが劇を発表しました。"
+  },
+  "bw-62f818bee3859cfc": {
+    "exampleJp": "夕食後は家族団欒の時間を楽しみます。"
+  },
+  "bw-52939b2f917760bd": {
+    "exampleJp": "警戒している猫は人に寄り付きません。"
+  },
+  "bw-796f8a0a37c2f81a": {
+    "exampleJp": "最近は寝つきがよく、朝までぐっすり眠れます。"
+  },
+  "bw-cd6eb290c4c82cf9": {
+    "exampleJp": "その決めぜりふは彼の専売特許です。"
+  },
+  "bw-e9973d24c7fbd891": {
+    "exampleJp": "電車に間に合うように駅まで小走りで向かいました。"
+  },
+  "bw-06856ed0e71e1d66": {
+    "exampleJp": "鉛筆の先をナイフで尖らしました。"
+  },
+  "bw-02ebe1f99612f206": {
+    "exampleJp": "公園に若者の屯ができていました。"
+  },
+  "bw-8eabda2696e6da64": {
+    "exampleJp": "その力士は来場所から幕内に上がります。"
+  },
+  "bw-3be3a51ac96fe6a8": {
+    "english": "publicity expenses",
+    "exampleJp": "新商品の広報費を予算に計上しました。"
+  },
+  "bw-afb6b10981371c9b": {
+    "exampleJp": "今年の利用者数は前年より微増しました。"
+  },
+  "bw-4d149d355a9855ea": {
+    "exampleJp": "授業で様々な徳目について話し合いました。"
+  },
+  "bw-0f76ad83493d9dd1": {
+    "exampleJp": "乗客が我先に出口へ向かいました。"
+  },
+  "bw-2ae095ddad96018a": {
+    "exampleJp": "子供たちは我勝ちに手を挙げました。"
+  },
+  "bw-f2f62e3e0a40c0a4": {
+    "exampleJp": "先生から手厳しい批評を受けました。"
+  },
+  "bw-98cdc99a53da11af": {
+    "exampleJp": "折りしも、外では雨が降り始めました。"
+  },
+  "bw-3407efbe050db5ff": {
+    "exampleJp": "新聞の折り込み広告で特売を知りました。"
+  },
+  "bw-99e14d4fc880e706": {
+    "exampleJp": "拾得物は駅の窓口に届けてください。"
+  },
+  "bw-5cf255e845b7ca3e": {
+    "exampleJp": "暑いのでシャツの袖を捲りました。"
+  },
+  "bw-2206e8a25fd25bfa": {
+    "exampleJp": "忙しい中でも勉強する時間を捻り出しています。"
+  },
+  "bw-0686ee02839afa48": {
+    "exampleJp": "文部科学省の発表を確認しました。"
+  },
+  "bw-3d987b65566cef90": {
+    "english": "appear on a screen",
+    "exampleJp": "画面に会場の様子が映り出しました。"
+  },
+  "bw-c45e35374cfd1c9d": {
+    "exampleJp": "この催しには未就学児童も参加できます。"
+  },
+  "bw-5bb95fcee92589d1": {
+    "exampleJp": "未登録の利用者は先に登録してください。"
+  },
+  "bw-191086f4420a0946": {
+    "exampleJp": "この飲み物には果汁が三十パーセント含まれています。"
+  },
+  "bw-8c74b2d06e0f1ceb": {
+    "exampleJp": "冷えた体に温かいスープが染み入ります。"
+  },
+  "bw-ec29a05093fbecea": {
+    "exampleJp": "食品に含まれる栄養素を調べました。"
+  },
+  "bw-dc06b2429d4fbe07": {
+    "exampleJp": "この布は植物繊維から作られています。"
+  },
+  "bw-9a3b538f81c9e657": {
+    "meaningZh": "横纲（相扑最高等级）",
+    "exampleJp": "横綱が土俵入りを披露しました。"
+  },
+  "bw-9411025868ec406e": {
+    "exampleJp": "学校に欠席届を提出しました。"
+  },
+  "bw-29db327d7320bfa7": {
+    "exampleJp": "次世代を担う子供たちを支援します。"
+  },
+  "bw-bd4fcdf9b3f5fc7b": {
+    "exampleJp": "悪天候なら中止も止む無いでしょう。"
+  },
+  "bw-bd4f5da7c791baf3": {
+    "english": "kill",
+    "exampleJp": "小説の主人公は人を殺めたことを悔いています。"
+  },
+  "bw-368b2018c12f45c3": {
+    "exampleJp": "人を殺傷する事件が起き、警察が捜査しています。"
+  },
+  "bw-d52c354187909623": {
+    "exampleJp": "水飴を加えて菓子に甘みを付けました。"
+  },
+  "bw-fd9a1243e03d3e77": {
+    "exampleJp": "永住権の申請に必要な書類を調べました。"
+  },
+  "bw-5fb0c59892fa2ba0": {
+    "exampleJp": "汚損した紙幣を銀行に持って行きました。"
+  },
+  "bw-9e0a571e49a1679a": {
+    "english": "life as a student retaking entrance exams",
+    "exampleJp": "彼は一年の浪人暮らしを経て大学に合格しました。"
+  },
+  "bw-be2a4ad302e6e24b": {
+    "exampleJp": "ストーブに点火すると部屋が暖まりました。"
+  },
+  "bw-8cc64b71e9a13b8b": {
+    "exampleJp": "画鋲でポスターを壁に留めました。"
+  },
+  "bw-9826b448b450708a": {
+    "meaningZh": "临终照护；看护至最后",
+    "english": "care for someone at the end of life",
+    "exampleJp": "家族は最期まで祖母を看取りました。"
+  },
+  "bw-a5f6fd9b65294061": {
+    "exampleJp": "乾いた木に着火して火をおこしました。"
+  },
+  "bw-8f33751e821925ac": {
+    "exampleJp": "人気の切符は瞬く間に売り切れました。"
+  },
+  "bw-cd80e093fe57f8d5": {
+    "meaningZh": "恭顺；老实；严肃认真",
+    "exampleJp": "子供は神妙な顔で話を聞いていました。"
+  },
+  "bw-ad108da073425906": {
+    "exampleJp": "就職先を選ぶときは福利厚生も確認します。"
+  },
+  "bw-4bff843516df82df": {
+    "exampleJp": "人前で大声で騒ぐのは端ない行為です。"
+  },
+  "bw-94b07c1333d9acf8": {
+    "meaningZh": "继续承担某事的人；继承者",
+    "english": "successor",
+    "exampleJp": "事業の継続者を探しています。"
+  },
+  "bw-6f3947e177f48779": {
+    "exampleJp": "総務省が公表した統計を調べました。"
+  },
+  "bw-2c02957427ea9c4a": {
+    "meaningZh": "（肩身が狭い等）处境；面子",
+    "english": "social standing",
+    "exampleJp": "約束を破ってしまい、肩身が狭いです。"
+  },
+  "bw-115d393c7e8acb19": {
+    "exampleJp": "この小説では主人公の自己愛が描かれています。"
+  },
+  "bw-3cbfa60c105f13c5": {
+    "exampleJp": "昔は女性に良妻賢母の役割が求められました。"
+  },
+  "bw-12117489ef7ef7eb": {
+    "english": "large taro root",
+    "exampleJp": "芋頭を煮物にして食べました。"
+  },
+  "bw-157cbd44b625307b": {
+    "exampleJp": "衆院選の結果が新聞に載っています。"
+  },
+  "bw-82399b17c04a2fb3": {
+    "exampleJp": "衝動的に買わず、一晩考えることにしています。"
+  },
+  "bw-b4262a7d5abc07eb": {
+    "exampleJp": "着物の袂から手紙を取り出しました。"
+  },
+  "bw-99562860b7d45817": {
+    "exampleJp": "扇の要が緩んでしまいました。"
+  },
+  "bw-ad0c837999e34aa5": {
+    "exampleJp": "大学の要覧で授業内容を確認しました。"
+  },
+  "bw-3c461045325d7c27": {
+    "english": "permit certificate",
+    "exampleJp": "入口で許可証明書を提示しました。"
+  },
+  "bw-aed2bb79484bcf30": {
+    "exampleJp": "寮の談話室で友人と話しました。"
+  },
+  "bw-eff48428120dd86d": {
+    "meaningZh": "追击；再加打击",
+    "exampleJp": "失敗した彼にさらに追い討ちをかけるのはやめよう。"
+  },
+  "bw-fdf330a9204ee395": {
+    "exampleJp": "都心部は家賃が高い傾向があります。"
+  },
+  "bw-2d41ca52659f36fd": {
+    "exampleJp": "酒浸りの生活を改めようと決心しました。"
+  },
+  "bw-750165ae52d23575": {
+    "exampleJp": "この飲料には酸味料が使われています。"
+  },
+  "bw-a5b5baa07331d80c": {
+    "exampleJp": "入口に防犯カメラを設置しました。"
+  },
+  "bw-d1b7f6f71ce7cbbb": {
+    "exampleJp": "私たちは非営利の団体で活動しています。"
+  },
+  "bw-b97ec20adfdf51db": {
+    "exampleJp": "会議にはいつもの顔ぶれがそろいました。"
+  },
+  "bw-577a3cb8368c1175": {
+    "meaningZh": "长距离接力赛跑",
+    "exampleJp": "駅伝では選手がたすきをつなぎます。"
+  },
+  "bw-373a69bcb70ae977": {
+    "exampleJp": "かつての栄華をしのばせる建物です。"
+  },
+  "bw-ca661e3adf53b48e": {
+    "exampleJp": "彼は気まずそうに外方を向きました。"
+  },
+  "bw-90902560f6cf9815": {
+    "exampleJp": "うちの倅も来年は社会人です。"
+  },
+  "bw-6329803a2b407413": {
+    "exampleJp": "販売店のマージンを考慮して価格を決めました。"
+  },
+  "bw-cefcfd383c5e20d6": {
+    "exampleJp": "地域で環境保全の啓蒙活動をしています。"
+  },
+  "bw-b99304f42b31c371": {
+    "exampleJp": "私は法律については門外漢です。"
+  },
+  "bw-6e57857ded5336bb": {
+    "exampleJp": "このふたは容器にぴったり嵌まります。"
+  },
+  "bw-48a19761891c0704": {
+    "exampleJp": "今日は嫌に静かですね。"
+  },
+  "bw-3e3630ef78113706": {
+    "exampleJp": "授業でアニミズムという考え方を学びました。"
+  },
+  "bw-c4a6f2da52bad7d5": {
+    "exampleJp": "小さな努力の積み重ねが、延いては大きな成果につながります。"
+  },
+  "bw-1c9b8000564f1793": {
+    "exampleJp": "知っているのに惚けるのはやめてください。"
+  },
+  "bw-ef3f32fcb03b1043": {
+    "exampleJp": "これは有り触れた日常の風景です。"
+  },
+  "bw-7ce18d1e63cf276c": {
+    "exampleJp": "予てからお会いしたいと思っていました。"
+  },
+  "bw-77dd487a62ed56ac": {
+    "exampleJp": "心に残った名言を手帳に書きました。"
+  },
+  "bw-ed4be1ba2fc78dc1": {
+    "exampleJp": "担当者が便宜を計らってくれました。"
+  },
+  "bw-81d9e0b12c36d58d": {
+    "exampleJp": "このサイトには動画のコンテンツが充実しています。"
+  },
+  "bw-a6be9d8ca03f26f0": {
+    "english": "aftereffect; sequela",
+    "exampleJp": "事故の後遺症について医師に相談しています。"
+  },
+  "bw-9c19f10c74b3c387": {
+    "exampleJp": "祖父は店を息子に譲って隠居しました。"
+  },
+  "bw-299b9baf8067f452": {
+    "exampleJp": "交通安全の標語を考えました。"
+  },
+  "bw-6b32e1f8d3b45347": {
+    "exampleJp": "この港では海運業が発達しています。"
+  },
+  "bw-f6988a2b0b2685b2": {
+    "exampleJp": "ビジュアルを重視して資料を作りました。"
+  },
+  "bw-28de21c412439c0b": {
+    "exampleJp": "大会には多くのボランティアが動員されました。"
+  },
+  "bw-029785eb0935b672": {
+    "exampleJp": "映像にナレーションを付けました。"
+  },
+  "bw-972d9a13ebf59bfb": {
+    "exampleJp": "大切な書類を同僚に託しました。"
+  },
+  "bw-9f8ca5d9989b3231": {
+    "exampleJp": "彼はラジオのパーソナリティを務めています。"
+  },
+  "bw-0aec147daa38d333": {
+    "exampleJp": "上司から労いの言葉を掛けてもらいました。"
+  },
+  "bw-c264d951a3e396f9": {
+    "exampleJp": "人の悪口ばかり言うと品性を疑われます。"
+  },
+  "bw-1aa804e19cadc96c": {
+    "exampleJp": "このれんこんは歯応えがいいです。"
+  },
+  "bw-47be631d199937a9": {
+    "exampleJp": "魚が餌に食い付きました。"
+  },
+  "bw-b6c3cfbd0cfcb8e7": {
+    "exampleJp": "部屋のレイアウトを変えました。"
+  },
+  "bw-1b7f2b8164c4b5cf": {
+    "english": "likeness; portrait",
+    "exampleJp": "画家が私の似顔を描いてくれました。"
+  },
+  "bw-20801607067abae9": {
+    "exampleJp": "新しい掃除機の威力に驚きました。"
+  },
+  "bw-99be2ecef1876c93": {
+    "english": "liven up; heap up",
+    "exampleJp": "応援団が会場を盛り上げました。"
+  },
+  "bw-c42b971633d99729": {
+    "exampleJp": "急いでいたので碌な準備もできませんでした。"
+  },
+  "bw-c5eef3ef8c077cf5": {
+    "exampleJp": "長い試合を戦い抜くにはスタミナが必要です。"
+  },
+  "bw-637648b59f23caa2": {
+    "exampleJp": "彼は大きな旗を振り翳して応援しました。"
+  },
+  "bw-6d9cabed59498e97": {
+    "exampleJp": "選手は体力の極限に挑みました。"
+  },
+  "bw-b3f4436471a3b06b": {
+    "exampleJp": "遠く離れた故郷に思いを馳せました。"
+  },
+  "bw-8d6ce72d28cd9edb": {
+    "exampleJp": "本の後記に執筆の経緯が書かれています。"
+  },
+  "bw-ec11a3ba18c4cd4b": {
+    "exampleJp": "昨夜は本を読んで夜を更かしました。"
+  },
+  "bw-334d5199b4630882": {
+    "exampleJp": "舞台の中央にスポットライトが当たりました。"
+  },
+  "bw-da4e6509becc9555": {
+    "exampleJp": "その作品には当時の世態が描かれています。"
+  },
+  "bw-55e65acdfbcebc1c": {
+    "exampleJp": "壁から釘が出っ張っています。"
+  },
+  "bw-7199b759f5b4d967": {
+    "exampleJp": "この研究では人口の静態を分析しています。"
+  },
+  "bw-843f0ded84b58273": {
+    "term": "ややもすると",
+    "reading": "ややもすると",
+    "meaningZh": "动不动就；很容易",
+    "english": "be apt to",
+    "exampleJp": "忙しいと、ややもすると休憩を忘れがちです。"
+  },
+  "bw-d1e50ede68f682fa": {
+    "meaningZh": "若无其事；完全恢复的样子",
+    "english": "as if nothing had happened",
+    "exampleJp": "さっきまで泣いていた子供がケロッとしています。"
+  },
+  "bw-8096c554bafbcad0": {
+    "exampleJp": "ロープウェイで山頂に上がりました。"
+  },
+  "bw-e4f25ac9ab38eead": {
+    "exampleJp": "その会社は他社に先駆けて新製品を発売しました。"
+  },
+  "bw-dbe68d85ddb07ecb": {
+    "exampleJp": "大皿の料理は取り箸で取ってください。"
+  },
+  "bw-6bd37923bae22367": {
+    "exampleJp": "地域の将来を憂える声が上がっています。"
+  },
+  "bw-fe63bf4d0bc5a687": {
+    "exampleJp": "空港で動物の検疫を受けました。"
+  },
+  "bw-ff709a259a743191": {
+    "exampleJp": "自転車置き場は建物の裏にあります。"
+  },
+  "bw-af0ab1d44559fe16": {
+    "exampleJp": "引っ越してから近所付き合いが増えました。"
+  },
+  "bw-980cf5790d3d084f": {
+    "exampleJp": "葬儀で香典を渡しました。"
+  },
+  "bw-7e3949ac9dc2bbc4": {
+    "exampleJp": "強く押しても扉はびくともしません。"
+  },
+  "bw-b9af16e930f44f2c": {
+    "exampleJp": "子供と一緒にアニメーション映画を見ました。"
+  },
+  "bw-8e1230afadabde6f": {
+    "exampleJp": "処方された内服薬の説明を薬剤師に聞きました。"
+  },
+  "bw-c48aaf4223f9a9ba": {
+    "exampleJp": "川底に砂が堆積しています。"
+  },
+  "bw-0221f22d3329d02a": {
+    "exampleJp": "彼女は大会で新記録を打ち立てました。"
+  },
+  "bw-4530b18009ebffea": {
+    "meaningZh": "投身；纵身跳下",
+    "english": "throwing oneself down",
+    "exampleJp": "その小説は主人公の投身をめぐる事件を描いています。"
+  },
+  "bw-e7cb78f8a192c57b": {
+    "exampleJp": "公園で野良犬を見かけました。"
+  },
+  "bw-80baf5dd0124c2e4": {
+    "exampleJp": "災害に備えて非常食を用意しました。"
+  },
+  "bw-bf0138f2b9327531": {
+    "exampleJp": "彼はチームの中堅として活躍しています。"
+  },
+  "bw-94ece3a69327b900": {
+    "english": "skin lotion",
+    "exampleJp": "洗顔後に乳液を使っています。"
+  },
+  "bw-4ab7f62fec9e9776": {
+    "exampleJp": "ここが二つの道の分かれ目です。"
+  },
+  "bw-488fe1dbb49363bf": {
+    "english": "neighborhood circular notice",
+    "exampleJp": "回覧板を読んでから隣の家へ回しました。"
+  },
+  "bw-3951018bf7cfc60e": {
+    "exampleJp": "兄は大学の水球チームに入っています。"
+  },
+  "bw-1cd919b6d0d62b49": {
+    "exampleJp": "その小説は異邦人の視点から町を描いています。"
+  },
+  "bw-633b061d9c6d50cb": {
+    "exampleJp": "窓から移り変わる季節を眺めています。"
+  },
+  "bw-c1fae0261b96f2f7": {
+    "exampleJp": "この会社が橋の建設工事を落札しました。"
+  },
+  "bw-2ad57f53a451123c": {
+    "exampleJp": "僭越ながら、私から一言ご挨拶を申し上げます。"
+  },
+  "bw-1f76b2677a8e1f3c": {
+    "exampleJp": "二人の仲のよさには妬けますね。"
+  },
+  "bw-6a37f51af3ce567e": {
+    "exampleJp": "大学を卒業して学士の学位を取得しました。"
+  },
+  "bw-77af662e060e2a05": {
+    "meaningZh": "原本就属于或常住某家的",
+    "exampleJp": "祖父は家付きの使用人がいた時代の話をしました。"
+  },
+  "bw-8afdab763d144385": {
+    "exampleJp": "美術が好きな人には必見の展覧会です。"
+  },
+  "bw-b67564a9cb0f0024": {
+    "exampleJp": "遠くの山が霧で暈けて見えます。"
+  },
+  "bw-1e7a28841e195561": {
+    "exampleJp": "極言すれば、この計画は初めから無理だったのです。"
+  },
+  "bw-04b957b45655b58b": {
+    "exampleJp": "物音を聞いて息を潜めました。"
+  },
+  "bw-27007cdc42c89c96": {
+    "exampleJp": "住所変更を総務部に届けました。"
+  },
+  "bw-d904f1b862e31a03": {
+    "meaningZh": "势力范围；地盘",
+    "english": "territory",
+    "exampleJp": "猫は自分の縄張りを守ろうとします。"
+  },
+  "bw-976700064d748f34": {
+    "exampleJp": "聞き間違いがないように、もう一度確認しました。"
+  },
+  "bw-473a6fba8501cc38": {
+    "exampleJp": "父は胃潰瘍の検査を受けました。"
+  },
+  "bw-b5d37468b77d0f9c": {
+    "exampleJp": "この町には昔の暮らしの面影が色濃く残っています。"
+  },
+  "bw-89ccee23e3634c4e": {
+    "exampleJp": "好きな選手に色紙へサインをしてもらいました。"
+  },
+  "bw-9b564595bfe7f940": {
+    "english": "passing by",
+    "exampleJp": "通り掛りの人に道を尋ねました。"
+  },
+  "bw-5cff88f9cf147c54": {
+    "exampleJp": "景気の回復が鈍化しています。"
+  },
+  "bw-00020cdf0c07fff1": {
+    "exampleJp": "この地域では風力を利用して発電しています。"
+  },
+  "bw-26fa5bff65c3375a": {
+    "exampleJp": "古い床板がぎちぎちと鳴ります。"
+  },
+  "bw-911b073df4320ab5": {
+    "exampleJp": "封筒に切手をぺたりと貼りました。"
+  },
+  "bw-bcdeb1b5cff5eba6": {
+    "english": "intently",
+    "exampleJp": "彼は写真をまじまじと見つめました。"
+  },
+  "bw-d7410cbf4e4e4a66": {
+    "exampleJp": "点線に沿って切り取り、提出してください。"
+  },
+  "bw-963eb20c80e90424": {
+    "exampleJp": "大雨で山道に土砂崩れが起きました。"
+  },
+  "bw-9ce6e4e29bc733da": {
+    "exampleJp": "休日の公園は家族連れでにぎわっています。"
+  },
+  "bw-b9a507bff4e115ad": {
+    "exampleJp": "「珈琲」は外来語に漢字を当てた当て字です。"
+  },
+  "bw-099ceb07b45b1b2d": {
+    "exampleJp": "外出前に日焼け止めを塗りました。"
+  },
+  "bw-dc3693e90b1799bd": {
+    "exampleJp": "川に仮設の橋を架設しました。"
+  },
+  "bw-5b81a6712dbf4a22": {
+    "exampleJp": "泡立てた洗顔料で顔を洗いました。"
+  },
+  "bw-27ddc07654268396": {
+    "exampleJp": "弁当に海苔巻きを入れました。"
+  },
+  "bw-9a0a8aa764dc1adb": {
+    "exampleJp": "夜になると無性に甘い物が食べたくなります。"
+  },
+  "bw-47bf581ab2427467": {
+    "exampleJp": "この神社は縁結びで知られています。"
+  },
+  "bw-b439db2cd9733d95": {
+    "exampleJp": "洗顔後に美容液を使っています。"
+  },
+  "bw-85637ddad1f6c284": {
+    "exampleJp": "かつてこの地域では鉱業が栄えていました。"
+  },
+  "bw-20198aee693d4e5b": {
+    "english": "without leaving home",
+    "exampleJp": "家にいながらにして買い物ができます。"
+  },
+  "bw-dfc032022a3d2272": {
+    "exampleJp": "小犬がきゃんきゃん鳴いています。"
+  },
+  "bw-e8eab0f66089338a": {
+    "exampleJp": "彼は人混みをずんずん進んでいきました。"
+  },
+  "bw-f529a420d529528d": {
+    "exampleJp": "金魚が口をぱくぱく動かしています。"
+  },
+  "bw-9f3913985f4786db": {
+    "exampleJp": "駅前のイベントホールで展示会が開かれます。"
+  },
+  "bw-109ab7d902a0ec98": {
+    "exampleJp": "今週は休日出勤の予定があります。"
+  },
+  "bw-a2bd982b382b99a4": {
+    "exampleJp": "コーヒーは私にとって大切な嗜好品です。"
+  },
+  "bw-6e8dba4617b5bd3f": {
+    "exampleJp": "地震で道路に大きな地割れができました。"
+  },
+  "bw-403df9fcf1bb4037": {
+    "exampleJp": "官房の担当者が会見の準備をしています。"
+  },
+  "bw-1d76ba6acec58d93": {
+    "exampleJp": "救急隊員が担架でけが人を運びました。"
+  },
+  "bw-903e9885ec5c1cc8": {
+    "exampleJp": "厳しい熱波が数日間続きました。"
+  },
+  "bw-b9f87a42972d577c": {
+    "meaningZh": "甜咸的",
+    "exampleJp": "肉を砂糖としょうゆで甘辛く煮ました。"
+  },
+  "bw-c6678b5c269cf85f": {
+    "exampleJp": "原料の値上がりで生産コストが増えました。"
+  },
+  "bw-edb815bcdbb59a4f": {
+    "meaningZh": "迷上；上瘾；患病",
+    "english": "become hooked on",
+    "exampleJp": "一度食べたらこの味に病み付いてしまいました。"
+  },
+  "bw-0a39ef0854244f04": {
+    "exampleJp": "課外活動で地域の清掃に参加しました。"
+  },
+  "bw-2aac1883ecd58111": {
+    "meaningZh": "若无其事；满不在乎；发呆的样子",
+    "english": "nonchalantly",
+    "exampleJp": "彼女は失敗した後もあっけらかんと笑っていました。"
+  },
+  "bw-785b4ef5bcf0e70f": {
+    "exampleJp": "こし餡の入ったまんじゅうを買いました。"
+  },
+  "bw-a4c9debd89b52abb": {
+    "english": "cash",
+    "exampleJp": "この店はキャッシュでしか支払えません。"
+  },
+  "bw-90fefcb1e1c6338e": {
+    "exampleJp": "魚の乱獲を防ぐ取り組みが進められています。"
+  },
+  "bw-6619029460271064": {
+    "exampleJp": "駅の近くで新築マンションを分譲しています。"
+  },
+  "bw-eb51cf022b34ea26": {
+    "meaningZh": "祛厄；除厄仪式",
+    "exampleJp": "神社で厄払いをしてもらいました。"
+  },
+  "bw-0fececac25d32abd": {
+    "exampleJp": "可燃ゴミは指定の袋に入れてください。"
+  },
+  "bw-01ac6743f805b120": {
+    "exampleJp": "喪中のため、新年の挨拶を控えました。"
+  },
+  "bw-7e12f0b8c620da27": {
+    "exampleJp": "夕食前におかずを摘まみ食いしました。"
+  },
+  "bw-9392b3555e88bcd3": {
+    "exampleJp": "封筒の宛名は横書きで記入しました。"
+  },
+  "bw-af6568629130e4af": {
+    "exampleJp": "彼はこの人気キャラクターの生みの親です。"
+  },
+  "bw-da476b30cd40d7d8": {
+    "english": "origin; reason",
+    "exampleJp": "この地名には歴史的な由縁があります。"
+  },
+  "bw-2e7b295dcd2bf1d1": {
+    "term": "程々",
+    "reading": "ほどほど",
+    "meaningZh": "适度；恰到好处",
+    "english": "moderation",
+    "exampleJp": "夜更かしは程程にしてください。"
+  },
+  "bw-b579a029cfd192ab": {
+    "exampleJp": "一人で全部を遣り切れないので、手伝ってください。"
+  },
+  "bw-e65492d93423e096": {
+    "meaningZh": "眉毛；眉笔等眉部化妆品",
+    "english": "eyebrow makeup",
+    "exampleJp": "アイブロウで眉の形を整えました。"
+  },
+  "bw-3b71fdadcffe0e3f": {
+    "exampleJp": "その俳優が商品のイメージキャラクターになりました。"
+  },
+  "bw-a721dff41dfd7d80": {
+    "exampleJp": "更新が終わったらパソコンを再起動してください。"
+  },
+  "bw-facd26fb36e507c0": {
+    "exampleJp": "及ばずながら、お手伝いさせていただきます。"
+  },
+  "bw-33ce749b2168c153": {
+    "exampleJp": "参加者には全員同額の謝礼が支払われます。"
+  },
+  "bw-c936d247cc20f562": {
+    "exampleJp": "大学で外食産業の経営を研究しています。"
+  },
+  "bw-8454ebc0cc29201b": {
+    "term": "おしめ",
+    "reading": "おしめ",
+    "meaningZh": "尿布",
+    "exampleJp": "赤ちゃんの御湿を取り替えました。"
+  },
+  "bw-b6fb1dfd7b5dc7d3": {
+    "exampleJp": "申込書の住所を書き間違いました。"
+  },
+  "bw-3d2b99b32d6011f6": {
+    "exampleJp": "朝礼で今日の予定を確認しました。"
+  },
+  "bw-c1830b5ac4d869f4": {
+    "exampleJp": "点線に沿って紙を折ってください。"
+  },
+  "bw-64f28396cd9991b8": {
+    "exampleJp": "古い町並みに瓦屋根の家が続いています。"
+  },
+  "bw-4f36a7dd8b31383e": {
+    "exampleJp": "よく磨いた床が艶艶しています。"
+  },
+  "bw-e4096d507775c10f": {
+    "exampleJp": "彼は人望が厚く、皆から頼りにされています。"
+  },
+  "bw-c1af367684def102": {
+    "exampleJp": "建て売りの住宅を購入しました。"
+  },
+  "bw-dbaa14b6bf9a1fb3": {
+    "exampleJp": "応募書類に略歴を添えてください。"
+  },
+  "bw-fc227eabbec714d6": {
+    "exampleJp": "彼は状況に応じてうまく立ち回ります。"
+  },
+  "bw-89c0697b7abdf269": {
+    "exampleJp": "老若を問わず多くの人が祭りに参加しました。"
+  },
+  "bw-2a16e5c5a8181882": {
+    "exampleJp": "作業を遣りっ放しにせず、最後まで片付けてください。"
+  },
+  "bw-193a621a3fa957f0": {
+    "english": "gushing continuously",
+    "exampleJp": "山の泉から水がこんこんと湧き出ています。"
+  },
+  "bw-68eaf9dc360808d5": {
+    "exampleJp": "子供たちは朝ご飯をもりもり食べています。"
+  },
+  "bw-21283dbb34ae5f46": {
+    "exampleJp": "休み時間になると教室はわいわいにぎわいます。"
+  },
+  "bw-242225d40f9220ed": {
+    "exampleJp": "一遍に全部を覚えようとしなくても大丈夫です。"
+  },
+  "bw-196a0648994f75ff": {
+    "term": "不燃ごみ",
+    "reading": "ふねんごみ",
+    "meaningZh": "不可燃垃圾",
+    "exampleJp": "割れた皿は不燃ごみとして出しました。"
+  },
+  "bw-e455c9643d60127f": {
+    "exampleJp": "この昆虫には共食いをする習性があります。"
+  },
+  "bw-79f662628c4d797f": {
+    "exampleJp": "分母をそろえて分数を足しました。"
+  },
+  "bw-2045276b3a1c5b1d": {
+    "exampleJp": "姉は洋楽を聞いて英語を勉強しています。"
+  },
+  "bw-9c601b385c8a74aa": {
+    "exampleJp": "船長が舵を取って港へ向かいました。"
+  },
+  "bw-1f51dcebcd5fa648": {
+    "exampleJp": "大阪の友達は関西弁で話します。"
+  },
+  "bw-eb5165749cd5d6cf": {
+    "exampleJp": "足の裏を擽ると子供が笑いました。"
+  },
+  "bw-db6e0a608105bd77": {
+    "exampleJp": "手を洗って黴菌を落としましょう。"
+  },
+  "bw-9229624630927a72": {
+    "exampleJp": "親に心配をかけてばかりで不孝をわびました。"
+  },
+  "bw-77489cb7f4ee18dd": {
+    "exampleJp": "おにぎりの中に梅干しを入れました。"
+  },
+  "bw-e73a37c1ab2a393e": {
+    "exampleJp": "大学でインターナショナルな交流会が開かれました。"
+  },
+  "bw-6bcf14aa2b90e5a9": {
+    "exampleJp": "子猫が円らな目でこちらを見ています。"
+  },
+  "bw-e0b5852fea6c3b95": {
+    "exampleJp": "雑誌の懸賞に応募しました。"
+  },
+  "bw-df7d8a82e619be8f": {
+    "exampleJp": "口の中でチョコレートが蕩けました。"
+  },
+  "bw-790ef4250ea27bdc": {
+    "exampleJp": "間違いを指摘されても平然としているとは鉄面皮だ。"
+  },
+  "bw-fe50f5ac8a107151": {
+    "exampleJp": "シルバーの指輪を誕生日にもらいました。"
+  },
+  "bw-7adf6d87a6e20ff3": {
+    "meaningZh": "护理；护发素",
+    "english": "hair treatment",
+    "exampleJp": "髪にトリートメントを付けてから洗い流しました。"
+  },
+  "bw-50343a618b11cd22": {
+    "english": "unavoidable",
+    "exampleJp": "工事のために迂回は余儀ないものとなりました。"
+  },
+  "bw-9d2d9a957ce2d107": {
+    "exampleJp": "冬眠中の動物を起こさないように観察しました。"
+  },
+  "bw-6c5626dacc69b428": {
+    "exampleJp": "物干しの竿に洗濯物を掛けました。"
+  },
+  "bw-50840986a6fa92be": {
+    "exampleJp": "商品の特徴を短いキャッチフレーズにしました。"
+  },
+  "bw-ba97bd4883ff1538": {
+    "exampleJp": "旅行では地元のグルメを楽しみたいです。"
+  },
+  "bw-20290d9207559650": {
+    "exampleJp": "祖母はグループホームで暮らしています。"
+  },
+  "bw-2e41afc6e95bea76": {
+    "exampleJp": "一年間休学して海外で学びました。"
+  },
+  "bw-9d601d8f7c8a8d07": {
+    "exampleJp": "ここは何の変哲もない静かな町です。"
+  },
+  "bw-c4cb9f9801fa85b9": {
+    "exampleJp": "油と水では比重が異なります。"
+  },
+  "bw-704265c322cdcfdb": {
+    "exampleJp": "この地域は治安がよく、夜も人通りがあります。"
+  },
+  "bw-8e04adfdf2e56ea9": {
+    "exampleJp": "次の準急に乗れば乗り換えずに行けます。"
+  },
+  "bw-6874181ce7f25ede": {
+    "exampleJp": "碁盤の上に白と黒の石が並んでいます。"
+  },
+  "bw-1fa451dea97359ad": {
+    "exampleJp": "その新聞が大きなスクープを報じました。"
+  },
+  "bw-067f18b63f96c3b2": {
+    "exampleJp": "「サラリーマン」は和製英語の一つです。"
+  },
+  "bw-17e5e432022729f3": {
+    "exampleJp": "応募の前に募集要項をよく読んでください。"
+  },
+  "bw-2a9c69a67100742d": {
+    "exampleJp": "資料館に当時の軍服が展示されています。"
+  },
+  "bw-0a68225cd0eb033c": {
+    "exampleJp": "雨が強いので出発を一時間遅らしました。"
+  },
+  "bw-3b61c9e6fa27ac0b": {
+    "exampleJp": "資料を年代別に類別しました。"
+  },
+  "bw-22b5fa4a372583c7": {
+    "exampleJp": "アイライナーで細い線を引きました。"
+  },
+  "bw-1c1d07db71731326": {
+    "exampleJp": "海外の友人にエアメールを送りました。"
+  },
+  "bw-3af9e51b69dd66f1": {
+    "exampleJp": "顕微鏡の倍率を上げて観察しました。"
+  },
+  "bw-426e318715840769": {
+    "english": "replacement",
+    "exampleJp": "電池の取替えが必要です。"
+  },
+  "bw-fba7d99676004d84": {
+    "exampleJp": "有識者の意見を参考にして制度を見直しました。"
+  },
+  "bw-4808de6af02c0210": {
+    "exampleJp": "地域の民俗を伝える祭りが続いています。"
+  },
+  "bw-f61d907a7af42d4b": {
+    "exampleJp": "美術の授業で木の版画を作りました。"
+  },
+  "bw-42f96a38bee600d5": {
+    "exampleJp": "品質に応じて商品の等級を分けました。"
+  },
+  "bw-ba917ef156580d4c": {
+    "exampleJp": "自転車のサドルで股が痛くなりました。"
+  },
+  "bw-350a92dfbb0ee347": {
+    "exampleJp": "この滝は落差が三十メートルあります。"
+  },
+  "bw-4e00dd00fcadf368": {
+    "exampleJp": "この草原では家畜を連れた遊牧が行われています。"
+  },
+  "bw-b9905bac477059bc": {
+    "exampleJp": "これを以て本日の会議を終わります。"
+  },
+  "bw-17af1ed8aa2acc81": {
+    "exampleJp": "足の裏を触られると擽ったいです。"
+  },
+  "bw-18dc9041cbb33e12": {
+    "exampleJp": "庭で採れた梅で果実酒を作りました。"
+  },
+  "bw-379bb47fd364ad76": {
+    "exampleJp": "この城には昔、殿様が住んでいました。"
+  },
+  "bw-852c6c69f018ea08": {
+    "exampleJp": "留学のために来月、海外へ渡航します。"
+  },
+  "bw-b8947dce860f9284": {
+    "exampleJp": "開けたままのせんべいが湿気ってしまいました。"
+  },
+  "bw-f49a31e61013cf54": {
+    "exampleJp": "産後は家族の助けを借りて過ごしました。"
+  },
+  "bw-34510dde966c3134": {
+    "exampleJp": "この町は紡績の工場が多いことで知られています。"
+  },
+  "bw-346b249a6c05aa53": {
+    "meaningZh": "沾光；希望得到同样的好运",
+    "exampleJp": "彼の幸運に肖りたいものです。"
+  },
+  "bw-c91cfc7efdc4d6d2": {
+    "exampleJp": "長い間、雨風が建物を蝕んできました。"
+  },
+  "bw-7185244858ad8b2b": {
+    "exampleJp": "トンネル内の非常電話で助けを求めました。"
+  },
+  "bw-b44870dfec5bbe84": {
+    "exampleJp": "広場は祭りの見物客で埋め尽くされました。"
+  },
+  "bw-7c5eb2c679386a94": {
+    "exampleJp": "密やかな足音が廊下に響きました。"
+  },
+  "bw-575f452338215ac1": {
+    "exampleJp": "専門的な内容を通俗な言葉で説明しました。"
+  },
+  "bw-35036dffcb1172a4": {
+    "meaningZh": "静静地；感伤地",
+    "english": "quietly and sentimentally",
+    "exampleJp": "二人は昔の思い出をしんみりと語りました。"
+  },
+  "bw-cd729ad91df2843f": {
+    "exampleJp": "看板に店の名前がでかでかと書いてあります。"
+  },
+  "bw-a17547bcc82cedb0": {
+    "exampleJp": "氏名並びに連絡先を記入してください。"
+  },
+  "bw-9efa45207037ff90": {
+    "exampleJp": "猫が窓辺で日なたぼっこをしています。"
+  },
+  "bw-eb647e1edce3b816": {
+    "english": "interpersonal",
+    "exampleJp": "接客の仕事では対人能力が求められます。"
+  },
+  "bw-9a92612934a391a8": {
+    "exampleJp": "洪水で橋の一部が流失しました。"
+  },
+  "bw-7d7185d71a885e59": {
+    "exampleJp": "終戦直後の闇市について写真で学びました。"
+  },
+  "bw-80a610cda1ea728c": {
+    "exampleJp": "授業の最後に今日のお浚いをしました。"
+  },
+  "bw-27e4798cb24904a9": {
+    "exampleJp": "熱でプラスチックがぐにゃぐにゃになりました。"
+  },
+  "bw-3fcd01a592801759": {
+    "exampleJp": "桜の花びらが一枚はらりと落ちました。"
+  },
+  "bw-f20ef24b265c7f0c": {
+    "exampleJp": "家族はアルツハイマー病について医師に説明を聞きました。"
+  },
+  "bw-ee85f71b5d6a8386": {
+    "exampleJp": "エイプリルフールに友達が冗談を言いました。"
+  },
+  "bw-a8edca8224b8fe1b": {
+    "exampleJp": "この作品はコミックスでも読むことができます。"
+  },
+  "bw-166672b7abf6551b": {
+    "exampleJp": "決勝ではハイレベルな試合が続きました。"
+  },
+  "bw-ada414eb082a7e99": {
+    "exampleJp": "彼女は日本語と英語のバイリンガルです。"
+  },
+  "bw-77811c9ca9fe8046": {
+    "exampleJp": "空き地に古いバラックが残っています。"
+  },
+  "bw-003cb7296dd308a2": {
+    "exampleJp": "三人のパネラーが討論に参加しました。"
+  },
+  "bw-3eb5bb2a78a7aec1": {
+    "exampleJp": "推測とファクトを分けて考えましょう。"
+  },
+  "bw-23b54c07eee3c391": {
+    "exampleJp": "昔のデータがフロッピーディスクに残っていました。"
+  },
+  "bw-6e2820a6a7fe9714": {
+    "exampleJp": "映画のプロデューサーが舞台挨拶に登場しました。"
+  },
+  "bw-53c1f9233297f134": {
+    "exampleJp": "新一年生がランドセルを背負って歩いています。"
+  },
+  "bw-38932cfa1db023a8": {
+    "exampleJp": "姉はロングヘアを後ろでまとめています。"
+  },
+  "bw-bf69a7055971b942": {
+    "exampleJp": "自分の不心得を深く反省しています。"
+  },
+  "bw-0be0e540f2d38dab": {
+    "english": "illegal stay",
+    "exampleJp": "不法在留に関する制度を調べました。"
+  },
+  "bw-4043453aa335e306": {
+    "exampleJp": "監督の不行き届きをおわびします。"
+  },
+  "bw-ba39a269ea29f3ef": {
+    "exampleJp": "作者不詳の絵が展示されています。"
+  },
+  "bw-30a6fa2107e4f032": {
+    "english": "transit point",
+    "exampleJp": "この港は航路の中継地として使われました。"
+  },
+  "bw-c87537675bed93d3": {
+    "exampleJp": "物語では主従の固い信頼が描かれています。"
+  },
+  "bw-abecca850244235b": {
+    "exampleJp": "柔道の練習で乱取りをしました。"
+  },
+  "bw-7c2c05bc8dd96acb": {
+    "exampleJp": "寺で仏陀の教えについて話を聞きました。"
+  },
+  "bw-65c3cad24ce0a53b": {
+    "exampleJp": "アンケートへの回答は任意です。"
+  },
+  "bw-a929a457349e5cb3": {
+    "exampleJp": "何度も練習して技を会得しました。"
+  },
+  "bw-33ec54de80969f54": {
+    "exampleJp": "祖母から郷土料理の作り方を伝授されました。"
+  },
+  "bw-fdb9bdaab200fe7f": {
+    "exampleJp": "この素材は軽さと丈夫さを併せ持っています。"
+  },
+  "bw-07cd8c9be4dc31cb": {
+    "meaningZh": "同桌家人各吃不同饭菜（区别于独自吃饭的「孤食」）",
+    "exampleJp": "家族が別々の料理を食べる個食について考えました。"
+  },
+  "bw-561dad807e2a96f1": {
+    "exampleJp": "鉛筆の先っぽが折れました。"
+  },
+  "bw-b0f874d086cff4b1": {
+    "exampleJp": "昔の公家の暮らしを展示で学びました。"
+  },
+  "bw-f877983eb9724a8c": {
+    "exampleJp": "大使の公邸で会合が開かれました。"
+  },
+  "bw-12cfb062ca85852f": {
+    "exampleJp": "この計画が内包する問題を検討しました。"
+  },
+  "bw-9312f6df42fd2df1": {
+    "exampleJp": "黒板に書かれた図をノートに写し取りました。"
+  },
+  "bw-2202990ab595bd84": {
+    "english": "shelter; coping",
+    "exampleJp": "屋根の下を雨の凌ぎにしました。"
+  },
+  "bw-981549f4d314bab3": {
+    "exampleJp": "昼食にそばの出前を頼みました。"
+  },
+  "bw-728aa00b75699f7c": {
+    "exampleJp": "彼女は故郷への思いを切切と語りました。"
+  },
+  "bw-2c800b747becd0d9": {
+    "exampleJp": "事故の加害者が被害者に謝罪しました。"
+  },
+  "bw-74e7ea0f9a2c73a7": {
+    "meaningZh": "半回针缝法；赠礼金额一半的回礼",
+    "english": "half backstitch; half-value return gift",
+    "exampleJp": "ほつれた部分を半返し縫いで補修しました。"
+  },
+  "bw-327925f045594018": {
+    "exampleJp": "突然の異動で否応なしに引っ越すことになりました。"
+  },
+  "bw-38fdd51781e90bb5": {
+    "exampleJp": "料理のおいしさを噛み締めながら食べました。"
+  },
+  "bw-4921472fcae7e99a": {
+    "exampleJp": "彼の話し方には国訛が残っています。"
+  },
+  "bw-7e4265dc325e59d4": {
+    "exampleJp": "在京の友人と久しぶりに会いました。"
+  },
+  "bw-f4bd9fc7cccf2866": {
+    "english": "suspended sentence",
+    "exampleJp": "裁判で執行猶予付きの判決が言い渡されました。"
+  },
+  "bw-fb7fefe4adf4ce0e": {
+    "exampleJp": "夏の夜、縁側で夕涼みをしました。"
+  },
+  "bw-dc66a046151844f3": {
+    "exampleJp": "衝突で車が大破しました。"
+  },
+  "bw-0be88df621a3f25a": {
+    "exampleJp": "資料館には大麻の繊維で作られた布が展示されています。"
+  },
+  "bw-03ce15cb78be2f31": {
+    "meaningZh": "官员退休后到关联机构任职；自上而下的命令",
+    "english": "post-retirement appointment of officials",
+    "exampleJp": "退職した官僚の天下りが新聞で問題になっています。"
+  },
+  "bw-2d4e40583191648f": {
+    "exampleJp": "雨が上がると雲も失せました。"
+  },
+  "bw-c59375fa8984a11e": {
+    "exampleJp": "先ほどは失敬しました。"
+  },
+  "bw-ad13679f4e82cb02": {
+    "exampleJp": "二人は生涯を共にする契りを交わしました。"
+  },
+  "bw-8713fc316a1db8cc": {
+    "exampleJp": "事故の経緯を始末書にまとめました。"
+  },
+  "bw-012f0ec03dc50dff": {
+    "exampleJp": "この地域では外国出身の定住者が増えています。"
+  },
+  "bw-abf957f33b7fbb4a": {
+    "exampleJp": "酒の密造を取り締まる法律があります。"
+  },
+  "bw-e94df0e709ebc01d": {
+    "exampleJp": "寸暇を惜しんで読書に励んでいます。"
+  },
+  "bw-f0fbc08318517b4b": {
+    "exampleJp": "両チームの選手がネットを挟んで対峙しました。"
+  },
+  "bw-7dd79431bf310f57": {
+    "exampleJp": "大切な書類は封書で送りました。"
+  },
+  "bw-ee5474397063a864": {
+    "exampleJp": "左様でございます。ご予約は承っております。"
+  },
+  "bw-60fe1d46c13ac07e": {
+    "exampleJp": "神社で巫女が参拝客を案内していました。"
+  },
+  "bw-2cb105198acddf25": {
+    "exampleJp": "広報部が新商品の発表を担当します。"
+  },
+  "bw-80abe3bc64b7a2d9": {
+    "exampleJp": "座長が討論の進行を務めました。"
+  },
+  "bw-051bb73e520a40d5": {
+    "exampleJp": "長く住んだアパートを引き払いました。"
+  },
+  "bw-7c87bd124640201b": {
+    "exampleJp": "彼は得たりとばかりに自説を語り始めました。"
+  },
+  "bw-f578644550fd5bf5": {
+    "exampleJp": "休日は皆が思い思いに過ごしています。"
+  },
+  "bw-faf7f20d866dc26d": {
+    "exampleJp": "進路を決められず思い惑っています。"
+  },
+  "bw-5d83b7b63e87b3fd": {
+    "exampleJp": "彼女は急ぎ足で駅へ向かいました。"
+  },
+  "bw-7651e092b426cc14": {
+    "exampleJp": "台風の接近で予定を急遽変更しました。"
+  },
+  "bw-83674c0c4fa3616d": {
+    "exampleJp": "手前勝手な理由で約束を変えるのはよくありません。"
+  },
+  "bw-7b9fa799fa627c88": {
+    "exampleJp": "紙の端を内側に折り込みました。"
+  },
+  "bw-69735c048e364a70": {
+    "term": "抜粋",
+    "reading": "ばっすい",
+    "english": "extract; excerpt",
+    "exampleJp": "小説の一部を抜粋して紹介しました。"
+  },
+  "bw-ec63e750e8699aba": {
+    "english": "temporary dip in a rising market",
+    "exampleJp": "投資家は相場の押し目を待っていました。"
+  },
+  "bw-1ce1cabbf24691c2": {
+    "exampleJp": "赤ちゃんは首が据わってきました。"
+  },
+  "bw-e1ef1a669d25d698": {
+    "exampleJp": "原作の結末を大きく改変した映画です。"
+  },
+  "bw-ada7225e9447f9d8": {
+    "exampleJp": "取引先との会食は料亭で行われました。"
+  },
+  "bw-f72ef270ef41be74": {
+    "exampleJp": "旋盤を使って金属の部品を加工しました。"
+  },
+  "bw-459f5a31fb4b4b27": {
+    "exampleJp": "多くの方に来会いただき、感謝しています。"
+  },
+  "bw-cf8f24b1a40a8c3a": {
+    "exampleJp": "信頼は組織の根幹を成しています。"
+  },
+  "bw-8a81a138eff91315": {
+    "meaningZh": "平铺直叙地朗读；无抑扬地念",
+    "exampleJp": "台本を棒読みにせず、気持ちを込めてください。"
+  },
+  "bw-9da4d567105f4539": {
+    "exampleJp": "家族は植物状態にある患者を見舞いました。"
+  },
+  "bw-ffcbab888052a5d9": {
+    "exampleJp": "思うように話せず歯痒い思いをしました。"
+  },
+  "bw-60f2d32522b4ac29": {
+    "exampleJp": "口論が殴り合いに発展してしまいました。"
+  },
+  "bw-3d6d2716dc50fefa": {
+    "exampleJp": "争いが続き、町には殺伐とした空気が漂っています。"
+  },
+  "bw-65d0064a9c0e51db": {
+    "exampleJp": "赤ちゃんは母胎の中で育ちます。"
+  },
+  "bw-226024a98416c180": {
+    "exampleJp": "彼にできないと初めから決め込むべきではありません。"
+  },
+  "bw-7ca6040be2c90bdf": {
+    "exampleJp": "子供たちは波打ち際で貝を拾っています。"
+  },
+  "bw-ca5e83cd30459719": {
+    "exampleJp": "仕事の進め方には彼なりの流儀があります。"
+  },
+  "bw-ea9c426af8cb5958": {
+    "exampleJp": "川の淀みに落ち葉が集まっています。"
+  },
+  "bw-dbf958de224e0967": {
+    "exampleJp": "手作りの品には温もりが感じられます。"
+  },
+  "bw-7176d456aba50074": {
+    "meaningZh": "暖水袋；汤婆子",
+    "exampleJp": "寝る前に湯湯婆を布団に入れました。"
+  },
+  "bw-0e035c7fa57bf0db": {
+    "exampleJp": "私たちのチームは大会で準優勝しました。"
+  },
+  "bw-86795eee761559b8": {
+    "exampleJp": "彼は現在無職で、仕事を探しています。"
+  },
+  "bw-e941feabd3265279": {
+    "exampleJp": "食後に温かい煎茶を入れました。"
+  },
+  "bw-bfa8bfa730ded61c": {
+    "exampleJp": "講演会で思わぬ珍問が飛び出しました。"
+  },
+  "bw-cc83cd0817c10bbc": {
+    "exampleJp": "転んだばかりの生傷がまだ痛みます。"
+  },
+  "bw-9a7a6232c23adcb9": {
+    "exampleJp": "生活習慣病について保健の授業で学びました。"
+  },
+  "bw-3f2f8efe2e564007": {
+    "meaningZh": "筹措；借钱给人",
+    "exampleJp": "友人が急な旅費を用立ててくれました。"
+  },
+  "bw-e3c4de17c6fba445": {
+    "exampleJp": "次の場所の番付が発表されました。"
+  },
+  "bw-7da91af53dfd55dd": {
+    "meaningZh": "痴呆（旧称，现通常使用「認知症」）",
+    "exampleJp": "古い文献では認知症を痴呆と記すことがあります。"
+  },
+  "bw-ae60dbb4547c8536": {
+    "english": "connoisseur; appraisal",
+    "exampleJp": "骨董品の目利きに鑑定をお願いしました。"
+  },
+  "bw-01060aa7bceb57d9": {
+    "exampleJp": "着衣のまま水に落ちてしまいました。"
+  },
+  "bw-fa5b5edb61dc66e6": {
+    "exampleJp": "旅行のために毎月積み立てをしています。"
+  },
+  "bw-e4eff341dbd9cbac": {
+    "english": "snap at; challenge",
+    "exampleJp": "彼は何かにつけて私に突っ掛かってきます。"
+  },
+  "bw-87c0bf1a52ad2d0d": {
+    "exampleJp": "突然の質問に返答に窮しました。"
+  },
+  "bw-25639e5c688ded1f": {
+    "exampleJp": "困っている人の窮状を知り、支援を申し出ました。"
+  },
+  "bw-18d592ba67e2dcef": {
+    "meaningZh": "选址；地理位置",
+    "english": "location",
+    "exampleJp": "この店は駅から近く、立地がいいです。"
+  },
+  "bw-99bc57608efbe0eb": {
+    "exampleJp": "そこまであなたに言われる筋合いはありません。"
+  },
+  "bw-af8991d4b271746f": {
+    "exampleJp": "箱を粘着テープでしっかり留めました。"
+  },
+  "bw-cedd99afeb050a0e": {
+    "meaningZh": "细长；苗条",
+    "english": "slender",
+    "exampleJp": "彼は細身のスーツを着ています。"
+  },
+  "bw-46062ab7bb6ccc76": {
+    "exampleJp": "面接には紺色のスーツで行きました。"
+  },
+  "bw-ec23a87ce4a9a8df": {
+    "exampleJp": "会議の最後に今年の活動を総括しました。"
+  },
+  "bw-8ff5e407d92cdfdf": {
+    "exampleJp": "缶入りのスープを温めて飲みました。"
+  },
+  "bw-512938e64c42c180": {
+    "exampleJp": "体内の老廃物について授業で学びました。"
+  },
+  "bw-2f343349d727e24a": {
+    "exampleJp": "父は脳梗塞の治療後、リハビリを続けています。"
+  },
+  "bw-11964ca48edda5d2": {
+    "exampleJp": "高温の場所に置いた食品が腐乱してしまいました。"
+  },
+  "bw-a8e46df64b6087a5": {
+    "exampleJp": "この村では食料を自給自足しています。"
+  },
+  "bw-d5fcfe62a7f66e10": {
+    "exampleJp": "一人で完成させるのは至難の業です。"
+  },
+  "bw-30c8814224115a6e": {
+    "exampleJp": "若気の至りで無茶をしたことがあります。"
+  },
+  "bw-dcfcd3b874980ebe": {
+    "exampleJp": "若盛りの選手たちが力を競い合いました。"
+  },
+  "bw-5e8d792e22d5d1b5": {
+    "exampleJp": "若手の起用でチームの若返りを図りました。"
+  },
+  "bw-3e354e29d24c7bc4": {
+    "exampleJp": "放置された庭に雑草が蔓延っています。"
+  },
+  "bw-1314475c04c05e64": {
+    "exampleJp": "暖炉に薪を一本足しました。"
+  },
+  "bw-a0754b74db0ae1ba": {
+    "exampleJp": "長い試合が終わり、選手は虚脱したように座り込みました。"
+  },
+  "bw-280f4e590171f9bf": {
+    "exampleJp": "夕方になると庭で蚊取り線香を使います。"
+  },
+  "bw-3719c614ba6c99e8": {
+    "exampleJp": "行く行くは自分の店を開きたいです。"
+  },
+  "bw-405d0c8de4c9939c": {
+    "exampleJp": "作業を始める前に保護具を装着してください。"
+  },
+  "bw-b9011113d6a7c608": {
+    "exampleJp": "彼は監督の補佐役を務めています。"
+  },
+  "bw-07b5a0ecf27fbbc0": {
+    "exampleJp": "いつまでも親がかりではいられません。"
+  },
+  "bw-bbeda85cf8098e98": {
+    "exampleJp": "迷惑をかけた相手に詫び状を送りました。"
+  },
+  "bw-3e24d17297238c0a": {
+    "exampleJp": "読点を入れる位置を見直しました。"
+  },
+  "bw-a80c82ce2eac3c40": {
+    "exampleJp": "講演では環境問題にも論及しました。"
+  },
+  "bw-8026ac8a5a91cfa7": {
+    "exampleJp": "部屋の賃貸料を毎月振り込んでいます。"
+  },
+  "bw-d5763568d29f0eb2": {
+    "english": "Red Cross society",
+    "exampleJp": "赤十字会の活動について資料を読みました。"
+  },
+  "bw-b1f6bcd95a0614ee": {
+    "exampleJp": "長く歩いて足裏が痛くなりました。"
+  },
+  "bw-311e4c0f92137128": {
+    "exampleJp": "彼女は交渉で辣腕を振るっています。"
+  },
+  "bw-6e6ab104a1f96f44": {
+    "meaningZh": "通信费用",
+    "english": "communication expenses",
+    "exampleJp": "毎月の通信費を見直しました。"
+  },
+  "bw-adeae6d5356b5e35": {
+    "exampleJp": "親族が集まって通夜を営みました。"
+  },
+  "bw-e2e47c6b31c15ec6": {
+    "exampleJp": "映画祭は盛況のうちに閉幕しました。"
+  },
+  "bw-c60da607b84a6179": {
+    "exampleJp": "この港町は貿易で隆盛を極めました。"
+  },
+  "bw-c8ff1c8ed93b7057": {
+    "exampleJp": "山に囲まれた集落は外部から隔絶されていました。"
+  },
+  "bw-c461fb9ff995b355": {
+    "exampleJp": "支払いの後、領収証を受け取りました。"
+  },
+  "bw-7470edbe05c88aad": {
+    "exampleJp": "窓辺の風鈴が涼しげな音を立てています。"
+  },
+  "bw-2175e7af00e8ec0a": {
+    "exampleJp": "薬を水と一緒に飲み下しました。"
+  },
+  "bw-84b758e5bf22100e": {
+    "exampleJp": "今回の騒動では世間を騒がせました。"
+  },
+  "bw-2b04fb1c83ee7dc0": {
+    "exampleJp": "成功しても驕りを持たないようにしたいです。"
+  },
+  "bw-0f547a95bbbebf25": {
+    "exampleJp": "雨の日が続き、鬱鬱とした気分になりました。"
+  },
+  "bw-db4ae48f69d9bdc0": {
+    "english": "hill",
+    "exampleJp": "小高い丘に登ると町が見渡せます。"
+  },
+  "bw-a143c6abfd8fe64c": {
+    "english": "bureau; office",
+    "exampleJp": "郵便局で切手を買いました。"
+  },
+  "bw-c88787e75fb36679": {
+    "english": "number; issue",
+    "exampleJp": "この雑誌の五月号を読みました。"
+  },
+  "bw-d9230a6610ae93b5": {
+    "english": "voice",
+    "exampleJp": "隣の部屋から笑い声が聞こえます。"
+  },
+  "bw-e192d6fe6c44181e": {
+    "english": "person with a particular skill",
+    "exampleJp": "優勝した選手に拍手を送りました。"
+  },
+  "bw-352777868d4a5b1d": {
+    "english": "person with a particular skill",
+    "exampleJp": "優勝した選手に拍手を送りました。"
+  },
+  "bw-0b8fe4dd6a7e591f": {
+    "english": "counter for shots",
+    "exampleJp": "花火が三発続けて上がりました。"
+  },
+  "bw-4117cd4583a37911": {
+    "english": "song",
+    "exampleJp": "卒業式で校歌を歌いました。"
+  },
+  "bw-ade3912d53a46452": {
+    "english": "state; continent",
+    "exampleJp": "兄はアメリカの別の州に住んでいます。"
+  },
+  "bw-7f7d2e56db00951c": {
+    "english": "counter for wins",
+    "exampleJp": "私たちのチームは三勝一敗でした。"
+  },
+  "bw-2c3d5b29fb7ec669": {
+    "english": "counter for lines or streams",
+    "exampleJp": "窓から一筋の光が差し込みました。"
+  },
+  "bw-7fb41b176630e962": {
+    "english": "counter for losses",
+    "exampleJp": "チームは今大会で二敗しました。"
+  },
+  "bw-3f7d93338fec2b57": {
+    "english": "territory; counter for sets of armor",
+    "exampleJp": "この島は当時フランス領でした。"
+  },
+  "bw-b76cf8d536c9d13e": {
+    "english": "layer; social group",
+    "exampleJp": "この雑誌は幅広い年齢層に読まれています。"
+  },
+  "bw-2adf74712830c787": {
+    "english": "covet; devour",
+    "exampleJp": "空腹だったので料理を貪るように食べました。"
+  },
+  "bw-f31cafd68517a63a": {
+    "english": "fierce; intense",
+    "exampleJp": "選手は試合に備えて猛練習をしました。"
+  },
+  "bw-57915ac6868191b0": {
+    "english": "have trouble doing",
+    "exampleJp": "彼は進路を決め煩っていました。"
+  },
+  "bw-5fa880d7c6e4bae3": {
+    "english": "rag",
+    "exampleJp": "古い襤褸を使って床を拭きました。"
+  },
+  "bw-cd7e37f9a2a0ea16": {
+    "english": "reasonable",
+    "exampleJp": "彼女が怒るのも尤もです。"
+  },
+  "bw-83d5806b4d26543c": {
+    "english": "veer off",
+    "exampleJp": "話が本題から逸れてしまいました。"
+  },
+  "bw-5a14727ec499e632": {
+    "english": "cash register",
+    "exampleJp": "店員がレジスターに金額を入力しました。"
+  },
+  "bw-9ad3605fbb611ed4": {
+    "english": "sorry",
+    "exampleJp": "待たせてしまって済まない。"
+  },
+  "bw-a5e3d50859dc4f0e": {
+    "english": "dash",
+    "exampleJp": "この文ではダッシュを使って説明を加えました。"
+  },
+  "bw-3caeab9fdbc5b953": {
+    "english": "mellow; smooth",
+    "exampleJp": "このスープは円やかな味がします。"
+  },
+  "bw-ee56b2b94245d6c2": {
+    "english": "for; intended for",
+    "exampleJp": "これは子供用の椅子です。",
+    "exampleJpZh": "这是儿童用的椅子。",
+    "exampleEn": "This chair is intended for children.",
+    "exampleEnZh": "这把椅子是给儿童用的。"
+  },
+  "bw-3c5eefd48f4b5454": {
+    "exampleEnZh": "我家的电话号码是：区号201，123-4567。"
+  }
+}

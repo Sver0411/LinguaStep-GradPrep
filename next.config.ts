@@ -10,6 +10,9 @@ if (configuredBasePath && !configuredBasePath.startsWith("/")) {
 
 const nextConfig: NextConfig = {
   basePath: configuredBasePath || undefined,
+  distDir: process.env.NEXT_BUILD_DIR || ".next",
+  // Imported media stays in its separately deployed runtime directory.
+  outputFileTracingExcludes: { "/*": ["./work/**/*"] },
   output: process.env.NEXT_STANDALONE === "true" ? "standalone" : undefined,
   async headers() {
     return [

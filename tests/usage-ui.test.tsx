@@ -24,7 +24,7 @@ describe("usage flows", () => {
     render(<MobileWordStudy params={new URLSearchParams(`mode=${mode}&word=${word.id}`)} />);
     expect(screen.queryByText(word[mode].term)).toBeNull();
     expect(screen.queryByText(word[mode].example)).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: /揭示答案/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /揭示答案/ }));
     expect(screen.getByText(word[mode].term)).toBeTruthy();
     expect(screen.getByText(word[mode].example)).toBeTruthy();
     expect(screen.getByText(word[mode].exampleZh)).toBeTruthy();
@@ -63,7 +63,7 @@ describe("usage flows", () => {
     mocked.supported = true;
     mocked.learning = { allWords: [word, ...WORD_PAIRS], snapshot: { ...makeSnapshot(), wordProgress: [] }, settings: { ...DEFAULT_SETTINGS, autoSpeak: false, displayDensity: "compact" }, answerWordQuiz: vi.fn(), setFocusMode: vi.fn(), isFavorite: () => false, toggleFavorite: vi.fn() };
     render(<WordStudySession items={[word]} mode="japanese" onFinish={vi.fn()} onRestart={vi.fn()} onContinuePlan={vi.fn()} onReviewUnknown={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /揭示答案/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /揭示答案/ }));
     expect(mocked.sequence).not.toHaveBeenCalled();
     fireEvent.click(await screen.findByRole("button", { name: "朗读日语例句和中文译文" }));
     expect(mocked.sequence).toHaveBeenCalledWith([{ text: word.japanese.example, language: "ja-JP" }, { text: word.japanese.exampleZh, language: "zh-CN" }]);
@@ -82,7 +82,7 @@ describe("usage flows", () => {
     mocked.learning = { allWords: [word, ...WORD_PAIRS], snapshot: { ...makeSnapshot(), dailyPlans: [], wordProgress: [] }, settings: { ...DEFAULT_SETTINGS, revealMode: "together" }, answerWordQuiz, setFocusMode: vi.fn(), isFavorite: () => false, toggleFavorite: vi.fn() };
     render(surface === "mobile" ? <MobileWordStudy params={new URLSearchParams(`mode=combined&word=${word.id}`)} /> : <WordStudySession items={[word]} mode="combined" onFinish={vi.fn()} onRestart={vi.fn()} onContinuePlan={vi.fn()} onReviewUnknown={vi.fn()} />);
     expect(screen.queryByText(word.japanese.term)).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: /揭示答案/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /揭示答案/ }));
     expect(answerWordQuiz).not.toHaveBeenCalled();
     for (const label of ["认识", "模糊", "不认识"]) expect(screen.queryByRole("button", { name: label })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /开始练习这 1 组/ }));
@@ -107,7 +107,7 @@ describe("usage flows", () => {
     const words = Array.from({ length: 8 }, (_, index) => makeWord(`cycle-${index}`, `cycle${index}`));
     const answerWordQuiz = vi.fn().mockResolvedValue(undefined);
     mocked.learning = { allWords: words, snapshot: { ...makeSnapshot(), dailyPlans: [], wordProgress: [] }, settings: { ...DEFAULT_SETTINGS, studyRoundSize: 8, revealMode: "together", autoSpeak: false }, answerWordQuiz, setFocusMode: vi.fn(), isFavorite: () => false, toggleFavorite: vi.fn() };
-    render(surface === "mobile" ? <MobileWordStudy params={new URLSearchParams("mode=combined")} /> : <WordStudySession items={words} mode="combined" onFinish={vi.fn()} onRestart={vi.fn()} onContinuePlan={vi.fn()} onReviewUnknown={vi.fn()} />);
+    render(<WordStudySession mobile={surface === "mobile"} items={words} mode="combined" onFinish={vi.fn()} onRestart={vi.fn()} onContinuePlan={vi.fn()} onReviewUnknown={vi.fn()} />);
     const learn = (start: number, count: number) => {
       for (let index = start; index < start + count; index++) {
         expect(screen.getByRole("heading", { name: words[index].meaningZh })).toBeTruthy();

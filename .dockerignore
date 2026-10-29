@@ -13,3 +13,5 @@ work
 .env.*
 !.env.example
 npm-debug.log*
+
+.next-verify

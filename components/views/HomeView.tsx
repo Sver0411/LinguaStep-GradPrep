@@ -1,164 +1,49 @@
 "use client";
-
+/* eslint-disable @next/next/no-img-element */
+import { STANDALONE_TESTS_ENABLED } from "@/lib/features";
 import Link from "next/link";
-import {
-  ArrowRight,
-  BookOpenText,
-  Check,
-  CircleAlert,
-  Clock3,
-  Flame,
-  Layers3,
-  ListTodo,
-  NotebookPen,
-  Play,
-  RefreshCw,
-} from "lucide-react";
-import { dateKey, calculateStreak } from "@/lib/learning";
-import { calculateDailyPlanProgress } from "@/lib/daily-plan";
-import { getNextLearningAction } from "@/lib/learning-flow";
+import { ArrowRight, BookOpen, ChevronRight, Settings2 } from "lucide-react";
 import { useLearning } from "@/context/learning";
-import { PageHeader, ProgressBar } from "@/components/ui";
+import { calculateDailyPlanProgress } from "@/lib/daily-plan";
+import { calculateStreak, dateKey } from "@/lib/learning";
+import { getNextLearningAction } from "@/lib/learning-flow";
+import { getWordBook, validWordBook } from "@/lib/word-books";
+import { mobileHref, mobileHrefForStep } from "@/components/mobile/navigation";
 
-export function HomeView() {
-  const { snapshot, allWords, allGrammar, allComparisons, rebuildTodayPlan } = useLearning();
+const BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").trim().replace(/\/+$/, "");
+export function HomeView({ mobile = false }: { mobile?: boolean }) {
+  const { snapshot, settings, rebuildTodayPlan } = useLearning();
   const today = dateKey(new Date());
-  const todayRecord = snapshot.dailyRecords.find((item) => item.date === today);
-  const todayPlan = snapshot.dailyPlans.find((item) => item.date === today);
-  const planProgress = todayPlan
-    ? calculateDailyPlanProgress(todayPlan, todayRecord)
-    : {
-        total: 0,
-        completed: 0,
-        remaining: 0,
-        percent: 0,
-        newCompleted: 0,
-        reviewCompleted: 0,
-        grammarCompleted: 0,
-        testCompleted: 0,
-      };
+  const plan = snapshot.dailyPlans.find((item) => item.date === today);
+  const record = snapshot.dailyRecords.find((item) => item.date === today);
+  const book = getWordBook(validWordBook(settings.studyWordBook))!;
+  const progress = plan ? calculateDailyPlanProgress(plan, record) : null;
+  const next = getNextLearningAction(snapshot, today);
+  const finished = Boolean(plan) && next.step === "complete";
+  const mode = plan?.studyMode ?? settings.defaultStudyMode;
+  const bookQuery = `book=${book.id}&mode=${mode}`;
+  const wordHref = (source: string) => `/words?${bookQuery}&${source}${mobile ? "&mobile=study" : ""}`;
+  const libraryHref = mobile ? mobileHref("/words", { mobile: "library" }) : "/words";
+  const nextHref = !plan || finished ? libraryHref : mobile ? mobileHrefForStep(next, mode) : next.href;
+  const streak = calculateStreak(snapshot.dailyRecords.filter((item) => item.wordsStudied + item.grammarStudied + item.questionsAnswered > 0).map((item) => item.date), today);
+  const tasks = [
+    { label: "到期复习", done: progress?.reviewCompleted ?? 0, total: plan?.reviewWordIds.length ?? 0, href: wordHref("review=1") },
+    { label: "今日新词", done: progress?.newCompleted ?? 0, total: plan?.newWordIds.length ?? 0, href: wordHref("plan=new") },
+    { label: "语法", done: progress?.grammarCompleted ?? 0, total: plan?.grammarIds.length ?? 0, href: mobile ? "/grammar?mobile=practice&today=1" : "/grammar?today=1" },
+    { label: "测试", done: progress?.testCompleted ?? 0, total: plan?.testTarget ?? 0, href: mobile ? "/test?mobile=practice" : "/test?source=today&start=1" },
+  ].filter((task) => STANDALONE_TESTS_ENABLED || task.label !== "测试");
   const mistakeCount = snapshot.mistakes.filter((item) => item.active).length;
-  const todayWords = todayRecord?.wordsStudied ?? 0;
-  const todayGrammar = todayRecord?.grammarStudied ?? 0;
-  const todayQuestions = todayRecord?.questionsAnswered ?? 0;
-  const sevenDayStart = new Date();
-  sevenDayStart.setDate(sevenDayStart.getDate() - 6);
-  const activeDaysThisWeek = snapshot.dailyRecords.filter((record) =>
-    record.date >= dateKey(sevenDayStart) &&
-    record.wordsStudied + record.grammarStudied + record.questionsAnswered > 0,
-  ).length;
-  const todayAccuracy = todayQuestions > 0
-    ? Math.round(((todayRecord?.correctAnswers ?? 0) / todayQuestions) * 100)
-    : null;
-  const streak = calculateStreak(
-    snapshot.dailyRecords
-      .filter((record) => record.wordsStudied + record.grammarStudied + record.questionsAnswered > 0)
-      .map((record) => record.date),
-    dateKey(new Date()),
-  );
-  const isFreshLearner =
-    streak === 0 &&
-    snapshot.wordProgress.length === 0 &&
-    snapshot.grammarProgress.length === 0 &&
-    snapshot.testResults.length === 0;
-  const metrics = [
-    { label: "今日进度", value: Math.round(planProgress.percent), suffix: "%", icon: Check, tone: "blue" },
-    { label: "连续学习", value: streak, suffix: "天", icon: Flame, tone: "amber" },
-    { label: "已逾期复习", value: todayPlan?.overdueWordIds.length ?? 0, suffix: "个", icon: Clock3, tone: "purple" },
-    { label: "活跃错题", value: mistakeCount, suffix: "道", icon: CircleAlert, tone: "amber" },
-  ];
-  const nextAction = getNextLearningAction(snapshot, today);
-  const todayComplete = nextAction.step === "complete" && Boolean(todayPlan);
-
-  return (
-    <div className="page-stack home-page">
-      {todayPlan?.budgetReason && <section className="card plan-budget"><strong>今日预计 {todayPlan.estimatedMinutes} 分钟</strong><p>{todayPlan.budgetReason}</p><Link href="/settings">调整目标与今日计划</Link></section>}
-      <PageHeader
-        eyebrow="今日学习"
-        title={
-          isFreshLearner
-            ? "从今天的第一组开始"
-            : todayComplete
-              ? "今天的学习已经完成"
-              : "按到期优先级稳步推进"
-        }
-        description={
-          isFreshLearner
-            ? "每天的量已经排好了：先过一遍新词，再学一条语法，最后做几道题，按下方计划估时安排。点下面的按钮直接开始。"
-            : todayComplete
-              ? "做得很好。你可以自由学习，或让记忆在下一次到期前休息。"
-              : "计划每天只生成一次；刷新页面不会重复添加任务。"
-        }
-        actions={<details className="header-more"><summary>更多</summary><button className="text-button" onClick={() => void rebuildTodayPlan()}><RefreshCw size={17} />按当前设置重算计划</button></details>}
-      />
-
-      <section className={`mobile-home-hero${todayComplete ? " complete" : ""}`}>
-        <div className="mobile-home-progress-row">
-          <span>{todayComplete ? "今日已完成" : "今日计划"}</span>
-          <strong>{Math.round(planProgress.percent)}%</strong>
-        </div>
-        <ProgressBar value={planProgress.percent} label="今日学习进度" />
-        <div className="mobile-home-copy">
-          <span className="section-kicker">NEXT STEP</span>
-          <h1>{todayComplete ? "今天做得很好" : nextAction.label}</h1>
-          <p>{nextAction.description}</p>
-        </div>
-        <Link className="button button-primary button-large mobile-primary-action" href={nextAction.href}>
-          <Play size={18} fill="currentColor" />
-          {isFreshLearner ? "开始今天的第一组" : todayComplete ? "继续自由学习" : "继续学习"}
-          <ArrowRight size={18} />
-        </Link>
-        <div className="mobile-home-metrics" aria-label="今日概览">
-          <div><Clock3 size={17} /><span>逾期</span><strong>{todayPlan?.overdueWordIds.length ?? 0}</strong></div>
-          <div><CircleAlert size={17} /><span>错题</span><strong>{mistakeCount}</strong></div>
-          <div><Check size={17} /><span>完成</span><strong>{planProgress.completed}</strong></div>
-        </div>
-        <div className="mobile-home-record" aria-label="今日学习记录">
-          <span>今日记录</span>
-          <strong>{todayWords} 个单词 · {todayGrammar} 个语法 · {todayQuestions} 道练习</strong>
-        </div>
-      </section>
-
-      <section className="mobile-home-insight" aria-label="近期学习状态">
-        <div><span>近 7 天节奏</span><strong>{activeDaysThisWeek} 天有学习</strong></div>
-        <div><span>今日答题</span><strong>{todayAccuracy === null ? "还未练习" : `${todayAccuracy}% 正确`}</strong></div>
-      </section>
-
-      <section className="metric-grid" aria-label="今日概览">
-        {metrics.map((metric) => {
-          const Icon = metric.icon;
-          return <article className="metric-card" key={metric.label}><span className={`metric-icon tone-${metric.tone}`}><Icon size={20} aria-hidden="true" /></span><div><p>{metric.label}</p><strong>{metric.value}<small>{metric.suffix}</small></strong></div></article>;
-        })}
-      </section>
-
-      <section className="today-layout single-column">
-        <article className={`card today-card${todayComplete ? " plan-complete" : ""}`}>
-          <div className="card-heading-row">
-            <div><span className="section-kicker">DAILY PLAN · {today}</span><h2>{todayComplete ? "今日学习完成" : "今日自动计划"}</h2><p>{todayPlan ? `${todayPlan.studyMode === "combined" ? "日英对照" : todayPlan.studyMode === "japanese" ? "日语" : "英语"}模式 · 以到期复习优先` : "正在生成今日计划"}</p></div>
-            <span className="round-badge">{Math.round(planProgress.percent)}%</span>
-          </div>
-          <ProgressBar value={planProgress.percent} label="今日计划进度" />
-          {todayPlan && (
-            <div className="task-list">
-              <Link className="task-row" href={`/words?review=1&mode=${todayPlan.studyMode}`}><span className="task-icon review"><Layers3 size={20} /></span><div><strong>到期复习</strong><small>其中逾期 {todayPlan.overdueWordIds.length} 个</small></div><span>{todayPlan.reviewWordIds.length} 个</span></Link>
-              <Link className="task-row" href={`/words?plan=new&mode=${todayPlan.studyMode}`}><span className="task-icon japanese"><BookOpenText size={20} /></span><div><strong>今日新词</strong><small>已完成 {planProgress.newCompleted}</small></div><span>{todayPlan.newWordIds.length} 个</span></Link>
-              <Link className="task-row" href="/grammar?today=1"><span className="task-icon grammar"><NotebookPen size={20} /></span><div><strong>今日语法</strong><small>已完成 {planProgress.grammarCompleted}</small></div><span>{todayPlan.grammarIds.length} 个</span></Link>
-              <Link className="task-row" href="/test?start=1"><span className="task-icon test"><ListTodo size={20} /></span><div><strong>今日练习</strong><small>已完成 {planProgress.testCompleted}</small></div><span>{todayPlan.testTarget} 题</span></Link>
-              {mistakeCount > 0 && <Link className="task-row" href="/mistakes?review=1"><span className="task-icon mistake"><CircleAlert size={20} /></span><div><strong>本次错题巩固</strong><small>测试后集中处理</small></div><span>{mistakeCount} 道</span></Link>}
-            </div>
-          )}
-          <div className="next-action-block"><p>{nextAction.description}</p><Link className="button button-primary button-large" href={nextAction.href}><Play size={18} fill="currentColor" />{nextAction.label}<ArrowRight size={18} /></Link></div>
-        </article>
-      </section>
-
-      <details className="free-study-section card compact-details">
-        <summary><span><strong>自由学习</strong><small>按需学习单词、语法或进行练习</small></span><ArrowRight size={18} /></summary>
-        <div className="free-study-grid">
-          <Link href="/words" className="study-entry"><span className="study-entry-icon japanese"><BookOpenText size={22} /></span><div><strong>单词与检索</strong><small>{allWords.length} 组 · 三种学习模式</small></div><ArrowRight size={18} /></Link>
-          <Link href="/grammar" className="study-entry"><span className="study-entry-icon grammar"><NotebookPen size={22} /></span><div><strong>语法与对比</strong><small>{allGrammar.length} 个语法 · {allComparisons.length} 组对比</small></div><ArrowRight size={18} /></Link>
-          <Link href="/test" className="study-entry"><span className="study-entry-icon test"><CircleAlert size={22} /></span><div><strong>语言练习</strong><small>日语、英语或日英混合，可按难度选择</small></div><ArrowRight size={18} /></Link>
-        </div>
-      </details>
-    </div>
-  );
+  return <main className={`home-simple${mobile ? " home-simple-mobile" : ""}`}>
+    <header className="home-simple-header"><div><h1>今日</h1><time dateTime={today}>{today.replaceAll("-", ".")}</time></div><Link className="home-settings-link" href="/settings" aria-label="学习设置"><Settings2 size={20} /></Link></header>
+    <section className="home-current-book" aria-label="当前词书">
+      <img src={`${BASE_PATH}${book.cover}`} alt={`${book.title}封面`} />
+      <div className="home-current-content"><div className="home-current-title"><h2>{book.title}</h2><Link href={libraryHref}>换书<ChevronRight size={15} /></Link></div><p>{book.wordCount.toLocaleString()} 词 · {mode === "combined" ? "日英对照" : mode === "japanese" ? "日语" : "英语"}</p><Link className="button button-primary" href={nextHref}>{finished ? "选择单词" : !plan ? "开始背词" : next.label.replace("继续：", "")}<ArrowRight size={18} /></Link></div>
+    </section>
+    <section className="home-today-tasks" aria-label="今日任务">
+      <div className="home-section-heading"><h2>今日任务</h2><Link href="/settings">调整计划</Link></div>
+      {plan ? <><div className="home-task-progress" role="progressbar" aria-label="今日任务进度" aria-valuenow={Math.round(progress?.percent ?? 0)} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress?.percent ?? 0}%` }} /></div><div className="home-task-rows">{tasks.map((task) => <Link href={task.href} key={task.label}><span>{task.label}</span><strong>{Math.min(task.done, task.total)}<small> / {task.total}</small></strong><ChevronRight size={17} /></Link>)}</div></> : <button className="button button-secondary" onClick={() => void rebuildTodayPlan()}>生成今日计划</button>}
+    </section>
+    <div className="home-record-line" aria-label="今日学习记录"><span>已学 <b>{record?.wordsStudied ?? 0}</b> 词</span><span>已答 <b>{record?.questionsAnswered ?? 0}</b> 题</span><span>连续 <b>{streak}</b> 天</span></div>
+    <nav className="home-shortcuts" aria-label="学习工具"><Link href={libraryHref}><BookOpen size={19} />词书<ChevronRight size={16} /></Link><Link href="/mistakes">错题本{mistakeCount > 0 && <span>{mistakeCount}</span>}<ChevronRight size={16} /></Link><Link href="/stats">学习记录<ChevronRight size={16} /></Link><Link href="/resources">资料<ChevronRight size={16} /></Link></nav>
+  </main>;
 }

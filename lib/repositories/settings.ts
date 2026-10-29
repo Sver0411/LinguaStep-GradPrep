@@ -2,7 +2,7 @@ import { DEFAULT_SETTINGS } from "../constants";
 import type { AppSettings } from "../models";
 
 export const SETTINGS_STORAGE_KEY = "lingua-step:settings";
-const SETTINGS_SCHEMA_VERSION = 6;
+const SETTINGS_SCHEMA_VERSION = 8;
 
 export interface SettingsRepository {
   get(): AppSettings;
@@ -79,6 +79,10 @@ function normalizeSettings(
       : fallback.studyEnglishLevel;
 
   return {
+    grammarCourse: typeof value.grammarCourse === "string" && /^(jp-n[1-5]|en-core)$/.test(value.grammarCourse) ? value.grammarCourse : fallback.grammarCourse,
+    grammarStudyOrder: value.grammarStudyOrder === "random" ? "random" : "sequential",
+    studyWordBook: typeof value.studyWordBook === "string" && /^(red|green)-n[1-5]$/.test(value.studyWordBook) ? value.studyWordBook : fallback.studyWordBook,
+    wordStudyOrder: value.wordStudyOrder === "random" || value.wordStudyOrder === "sequential" ? value.wordStudyOrder : fallback.wordStudyOrder,
     dailyMinutes: [0, 10, 20, 30].includes(Number(value.dailyMinutes)) ? Number(value.dailyMinutes) : 0,
     primaryGoal: typeof value.primaryGoal === "string" && ["general", "N3", "N2", "N1", "CET-4", "CET-6", "TOEIC"].includes(value.primaryGoal) ? value.primaryGoal : "general",
     targetExamDate: typeof value.targetExamDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.targetExamDate) && Number.isFinite(Date.parse(value.targetExamDate)) ? value.targetExamDate : "",

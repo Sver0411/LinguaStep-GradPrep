@@ -30,7 +30,7 @@ export function MobilePracticeScreen() {
 
   return (
     <main className="m2-page m2-practice-page">
-      <header className="m2-topline"><div><p className="m2-brand">PRACTICE</p><h1>练习</h1></div><button onClick={() => navigateTo(mobileHref("/stats", { mobile: "stats" }))} type="button"><Timer size={19} />练习记录</button></header>
+      <header className="m2-topline"><div><h1>练习</h1></div><button onClick={() => navigateTo(mobileHref("/stats", { mobile: "stats" }))} type="button"><Timer size={19} />练习记录</button></header>
       <section className="m2-practice-hero">
         <img className="m2-practice-art" src="/mobile-art/practice-clipboard-v2.jpg" alt="练习剪贴板插画" />
         <div className="m2-card-title"><span>今日练习</span><small>{target} 题目标</small></div>

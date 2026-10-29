@@ -42,7 +42,7 @@ function WordLibraryPage({
     <section className="library-section">
       <div className="section-title-row">
         <div>
-          <span className="section-kicker">WORD LIBRARY</span>
+
           <h2>学习词库</h2>
         </div>
         <span className="count-label">共 {words.length} 组</span>

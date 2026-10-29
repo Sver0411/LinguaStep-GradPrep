@@ -71,4 +71,21 @@ describe("neural audio player", () => {
     expect(fetcher).toHaveBeenCalledTimes(7);
   });
 
+  it("plays book MP3 first and falls back to neural TTS if the file fails", async () => {
+    const audios: MockAudio[] = [];
+    class MockAudio extends EventTarget {
+      src = ""; pause = vi.fn(); play = vi.fn().mockResolvedValue(undefined);
+      constructor() { super(); audios.push(this); }
+    }
+    vi.stubGlobal("Audio", MockAudio);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("missing", { status: 404 })));
+    const { speak } = await import("../lib/speech");
+    const task = speak("暑い", "ja-JP", true, `/api/word-audio/${"a".repeat(32)}`);
+    expect(audios[0].src).toContain("/api/word-audio/");
+    audios[0].dispatchEvent(new Event("error"));
+    expect(audios[0].src).toContain("/api/tts?");
+    audios[0].dispatchEvent(new Event("playing")); audios[0].dispatchEvent(new Event("ended"));
+    expect(await task).toEqual({ ok: true, voice: undefined });
+  });
+
 });

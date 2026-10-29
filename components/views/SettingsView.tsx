@@ -1,4 +1,5 @@
 "use client";
+import { STANDALONE_TESTS_ENABLED } from "@/lib/features";
 
 import {
   Check,
@@ -228,7 +229,7 @@ export function SettingsView() {
   ];
   return (
     <div className="page-stack settings-page">
-      <PageHeader eyebrow="设置" title="管理默认学习方式" description="这里的选项作为后续学习默认值；今日计划的临时操作集中在首页。" />
+      <PageHeader eyebrow="设置" title="设置" description="这里的选项作为后续学习默认值；今日计划的临时操作集中在首页。" />
 
       <div className="mobile-settings-switcher" role="tablist" aria-label="设置分类">
         <button className={mobileSection === "learning" ? "active" : ""} onClick={() => setMobileSection("learning")} role="tab" aria-selected={mobileSection === "learning"}>学习</button>
@@ -238,7 +239,7 @@ export function SettingsView() {
       <section className={`settings-section card mobile-settings-section${mobileSection === "learning" ? " mobile-open" : ""}`}>
         <div className="settings-section-heading"><span className="settings-icon"><SlidersHorizontal size={20} /></span><div><h2>学习与每日计划</h2><p>控制模式、任务数量和复习优先级</p></div></div>
         <SettingRow title="默认学习模式" description="进入单词学习和生成每日计划时优先使用。"><div className="segmented-control">{modes.map((mode) => <button className={settings.defaultStudyMode === mode.value ? "active" : ""} onClick={() => updateSettings({ defaultStudyMode: mode.value })} key={mode.value}>{mode.label}</button>)}</div></SettingRow>
-        <SettingRow title="答案揭示" description="默认分步揭示，减少一次出现过多信息；也可以切换为同时揭示。"><div className="segmented-control"><button className={settings.revealMode === "step-by-step" ? "active" : ""} onClick={() => updateSettings({ revealMode: "step-by-step" })}>分步（首选）</button><button className={settings.revealMode === "together" ? "active" : ""} onClick={() => updateSettings({ revealMode: "together" })}>同时</button></div></SettingRow>
+        <SettingRow title="答案揭示" description="默认分步揭示，减少一次出现过多信息；也可以切换为同时揭示。"><div className="segmented-control"><button className={settings.revealMode === "step-by-step" ? "active" : ""} onClick={() => updateSettings({ revealMode: "step-by-step" })}>分步</button><button className={settings.revealMode === "together" ? "active" : ""} onClick={() => updateSettings({ revealMode: "together" })}>同时</button></div></SettingRow>
         <SettingRow title="分步揭示顺序" description="随机顺序按词条稳定分配，避免同一张卡刷新后跳变。"><div className="segmented-control">{([{ value:"japanese-first", label:"日语优先" }, { value:"english-first", label:"英语优先" }, { value:"random", label:"随机" }] as Array<{ value: RevealOrder; label: string }>).map((item) => <button className={settings.revealOrder === item.value ? "active" : ""} onClick={() => updateSettings({ revealOrder: item.value })} key={item.value}>{item.label}</button>)}</div></SettingRow>
         <SettingRow title="日语学习范围" description="决定日语单词里包含哪些等级；设一次长期生效，学习页不再每次询问。">
           <select value={settings.studyJapaneseLevel} onChange={(event) => updateSettings({ studyJapaneseLevel: event.target.value })}>
@@ -255,10 +256,10 @@ export function SettingsView() {
         <SettingRow title="每日新单词" description="支持 10、20、30 或自定义。"><NumberControl value={settings.dailyNewWords} options={[10,20,30]} min={1} max={100} label="每日新单词" onChange={(value) => updateSettings({ dailyNewWords:value })} /></SettingRow>
         <SettingRow title="每轮学习数量" description="自由学习和计划学习都会使用这个轮次大小。"><NumberControl value={settings.studyRoundSize} options={[10,20,30]} min={1} max={100} label="每轮单词" onChange={(value) => updateSettings({ studyRoundSize:value })} /></SettingRow>
         <SettingRow title="每日语法数量" description="自动计划优先选择尚未学习的语法。"><NumberControl value={settings.dailyGrammarCount} options={[1,2,3]} min={1} max={10} label="每日语法" onChange={(value) => updateSettings({ dailyGrammarCount:value })} /></SettingRow>
-        <SettingRow title="每日测试题数" description="首页计划和测试页默认值。"><NumberControl value={settings.dailyTestQuestions} options={[10,20,30]} min={1} max={100} label="每日测试题数" onChange={(value) => updateSettings({ dailyTestQuestions:value })} /></SettingRow>
+        {STANDALONE_TESTS_ENABLED && <SettingRow title="每日测试题数" description="首页计划和测试页默认值。"><NumberControl value={settings.dailyTestQuestions} options={[10,20,30]} min={1} max={100} label="每日测试题数" onChange={(value) => updateSettings({ dailyTestQuestions:value })} /></SettingRow>}
         <SettingRow title="语法练习题数" description="每个语法点最多提供 5 道配套题。"><NumberControl value={settings.grammarExerciseCount} options={[3,5]} min={1} max={5} label="语法练习题数" onChange={(value) => updateSettings({ grammarExerciseCount:value })} /></SettingRow>
-        <SettingRow title="测试即时反馈" description="开启后每题立即显示正确答案和解析。"><Switch value={settings.immediateTestFeedback} label="测试即时反馈" onChange={() => updateSettings({ immediateTestFeedback:!settings.immediateTestFeedback })} /></SettingRow>
-        <SettingRow title="揭示后自动朗读" description="使用自然神经语音朗读单词和例句；需要联网，不使用系统机械音兜底。"><Switch value={settings.autoSpeak} label="揭示后自动朗读" onChange={() => updateSettings({ autoSpeak:!settings.autoSpeak })} /></SettingRow>
+        {STANDALONE_TESTS_ENABLED && <SettingRow title="测试即时反馈" description="开启后每题立即显示正确答案和解析。"><Switch value={settings.immediateTestFeedback} label="测试即时反馈" onChange={() => updateSettings({ immediateTestFeedback:!settings.immediateTestFeedback })} /></SettingRow>}
+        <SettingRow title="揭示后自动朗读" description="朗读单词、例句和中文译文。"><Switch value={settings.autoSpeak} label="揭示后自动朗读" onChange={() => updateSettings({ autoSpeak:!settings.autoSpeak })} /></SettingRow>
       </section>
 
       <section className={`settings-section card mobile-settings-section${mobileSection === "appearance" ? " mobile-open" : ""}`}>
@@ -301,7 +302,7 @@ export function SettingsView() {
         </div>
       </details>
 
-      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><div><strong>LinguaStep 日英阶梯</strong><p>数据库 v3 · 复习算法 v2 · {allWords.length} 组精选考试词汇 · {allGrammar.length} 个语法点 · 137 组语法对比</p><p>当前单词库只启用人工整理或复核的 N3、N2、N1 与四级、六级、TOEIC 常用考试词，不加载未复核的自动扩充词条。</p></div><span>版本 {APP_VERSION}</span></section>
+      <section className="about-card card"><span className="settings-icon"><Info size={20} /></span><strong>LinguaStep</strong><span>版本 {APP_VERSION}</span></section>
 
       {resetScope && (
         <div className="modal-backdrop" role="presentation" onClick={closeReset}>

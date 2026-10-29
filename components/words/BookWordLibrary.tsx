@@ -27,7 +27,7 @@ export function BookWordLibrary({
     <section className="library-section">
       <div className="section-title-row">
         <div>
-          <span className="section-kicker">BOOK VOCAB</span>
+
           <h2>{bookLabel}</h2>
         </div>
         <span className="count-label">共 {words.length} 条</span>

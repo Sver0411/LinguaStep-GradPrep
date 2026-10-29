@@ -1,5 +1,6 @@
 "use client";
 
+import { STANDALONE_TESTS_ENABLED } from "@/lib/features";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -35,8 +36,8 @@ export function LinguaApp() {
   const { ready, storageDegraded, focusMode, setFocusMode, settings } = useLearning();
   const isMobile = useIsMobileViewport();
   const section = pathname.split("/").filter(Boolean)[0] as keyof typeof views | undefined;
-  const View = section && views[section] ? views[section] : HomeView;
-  const focusEligible = section === "words" || section === "grammar" || section === "test" || section === "mistakes";
+  const View = !STANDALONE_TESTS_ENABLED && (section === "test" || section === "training") ? WordsView : section && views[section] ? views[section] : HomeView;
+  const focusEligible = section === "words" || section === "grammar" || section === "mistakes";
 
   useEffect(() => {
     if (!focusEligible && focusMode) setFocusMode(false);

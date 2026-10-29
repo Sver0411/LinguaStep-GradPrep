@@ -92,8 +92,8 @@ export function useSnapshotStore() {
           const migrated = migrateLearningSnapshot(await repository.getSnapshot());
           let stored = restrictSnapshotToActiveVocabulary(migrated);
           const today = dateKey(new Date());
-          if (!stored.dailyPlans.some((plan) => plan.date === today)) {
-            stored = { ...stored, dailyPlans: [...stored.dailyPlans, createPlan(stored, storedSettings)] };
+          if (!stored.dailyPlans.some((plan) => plan.date === today && plan.wordBookId === storedSettings.studyWordBook && plan.wordStudyOrder === storedSettings.wordStudyOrder && plan.grammarCourse === storedSettings.grammarCourse)) {
+            stored = { ...stored, dailyPlans: [...stored.dailyPlans.filter((plan) => plan.date !== today), createPlan(stored, storedSettings)] };
           }
           if (!equalValue(migrated, stored)) await repository.saveSnapshot(stored);
           if (cancelled) return;
@@ -129,12 +129,10 @@ export function useSnapshotStore() {
    */
   const updateSettings = useCallback(
     (patch: Partial<AppSettings>) => {
-      setSettings((current) => {
-        const next = { ...current, ...patch };
-        settingsRef.current = next;
-        settingsRepositoryRef.current?.save(next);
-        return next;
-      });
+      const next = { ...settingsRef.current, ...patch };
+      settingsRef.current = next;
+      settingsRepositoryRef.current?.save(next);
+      setSettings(next);
     },
     [],
   );

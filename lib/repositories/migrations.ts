@@ -311,6 +311,9 @@ export function migrateDailyRecord(value: unknown): DailyRecord {
 export function migrateDailyPlan(value: unknown): DailyPlan {
   const record = isRecord(value) ? value : {};
   return {
+    ...(typeof record.grammarCourse === "string" ? { grammarCourse: record.grammarCourse } : {}),
+    ...(typeof record.wordBookId === "string" ? { wordBookId: record.wordBookId } : {}),
+    ...(record.wordStudyOrder === "random" || record.wordStudyOrder === "sequential" ? { wordStudyOrder: record.wordStudyOrder } : {}),
     date: stringValue(record.date, "1970-01-01"),
     generatedAt: stringValue(record.generatedAt, new Date(0).toISOString()),
     newWordIds: Array.isArray(record.newWordIds)
