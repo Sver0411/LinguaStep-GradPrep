@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/changelog.en.md"><img src="https://img.shields.io/badge/version-0.20.2-5964f2?style=flat-square" alt="Version 0.20.2" /></a>
+  <a href="docs/changelog.en.md"><img src="https://img.shields.io/badge/version-0.20.3-5964f2?style=flat-square" alt="Version 0.20.3" /></a>
   <img src="https://img.shields.io/badge/Node.js-%3E%3D22.13-43853d?style=flat-square" alt="Node.js >=22.13" />
   <img src="https://img.shields.io/badge/TypeScript-3178c6?style=flat-square" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Local--first-278c82?style=flat-square" alt="Local-first" />
@@ -26,7 +26,7 @@ Version 0.20.0 unifies the mobile and desktop grammar workspace around six remem
 
 All 12,905 Chinese vocabulary glosses were checked, with 1,248 shortened or corrected. Previous glosses remain in an audit manifest; word IDs and learner progress are unchanged.
 
-Patch **0.20.2** aligns vocabulary and grammar page dimensions on phones and desktops, stops audio when leaving a page, reduces mobile navigation layout shifts, and adds kanji readings above Japanese examples. Grammar study now records reading without cloze questions or artificial recall scores.
+Patch **0.20.3** makes word reveal cards more compact: a small progress header, a large centered meaning with a separate favorite control, and side-by-side Japanese/English panels on desktop. Complete examples and translations remain visible, with a larger centered meaning and comfortable spacing on phones, plus natural scrolling for long entries.
 
 ## Run locally
 

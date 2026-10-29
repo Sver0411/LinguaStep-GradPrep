@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/changelog.md"><img src="https://img.shields.io/badge/version-0.20.2-5964f2?style=flat-square" alt="版本 0.20.2" /></a>
+  <a href="docs/changelog.md"><img src="https://img.shields.io/badge/version-0.20.3-5964f2?style=flat-square" alt="版本 0.20.3" /></a>
   <img src="https://img.shields.io/badge/Node.js-%3E%3D22.13-43853d?style=flat-square" alt="Node.js >=22.13" />
   <img src="https://img.shields.io/badge/TypeScript-3178c6?style=flat-square" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Local--first-278c82?style=flat-square" alt="本地优先" />
@@ -77,7 +77,7 @@ LinguaStep 是面向中文使用者的日语与英语学习应用。它把日英
 
 [查看完整使用指南](docs/user-guide.md)
 
-当前补丁 **v0.20.2** 统一单词与语法页面在手机和电脑上的尺寸、间距与控件位置，修复返回后继续朗读及移动端切换时的布局闪动。日语例句显示汉字假名；语法改为阅读完整原讲解，每条最多展示两个例句。
+当前补丁 **v0.20.3** 优化背词揭示页：收紧顶部进度，中文释义居中放大，桌面日英内容并排并保留舒适间距，完整保留单词、假名、例句和译文，让常见笔记本屏幕可直接看到下一步按钮。手机端保留宽松间距，中文释义放大并居中，长内容仍可完整浏览。
 
 ## 主要功能更新 · v0.20.0
 

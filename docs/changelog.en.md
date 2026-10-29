@@ -2,6 +2,12 @@
 
 [Project home](../README.en.md) · [Documentation](README.md) · [中文版本记录](changelog.md)
 
+## v0.20.3 · 2026-10-29
+
+- Compact word-study progress and exit controls; enlarge and center the meaning with a favorite button at the corner, and remove the redundant prompt after revealing.
+- Display Japanese and English panels side by side with comfortable spacing on desktop while preserving staged reveal, pronunciation, complete examples, ruby and Chinese translations.
+- Reduce desktop focus-mode spacing, retain Escape/exit controls, and give phones a large centered meaning with comfortable spacing. Long content grows naturally without clipping.
+
 ## v0.20.2 · 2026-10-29
 
 - Share page, cover, title, settings and action dimensions between vocabulary and grammar on phones and desktops.
