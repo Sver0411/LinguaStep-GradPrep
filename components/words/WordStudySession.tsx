@@ -77,7 +77,10 @@ function WordLearningRound({ items, mode, onFinish, onRestart, onContinuePlan, m
     preload(current.meaningZh, "zh-CN");
     return () => stopSpeech();
   }, [current, mode, stage, quizIndex]);
-  useEffect(() => () => setFocusMode(false), [setFocusMode]);
+  useEffect(() => {
+    setFocusMode(true);
+    return () => setFocusMode(false);
+  }, [setFocusMode]);
 
   const reveal = useCallback(() => {
     if (stage !== "learn" || !current) return;

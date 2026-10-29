@@ -101,22 +101,10 @@ export function AppShell({
     };
   }, [moreOpen]);
 
-  if (focusMode) {
-    return (
-      <div className="focus-shell">
-        <button className="focus-exit" onClick={onExitFocus} type="button">
-          <X size={18} aria-hidden="true" />
-          退出专注
-          <kbd>Esc</kbd>
-        </button>
-        <main className="focus-content">{children}</main>
-      </div>
-    );
-  }
-
   return (
-    <div className="app-shell">
-      <aside className="sidebar" aria-label="主导航">
+    <div className={focusMode ? "focus-shell" : "app-shell"}>
+      {focusMode && <button className="focus-exit" onClick={onExitFocus} type="button"><X size={18} aria-hidden="true" />退出专注<kbd>Esc</kbd></button>}
+      <aside className="sidebar" aria-label="主导航" hidden={focusMode}>
         <Link className="brand" href="/" aria-label="LinguaStep 日英阶梯首页">
           <span className="brand-mark">L</span>
           <span>
@@ -151,7 +139,7 @@ export function AppShell({
 
       </aside>
 
-      <header className="mobile-header">
+      <header className="mobile-header" hidden={focusMode}>
         <Link className="mobile-home-mark" href="/" aria-label="返回今日学习">
           <span className="brand-mark">L</span>
         </Link>
@@ -169,11 +157,11 @@ export function AppShell({
         </button>
       </header>
 
-      <div className="content-column" ref={contentColumnRef}>
-        <main className="page-content">{children}</main>
+      <div className={focusMode ? "focus-column" : "content-column"} ref={contentColumnRef}>
+        <main className={focusMode ? "focus-content" : "page-content"}>{children}</main>
       </div>
 
-      <nav className="mobile-nav" aria-label="移动端主导航">
+      <nav className="mobile-nav" aria-label="移动端主导航" hidden={focusMode}>
         {primaryMobileNavigation.map((item) => {
           const Icon = item.icon;
           const active = isActive(pathname, item.path);
@@ -202,7 +190,7 @@ export function AppShell({
         </button>
       </nav>
 
-      {moreOpen && (
+      {moreOpen && !focusMode && (
         <div className="mobile-sheet-backdrop" role="presentation" onClick={closeMore}>
           <section
             className="mobile-sheet"

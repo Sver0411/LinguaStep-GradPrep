@@ -2,6 +2,12 @@
 
 [Project home](../README.en.md) · [Documentation](README.md) · [中文版本记录](changelog.md)
 
+## v0.20.1 · 2026-10-29
+
+- Restore phone navigation from the actual session state and replace stale study URLs on exit.
+- Preserve the mounted desktop session across focus layout changes and close it through the shell exit.
+- Cover routed/inline sessions, empty study ranges and repeated exits with regression tests.
+
 ## v0.20.0 · 2026-10-29
 
 - Rebuilt the shared mobile/desktop grammar workspace with remembered courses, an on-demand catalog, sequential/random study and due reviews.

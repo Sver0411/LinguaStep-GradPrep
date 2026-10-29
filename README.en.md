@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/changelog.en.md"><img src="https://img.shields.io/badge/version-0.20.0-5964f2?style=flat-square" alt="Version 0.20.0" /></a>
+  <a href="docs/changelog.en.md"><img src="https://img.shields.io/badge/version-0.20.1-5964f2?style=flat-square" alt="Version 0.20.1" /></a>
   <img src="https://img.shields.io/badge/Node.js-%3E%3D22.13-43853d?style=flat-square" alt="Node.js >=22.13" />
   <img src="https://img.shields.io/badge/TypeScript-3178c6?style=flat-square" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Local--first-278c82?style=flat-square" alt="Local-first" />
@@ -25,6 +25,8 @@ The home screen now focuses on the current book and daily tasks. Standalone test
 Version 0.20.0 unifies the mobile and desktop grammar workspace around six remembered courses: Blue Book N1–N5 and the existing English course. The reviewed Japanese import contains 766 lessons, 2,465 paired examples and 159 source figures. Unresolved source defects are quarantined. Recall blanks reuse explicit spans from the original examples; missing content is not authored. [Source and review details](docs/grammar-sources.md).
 
 All 12,905 Chinese vocabulary glosses were checked, with 1,248 shortened or corrected. Previous glosses remain in an audit manifest; word IDs and learner progress are unchanged.
+
+Patch **0.20.1** restores navigation and clears study links on exit, and preserves the active round when toggling desktop focus mode.
 
 ## Run locally
 

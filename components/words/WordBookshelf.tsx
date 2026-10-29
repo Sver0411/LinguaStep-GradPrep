@@ -109,7 +109,20 @@ export function WordBookshelf({ mobile = false, params }: { mobile?: boolean; pa
       ? new Set([...current].filter((id) => !ids.has(id)))
       : new Set([...current, ...ids]);
   });
-  const finish = () => { setItems(null); setFocusMode(false); };
+  const finish = useCallback(() => {
+    initialized.current = true;
+    setItems(null); setFocusMode(false);
+    const search = params ?? new URLSearchParams(window.location.search);
+    if (search.get("mobile") === "study" || ["source", "study", "word", "review", "plan", "favorites"].some((key) => search.get(key) !== null)) {
+      navigateTo("/words", { replace: true });
+    }
+  }, [params, setFocusMode]);
+
+  useEffect(() => {
+    const exit = () => { if (items) finish(); };
+    window.addEventListener("linguastep:exit-session", exit);
+    return () => window.removeEventListener("linguastep:exit-session", exit);
+  }, [finish, items]);
 
   if (items) return <WordStudySession key={sessionNumber} items={items} mode={mode} mobile={mobile}
     onFinish={finish} onRestart={() => start("all")}

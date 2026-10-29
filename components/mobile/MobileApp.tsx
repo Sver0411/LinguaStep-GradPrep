@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { BookOpenText, Home, NotebookPen, UserRound } from "lucide-react";
 import { setAppRouter } from "./navigation";
+import { useLearning } from "@/context/learning";
 import { TrainingView } from "@/components/views/TrainingView";
 import { MobileFavorites } from "./screens/FavoritesScreen";
 import { MobileGrammarHub } from "./screens/GrammarScreen";
@@ -31,10 +32,9 @@ const TAB_ITEMS = [
 
 function MobileTabBar() {
   const pathname = usePathname();
-  const params = useSearchParams();
-  // A study round owns the whole screen (its rating row sits at the bottom), so
-  // the bar steps aside while one is running.
-  if (params?.get("mobile") === "study") return null;
+  const { focusMode } = useLearning();
+  // Follow the mounted session, not a possibly stale study URL.
+  if (focusMode) return null;
   return (
       <nav className="m2-tabbar" aria-label="移动端主导航">
         {TAB_ITEMS.map((item) => {

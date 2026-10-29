@@ -6770,3 +6770,6 @@ input[type="number"] {
 
 .grammar-usage > p + p { margin-top: 10px; }
 .grammar-catalog-list p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Keep the session mounted while toggling its surrounding navigation. */
+.focus-shell > [hidden] { display: none !important; }

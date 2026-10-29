@@ -17,11 +17,16 @@ export function setAppRouter(router: ReturnType<typeof useRouter> | null) {
   appRouter = router;
 }
 
-export function navigateTo(url: string) {
-  if (appRouter) appRouter.push(url);
+export function navigateTo(url: string, options: { replace?: boolean } = {}) {
+  if (appRouter) {
+    if (options.replace) appRouter.replace(url);
+    else appRouter.push(url);
+  }
   else {
     const base = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").trim().replace(/\/+$/, "");
-    window.location.assign(base && url.startsWith("/") && !url.startsWith(`${base}/`) && url !== base ? `${base}${url}` : url);
+    const destination = base && url.startsWith("/") && !url.startsWith(`${base}/`) && url !== base ? `${base}${url}` : url;
+    if (options.replace) window.location.replace(destination);
+    else window.location.assign(destination);
   }
 }
 
