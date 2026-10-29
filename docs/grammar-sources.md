@@ -35,9 +35,11 @@
 
 手机和电脑使用同一语法界面。默认显示上次选择的册、学习和复习入口，目录按需展开。可以切换 N1–N5 或英语，搜索全册，设置顺序／随机和每轮条数。
 
-先读原文讲解、接续和例句，更多用法、例句、说明与图表按需展开。例句按钮朗读外语及中文。图表型条目直接显示原图。
+完整展示原文讲解、接续和注意事项，每条最多显示两对例句，保留原图。例句按钮朗读外语及中文，返回、换条和离开页面都会停止朗读。没有补造原资料中缺失的讲解。
 
-“原句填空”只取原例句中单个明确加粗的片段，共 2,074 个可还原填空。用户输入后与原句核对，不制作干扰选项，不声称是出版社原配习题，也不把“与原句不同”等同于“语法一定错误”。练习记录沿用当前语法调度，不属于词汇 FSRS-6。没有可靠填空的条目使用“完成阅读”，只记学习量，答题数和正确数均不增加。
+语法学习入口不再使用原句填空。已整理的填空数据与历史答题记录保留；“完成阅读”只增加阅读学习量，不增加答题数、正确数、遗忘次数或掌握程度，按已有间隔（至少一天）安排再次阅读。
+
+日语例句增加汉字上方假名：优先保留卡组已有的 1,675 句读音（`data/grammar-source-ruby.json`），缺失部分离线使用 Kuromoji/IPADIC 生成并进行异常检查。标注只影响显示，朗读仍传原句。自动标注不等于逐句专业审校；读音纠正见 `data/example-reading-corrections.json`。
 
 ## 重建
 
@@ -48,6 +50,7 @@ python3 scripts/import-bluebook-grammar.py /path/to/N1N2N3N4N5.apkg
 # 检查 work/grammar-rebuild/staged 下的原字段、报告和图片；核对原书。
 # 隔离决策保存在 data/grammar-bluebook-audit.json 的 review 字段。
 python3 scripts/release-bluebook-grammar.py
+node scripts/build-example-furigana.mjs
 npm run typecheck
 npm test
 npm run build:vercel

@@ -24,3 +24,9 @@
 5. 检查所有活动词的双语表达、双语例句、中文译文及音频引用，再运行内容与交互测试。
 
 原始卡组、媒体和中间缓存保存在忽略的 `work/` 中。生成数据及修订记录可追溯，学习页面不增加来源徽标。分发不同来源的数据时，应分别遵守相应许可；商业使用前需处理教材与非商业语料的授权。
+
+## 例句假名与文字校正（v0.20.2）
+
+日语例句离线生成 ruby 假名，浏览器不下载分词词典。词书导入后运行 `node scripts/build-example-furigana.mjs`：先逐条应用 `data/example-text-review.json` 中有前后值的 134 处明显 OCR 字形校正，再生成读音。遇到原句与审核前后值均不匹配时停止，避免覆盖后续编辑。读音单独纠正表为 `data/example-reading-corrections.json`。每句移除标注后必须逐字还原原句，朗读仍使用原句。
+
+读音使用 Kuromoji 0.1.2 / IPADIC；自动标注及抽查不代表完整专业审校。相关许可保存在 [第三方说明](third-party/kuromoji-NOTICE.md) 与 [Apache 2.0](third-party/kuromoji-LICENSE.txt)。重建词库或语法后都要重新运行假名脚本。

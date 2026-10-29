@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/changelog.md"><img src="https://img.shields.io/badge/version-0.20.1-5964f2?style=flat-square" alt="版本 0.20.1" /></a>
+  <a href="docs/changelog.md"><img src="https://img.shields.io/badge/version-0.20.2-5964f2?style=flat-square" alt="版本 0.20.2" /></a>
   <img src="https://img.shields.io/badge/Node.js-%3E%3D22.13-43853d?style=flat-square" alt="Node.js >=22.13" />
   <img src="https://img.shields.io/badge/TypeScript-3178c6?style=flat-square" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Local--first-278c82?style=flat-square" alt="本地优先" />
@@ -28,7 +28,7 @@ LinguaStep 是面向中文使用者的日语与英语学习应用。它把日英
 | 页面 | 可以体验什么 |
 | --- | --- |
 | [单词学习](https://twclab.top/LinguaStep/words) | 词卡揭示、例句、对应选择与词库浏览 |
-| [语法](https://twclab.top/LinguaStep/grammar) | 蓝宝书 N1–N5、原书例句与填空回忆 |
+| [语法](https://twclab.top/LinguaStep/grammar) | 蓝宝书 N1–N5、原书讲解与例句朗读 |
 | [学习统计](https://twclab.top/LinguaStep/stats) | 学习量、首次作答和隔日记忆表现 |
 
 在线页面以当前部署版本为准；下文介绍仓库 `main` 中的功能。
@@ -67,7 +67,7 @@ LinguaStep 是面向中文使用者的日语与英语学习应用。它把日英
 | 功能 | 使用方式 |
 | --- | --- |
 | 三种学习模式 | 日语、英语、日英对照分别保留进度；支持揭示顺序与每轮数量设置 |
-| 语法 | 蓝宝书 N1–N5，阅读原讲解、接续与图表，再用原句填空回忆 |
+| 语法 | 蓝宝书 N1–N5，阅读原讲解、接续与图表，连读例句及中文 |
 | 独立测试与能力训练 | 暂停入口，保留实现；词汇熟练度练习继续开放 |
 | 错题本 | 自动保留错误与历史；听力题能重播，输入题继续用输入作答 |
 | 词库与收藏 | 搜索中文、日语、英语及例句；词书条目可收藏、加入学习和后续复习 |
@@ -77,7 +77,7 @@ LinguaStep 是面向中文使用者的日语与英语学习应用。它把日英
 
 [查看完整使用指南](docs/user-guide.md)
 
-当前补丁 **v0.20.1** 修复退出背词后底部导航未恢复、学习链接残留及桌面专注切换重置学习的问题。
+当前补丁 **v0.20.2** 统一单词与语法页面在手机和电脑上的尺寸、间距与控件位置，修复返回后继续朗读及移动端切换时的布局闪动。日语例句显示汉字假名；语法改为阅读完整原讲解，每条最多展示两个例句。
 
 ## 主要功能更新 · v0.20.0
 

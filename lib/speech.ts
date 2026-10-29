@@ -21,6 +21,7 @@ function scheduleLoad<T>(work: () => Promise<T>): Promise<T> {
 }
 let currentAudio: HTMLAudioElement | null = null;
 let cancelCurrent: (() => void) | null = null;
+let playbackVersion = 0;
 function source(text: string, language: SpeechLanguage, audioUrl?: string) {
   if (language === "ja-JP" && audioUrl && /^\/api\/word-audio\/[a-f0-9]{32}$/.test(audioUrl)) return `${APP_BASE_PATH}${audioUrl}`;
   // Version the URL so old dictionary clips are not reused.
@@ -60,6 +61,10 @@ export function isSpeechSupported(): boolean {
 }
 /** Only the configured neural voice; never fall back to system speech. */
 export function speak(text: string, language: SpeechLanguage, waitForEnd = false, audioUrl?: string): Promise<SpeechResult> {
+  playbackVersion += 1;
+  return playClip(text, language, waitForEnd, audioUrl);
+}
+function playClip(text: string, language: SpeechLanguage, waitForEnd = false, audioUrl?: string): Promise<SpeechResult> {
   if (!text.trim() || !isSpeechSupported()) return Promise.resolve({ ok: false, message: "当前设备无法播放自然语音" });
   cancelCurrent?.();
   currentAudio?.pause();
@@ -85,10 +90,11 @@ export function speak(text: string, language: SpeechLanguage, waitForEnd = false
       resolve(result);
     };
     const failed = () => {
+      if (settled) return;
       if (!retried && url !== fallbackUrl) {
         retried = true; window.clearTimeout(timer); timer = window.setTimeout(failed, 20000);
         audio.src = cache.get(fallbackUrl)?.url ?? fallbackUrl;
-        void audio.play().catch(() => { audio.pause(); finish({ ok: false, message: "自然语音暂时无法播放，请稍后重试" }); });
+        void audio.play().catch(() => { if (settled) return; audio.pause(); finish({ ok: false, message: "自然语音暂时无法播放，请稍后重试" }); });
         return;
       }
       audio.pause(); finish({ ok: false, message: "自然语音暂时无法播放，请稍后重试" });
@@ -105,6 +111,7 @@ export function speak(text: string, language: SpeechLanguage, waitForEnd = false
     audio.addEventListener("error", failed);
     audio.addEventListener("ended", ended);
     void audio.play().catch((error: unknown) => {
+      if (settled) return;
       if (error instanceof Error && error.name === "NotAllowedError") {
         audio.pause(); finish({ ok: false, message: "请点击喇叭播放自然语音" });
       } else failed();
@@ -117,8 +124,14 @@ export function speak(text: string, language: SpeechLanguage, waitForEnd = false
 export async function speakSequence(clips: SpeechClip[]): Promise<SpeechResult> {
   // Prepare every segment now, while the first one is already playing.
   // Waiting to request the Chinese clip until the foreign clip ends caused a network-sized gap.
+  const version = ++playbackVersion;
   clips.forEach((clip) => preload(clip.text, clip.language, clip.audioUrl));
-  for (const clip of clips) { const result = await speak(clip.text, clip.language, true, clip.audioUrl); if (!result.ok) return result; }
+  for (const clip of clips) {
+    if (version !== playbackVersion) return { ok: false, message: "" };
+    const result = await playClip(clip.text, clip.language, true, clip.audioUrl);
+    if (version !== playbackVersion) return { ok: false, message: "" };
+    if (!result.ok) return result;
+  }
   return { ok: true };
 }
-export function stopSpeech(): void { cancelCurrent?.(); currentAudio?.pause(); }
+export function stopSpeech(): void { playbackVersion += 1; cancelCurrent?.(); currentAudio?.pause(); }

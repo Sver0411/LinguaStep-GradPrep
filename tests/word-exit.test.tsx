@@ -12,7 +12,7 @@ import { setAppRouter } from "../components/mobile/navigation";
 const state=vi.hoisted(()=>({pathname:"/words",search:"",useLearning:()=>({} as Record<string,unknown>),replace:vi.fn(),push:vi.fn()}));
 vi.mock("@/context/learning",()=>({useLearning:()=>state.useLearning()}));
 vi.mock("next/navigation",()=>({usePathname:()=>state.pathname,useSearchParams:()=>new URLSearchParams(state.search),useRouter:()=>({replace:state.replace,push:state.push})}));
-vi.mock("next/link",()=>({default:({href,children,...props}:AnchorHTMLAttributes<HTMLAnchorElement> & {href:string;children:ReactNode})=><a href={href} {...props}>{children}</a>}));
+vi.mock("next/link",()=>({default:({href,children,scroll: _scroll,...props}:AnchorHTMLAttributes<HTMLAnchorElement> & {href:string;children:ReactNode;scroll?:boolean})=><a href={href} {...props}>{children}</a>}));
 vi.mock("@/lib/speech",()=>({isSpeechSupported:()=>false,preload:vi.fn(),stopSpeech:vi.fn(),speak:vi.fn(),speakSequence:vi.fn()}));
 const snapshot={...EMPTY_SNAPSHOT,wordProgress:[],dailyPlans:[],dailyRecords:[]};
 const settings={...DEFAULT_SETTINGS,autoSpeak:false};
@@ -21,8 +21,8 @@ function Host({desktop=false,empty=false}:{desktop?:boolean;empty?:boolean}) {
   state.useLearning=()=>({allWords:empty?[]:WORD_PAIRS,snapshot,settings,ready:true,focusMode,setFocusMode,isFavorite:()=>false,toggleFavorite:vi.fn(),updateSettings:vi.fn(),rebuildTodayPlan:vi.fn()});
   return desktop ? <AppShell focusMode={focusMode} onExitFocus={()=>{window.dispatchEvent(new Event("linguastep:exit-session"));setFocusMode(false);}}><WordsView /></AppShell> : <MobileApp />;
 }
-beforeEach(()=>{state.pathname="/words";state.search="";window.history.replaceState(null,"","/words");});
-afterEach(()=>{cleanup();setAppRouter(null);vi.clearAllMocks();});
+beforeEach(()=>{vi.spyOn(window,"scrollTo").mockImplementation(()=>{});state.pathname="/words";state.search="";window.history.replaceState(null,"","/words");});
+afterEach(()=>{cleanup();setAppRouter(null);vi.restoreAllMocks();vi.clearAllMocks();});
 describe("word study exits",()=>{
   it("restores all five phone tabs after a routed study exit, even before navigation commits",async()=>{
     state.search="mobile=study&source=new&mode=combined";

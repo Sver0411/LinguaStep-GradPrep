@@ -1,6 +1,6 @@
 {
   "name": "lingua-step",
-  "version": "0.20.1",
+  "version": "0.20.2",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -40,6 +40,7 @@
     "eslint-config-next": "16.2.6",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",
+    "kuromoji": "0.1.2",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",

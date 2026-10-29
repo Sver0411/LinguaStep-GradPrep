@@ -2,6 +2,14 @@
 
 [Project home](../README.en.md) · [Documentation](README.md) · [中文版本记录](changelog.md)
 
+## v0.20.2 · 2026-10-29
+
+- Share page, cover, title, settings and action dimensions between vocabulary and grammar on phones and desktops.
+- Stop complete audio sequences on return or route change, including cancellation races and late playback failures.
+- Read the viewport before client navigation paints; align mobile scroll reset and disable competing smooth scroll.
+- Add ruby readings to Japanese vocabulary and grammar examples, prioritizing 1,675 original source readings. Retain correction manifests and repair 134 obvious example OCR defects.
+- Replace grammar cloze practice with complete source explanations, notes and up to two examples. Preserve historical files and results; reading does not count as a failed or successful recall.
+
 ## v0.20.1 · 2026-10-29
 
 - Restore phone navigation from the actual session state and replace stale study URLs on exit.

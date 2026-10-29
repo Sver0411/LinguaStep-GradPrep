@@ -1,22 +1,14 @@
 "use client";
+import { useCallback, useSyncExternalStore } from "react";
 
-import { useEffect, useState } from "react";
-
-/**
- * Switches to the dedicated phone experience below the breakpoint. Server
- * render and the first client paint assume desktop so the markup stays
- * deterministic; the media query listener flips it immediately after mount.
- */
+// Client-side route changes read the existing viewport before painting. Starting
+// every mount at desktop caused the mobile shell and tab bar to visibly jump.
 export function useIsMobileViewport(breakpoint = 680): boolean {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
+  const subscribe = useCallback((notify: () => void) => {
     const query = window.matchMedia(`(max-width: ${breakpoint}px)`);
-    const update = () => setIsMobile(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
+    query.addEventListener("change", notify);
+    return () => query.removeEventListener("change", notify);
   }, [breakpoint]);
-
-  return isMobile;
+  const snapshot = useCallback(() => window.matchMedia(`(max-width: ${breakpoint}px)`).matches, [breakpoint]);
+  return useSyncExternalStore(subscribe, snapshot, () => false);
 }

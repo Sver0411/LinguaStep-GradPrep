@@ -133,7 +133,7 @@ export function WordBookshelf({ mobile = false, params }: { mobile?: boolean; pa
       else navigateTo(mobile ? mobileHref(next.pathname, { mobile: "practice" }) : href);
     }} />;
 
-  return <main className={`word-books-page${mobile ? " word-books-mobile m3-page" : " page-stack"}`}>
+  return <main className={`word-books-page learning-workspace${mobile ? " word-books-mobile m3-page" : " page-stack"}`}>
     {!book ? <>
       <header className="word-books-title"><div><h1>词书</h1></div><BookOpen size={30} /></header>
       <div className="book-shelf-filters">
@@ -150,15 +150,15 @@ export function WordBookshelf({ mobile = false, params }: { mobile?: boolean; pa
       })}</section>
 
     </> : <>
-      <header className={`book-detail-heading book-overview ${book.series}`}>
-        <button className="book-cover-button" type="button" aria-label="浏览本册单词" aria-expanded={showWords} onClick={() => setShowWords((value) => !value)}><img src={`${BASE_PATH}${book.cover}`} alt={`${book.title}封面`} /></button>
+      <header className={`book-detail-heading book-overview learning-overview ${book.series}`}>
+        <button className="book-cover-button learning-cover" type="button" aria-label="浏览本册单词" aria-expanded={showWords} onClick={() => setShowWords((value) => !value)}><img src={`${BASE_PATH}${book.cover}`} alt={`${book.title}封面`} /></button>
         <div className="book-overview-info"><h1>{book.title}</h1><p>{bookWords.length.toLocaleString()} 词 · 已学 {studiedCount.toLocaleString()}</p><div className="book-progress-track"><span style={{ width: `${studiedCount / Math.max(1, bookWords.length) * 100}%` }} /></div><div className="book-overview-actions"><button className="text-button" type="button" onClick={() => setShowWords((value) => !value)}>{showWords ? "收起词表" : "浏览单词"}</button><button className="text-button" type="button" onClick={() => { initialized.current = true; setBookId(null); setShowWords(false); setSelected(new Set()); setNotice(""); }}>换书</button></div></div>
       </header>
-      <details className="book-study-controls card book-settings"><summary><span>学习设置</span><span>{MODES[mode]} · {order === "random" ? "随机" : "顺序"}</span></summary><div className="book-settings-content">
+      <details className="book-study-controls card book-settings learning-settings"><summary><span>学习设置</span><span>{MODES[mode]} · {order === "random" ? "随机" : "顺序"}</span></summary><div className="book-settings-content">
         <div className="book-control-line"><span>学习语言</span><div className="segmented-control">{(Object.keys(MODES) as StudyMode[]).map((item) => <button key={item} type="button" className={mode === item ? "active" : ""} onClick={() => changeMode(item)}>{MODES[item]}</button>)}</div></div>
         <div className="book-control-line"><span>背诵顺序</span><div className="segmented-control" aria-label="背诵顺序"><button type="button" className={order === "sequential" ? "active" : ""} onClick={() => changeOrder("sequential")}><ListOrdered size={16} />顺序</button><button type="button" className={order === "random" ? "active" : ""} onClick={() => changeOrder("random")}><Shuffle size={16} />随机</button></div></div>
       </div></details>
-        <div className="book-start-actions"><button className="button button-primary" type="button" onClick={() => start("all")}><BookOpen size={17} />{order === "random" ? "随机背诵" : "顺序背诵"}</button><button className="button button-secondary" type="button" onClick={() => start("review")}>复习到期词</button></div>
+        <div className="book-start-actions learning-actions"><button className="button button-primary" type="button" onClick={() => start("all")}><BookOpen size={17} />{order === "random" ? "随机背诵" : "顺序背诵"}</button><button className="button button-secondary" type="button" onClick={() => start("review")}>复习到期词</button></div>
       {showWords && <section className="book-word-browser" aria-label={`${book.title}全册词汇`}>
         <div className="book-browser-toolbar"><label className="search-field"><Search size={18} /><span className="sr-only">搜索本册词汇</span><input aria-label="搜索本册词汇" value={query} onChange={(event) => { setQuery(event.target.value); setLimit(PAGE_SIZE); }} placeholder="搜索日语、读音、中文或英语" /></label><button className="text-button" type="button" onClick={toggleRange}>{matched.length && matched.every((word) => selected.has(word.id)) ? "取消全选" : "全选当前范围"}</button></div>
         <p className="book-list-count">{normalized ? `找到 ${matched.length} 词` : `全册 ${matched.length} 词，向下滚动浏览`} · 勾选后可单独背诵</p>

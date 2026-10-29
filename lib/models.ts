@@ -76,7 +76,10 @@ export interface AIContentMetadata {
   contentHash: string;
 }
 
+export type JapaneseRubyPart = string | [string, string];
+
 export interface WordLanguageEntry {
+  exampleRuby?: JapaneseRubyPart[];
   term: string;
   reading?: string;
   romanization?: string;
@@ -121,6 +124,7 @@ export interface ChoiceQuestion {
 }
 
 export interface GrammarExample {
+  ruby?: JapaneseRubyPart[];
   text: string;
   translationZh: string;
 }

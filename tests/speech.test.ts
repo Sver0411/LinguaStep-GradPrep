@@ -88,4 +88,37 @@ describe("neural audio player", () => {
     expect(await task).toEqual({ ok: true, voice: undefined });
   });
 
+  it("does not start the next clip if stopped between ended and sequence continuation", async () => {
+    const audios: MockAudio[] = [];
+    class MockAudio extends EventTarget {
+      src = ""; pause = vi.fn(); play = vi.fn().mockResolvedValue(undefined);
+      constructor() { super(); audios.push(this); }
+    }
+    vi.stubGlobal("Audio", MockAudio);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("missing", { status: 404 })));
+    const { speakSequence, stopSpeech } = await import("../lib/speech");
+    const task = speakSequence([{ text: "計画", language: "ja-JP" }, { text: "计划", language: "zh-CN" }]);
+    audios[0].dispatchEvent(new Event("playing"));
+    audios[0].dispatchEvent(new Event("ended"));
+    stopSpeech();
+    expect(await task).toMatchObject({ok:false});
+    expect(audios[0].play).toHaveBeenCalledTimes(1);
+  });
+  it("ignores a late play rejection after cancellation instead of starting fallback audio", async () => {
+    let rejectPlay!: (error: Error) => void;
+    const audios: MockAudio[] = [];
+    class MockAudio extends EventTarget {
+      src = ""; pause = vi.fn(); play = vi.fn(() => new Promise<void>((_resolve,reject) => { rejectPlay=reject; }));
+      constructor() { super(); audios.push(this); }
+    }
+    vi.stubGlobal("Audio", MockAudio);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("missing", { status: 404 })));
+    const { speak, stopSpeech } = await import("../lib/speech");
+    const task = speak("暑い", "ja-JP", true, `/api/word-audio/${"a".repeat(32)}`);
+    stopSpeech(); rejectPlay(new Error("aborted"));
+    await task; await Promise.resolve();
+    expect(audios[0].play).toHaveBeenCalledTimes(1);
+    expect(audios[0].src).not.toContain("/api/tts?");
+  });
+
 });

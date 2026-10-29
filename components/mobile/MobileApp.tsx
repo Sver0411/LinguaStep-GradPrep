@@ -3,7 +3,7 @@
 import { STANDALONE_TESTS_ENABLED } from "@/lib/features";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useLayoutEffect } from "react";
 import { BookOpenText, Home, NotebookPen, UserRound } from "lucide-react";
 import { setAppRouter } from "./navigation";
 import { useLearning } from "@/context/learning";
@@ -41,7 +41,7 @@ function MobileTabBar() {
           const Icon = item.icon;
           const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
-            <Link aria-current={active ? "page" : undefined} className={`m2-tabbar-item${active ? " active" : ""}`} href={item.href} key={item.href}>
+            <Link scroll={false} aria-current={active ? "page" : undefined} className={`m2-tabbar-item${active ? " active" : ""}`} href={item.href} key={item.href}>
               <Icon aria-hidden="true" />
               <span>{item.label}</span>
             </Link>
@@ -52,6 +52,10 @@ function MobileTabBar() {
 }
 
 export function MobileApp() {
+  const pathname = usePathname();
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
   return (
     <div className="m2-app">
       <Suspense fallback={null}>

@@ -1,11 +1,11 @@
 import source from "./grammar-bluebook.generated.json";
 import legacyEnglish from "./grammar-english.legacy.json";
-import type { GrammarPoint } from "@/lib/models";
+import type { GrammarPoint, GrammarExample } from "@/lib/models";
 
 const bookGrammar: GrammarPoint[] = source.map((lesson) => ({
   id:lesson.id, title:lesson.title, summary:lesson.explanations[0] ?? "", language:"japanese",
   level:`JLPT ${lesson.level}`, explanation:lesson.explanations.join("\n"), structure:lesson.title,
-  connection:lesson.connections.join("\n"), nuance:lesson.notes.join("\n"), scenarios:[], examples:lesson.examples,
+  connection:lesson.connections.join("\n"), nuance:lesson.notes.join("\n"), scenarios:[], examples:lesson.examples as GrammarExample[],
   comparison:{japanese:"",english:"",translationZh:""},commonErrors:lesson.notes,confusables:[],
   book:{sourceNote:lesson.sourceNote,sourceLink:lesson.sourceLink,order:lesson.order,connections:lesson.connections,explanations:lesson.explanations,notes:lesson.notes,images:lesson.images},
   exercises:lesson.recalls.map((recall) => ({

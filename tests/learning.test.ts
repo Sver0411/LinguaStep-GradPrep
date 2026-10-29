@@ -363,3 +363,19 @@ describe("test generation", () => {
     expect(questions[0].sourceId).toBe("word-3");
   });
 });
+
+describe("grammar reading without recall", () => {
+  it("does not count reading as a failure or a correct recall", () => {
+    const first = updateGrammarProgress(undefined, "reading", 0, 0, NOW);
+    expect(first).toMatchObject({ status: "learning", studyCount: 1, attemptCount: 0, correctCount: 0, review: { reviewCount: 0, correctStreak: 0, lapses: 0 } });
+    expect(first.nextReviewAt).toBe("2026-07-21T04:00:00.000Z");
+    const again = updateGrammarProgress(first, "reading", 0, 0, first.nextReviewAt);
+    expect(again).toMatchObject({ status: "learning", studyCount: 2, review: { reviewCount: 0, correctStreak: 0, lapses: 0 } });
+  });
+  it("preserves demonstrated mastery and past quiz counts when rereading", () => {
+    const previous = makeGrammarProgress("reading");
+    const result = updateGrammarProgress(previous, "reading", 0, 0, NOW);
+    expect(result.review).toMatchObject({ mastery: previous.review.mastery, correctStreak: previous.review.correctStreak, lapses: previous.review.lapses, reviewCount: previous.review.reviewCount, stability: previous.review.stability });
+    expect(result.attemptCount).toBe(previous.attemptCount);
+  });
+});

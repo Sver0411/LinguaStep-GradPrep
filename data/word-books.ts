@@ -1,5 +1,5 @@
 import source from "./word-books.generated.json";
-import type { WordPair } from "@/lib/models";
+import type { WordPair, JapaneseRubyPart } from "@/lib/models";
 
 export interface WordBook {
   id: string;
@@ -17,7 +17,7 @@ export const BOOK_MEMBERSHIPS = source.memberships as unknown as Record<string, 
 export const BOOK_WORDS: WordPair[] = source.words.map((word) => ({
   id: word.id, meaningZh: word.meaningZh,
   japanese: { term: word.term, reading: word.reading, partOfSpeech: word.pos,
-    difficulty: word.level, example: word.exampleJp, exampleZh: word.exampleJpZh, collocations: [] },
+    difficulty: word.level, exampleRuby: word.exampleRuby as JapaneseRubyPart[], example: word.exampleJp, exampleZh: word.exampleJpZh, collocations: [] },
   english: { term: word.english, partOfSpeech: word.englishPos, difficulty: "词书对应表达",
     example: word.exampleEn, exampleZh: word.exampleEnZh, collocations: [] },
   note: "",

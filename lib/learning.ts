@@ -8,6 +8,7 @@ import {
 import { summarizeWordProgress } from "./repositories/migrations";
 import {
   applyReviewRating,
+  recordReading,
   isReviewDue,
   reviewUrgency,
 } from "./spaced-repetition";
@@ -61,7 +62,7 @@ export function updateGrammarProgress(
   const ratio = attempted > 0 ? correct / attempted : 0;
   const rating: MasteryRating =
     ratio >= 0.8 ? "known" : ratio >= 0.5 ? "fuzzy" : "unknown";
-  const review = applyReviewRating(previous?.review, rating, now);
+  const review = attempted === 0 ? recordReading(previous?.review, now) : applyReviewRating(previous?.review, rating, now);
   return {
     grammarId,
     status: review.status,

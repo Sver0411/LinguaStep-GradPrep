@@ -1,5 +1,6 @@
 "use client";
 
+import { stopSpeech } from "@/lib/speech";
 import { STANDALONE_TESTS_ENABLED } from "@/lib/features";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -42,6 +43,13 @@ export function LinguaApp() {
   useEffect(() => {
     if (!focusEligible && focusMode) setFocusMode(false);
   }, [focusEligible, focusMode, setFocusMode]);
+
+  useEffect(() => {
+    stopSpeech();
+    window.addEventListener("pagehide", stopSpeech);
+    window.addEventListener("popstate", stopSpeech);
+    return () => { stopSpeech(); window.removeEventListener("pagehide", stopSpeech); window.removeEventListener("popstate", stopSpeech); };
+  }, [pathname]);
 
   const exitFocusSession = () => {
     window.dispatchEvent(new Event("linguastep:exit-session"));

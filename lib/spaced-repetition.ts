@@ -40,6 +40,20 @@ function initialState(now: string): ReviewState {
   };
 }
 
+/** Reading updates the schedule without claiming a correct or failed recall. */
+export function recordReading(previous: ReviewState | undefined, now: string): ReviewState {
+  const prior = previous ?? initialState(now);
+  const intervalDays = Math.max(1, prior.intervalDays);
+  return {
+    ...prior,
+    status: prior.status === "new" ? "learning" : prior.status,
+    lastStudiedAt: now,
+    nextReviewAt: addDays(now, intervalDays),
+    intervalDays,
+    isNew: false,
+  };
+}
+
 /**
  * An explainable SM-2-derived scheduler. Stability is the current interval
  * capacity in days; difficulty (1–10) controls how quickly it grows. Overdue

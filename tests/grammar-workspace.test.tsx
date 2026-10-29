@@ -29,25 +29,21 @@ describe("shared grammar workspace", () => {
     expect(learning.updateSettings).toHaveBeenCalledWith({grammarCourse:"en-core"});
     expect(learning.rebuildTodayPlan).toHaveBeenCalled();
   });
-  it("reads before recalling original examples and saves the real answers once", async () => {
+  it("reads full source explanations with two examples and no cloze, then stops audio on return", async () => {
     const learning=setup();
-    const point=GRAMMAR_POINTS.find((point)=>point.book && point.exercises.length >= 2)!;
+    const point=GRAMMAR_POINTS.find((point)=>point.book && point.examples.length > 2 && point.book.explanations.length > 1)!;
     render(<GrammarWorkspace params={new URLSearchParams(`id=${point.id}`)} />);
     await screen.findByRole("heading",{name:point.title});
+    for (const explanation of point.book!.explanations) expect(screen.getByText(explanation)).toBeTruthy();
+    expect(document.querySelectorAll(".grammar-example")).toHaveLength(2);
+    expect(screen.queryByText(/更多例句|原句填空/)).toBeNull();
     expect(learning.completeGrammar).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button",{name:/原句填空/}));
-    for (let index=0;index<2;index++) {
-      expect(screen.queryByRole("button",{name:"与原句不同"})).toBeNull();
-      fireEvent.change(screen.getByLabelText("回忆原句中的表达"),{target:{value:point.exercises[index].acceptedAnswers![0]}});
-      fireEvent.click(screen.getByRole("button",{name:"核对答案"}));
-      expect(screen.getByText("与原句一致")).toBeTruthy();
-      fireEvent.click(screen.getByRole("button",{name:index ? "完成练习" : "下一题"}));
-    }
-    await screen.findByRole("heading",{name:"练习完成"});
+    fireEvent.click(screen.getByRole("button",{name:"完成阅读"}));
+    await screen.findByRole("heading",{name:"蓝宝书 N5"});
     expect(learning.completeGrammar).toHaveBeenCalledTimes(1);
-    expect(learning.completeGrammar).toHaveBeenCalledWith(point.id,expect.arrayContaining([expect.objectContaining({isCorrect:true,typedAnswer:point.exercises[0].acceptedAnswers![0]})]));
-    fireEvent.click(screen.getByRole("button",{name:"返回语法"}));
-    expect(screen.getByRole("heading",{name:"蓝宝书 N5"})).toBeTruthy();
+    expect(learning.completeGrammar).toHaveBeenCalledWith(point.id,[]);
+    const { stopSpeech } = await import("../lib/speech");
+    expect(stopSpeech).toHaveBeenCalled();
   });
   it("shows original charts without inventing questions, and retries a failed reading save", async () => {
     const learning=setup(); learning.completeGrammar.mockRejectedValueOnce(new Error("offline"));

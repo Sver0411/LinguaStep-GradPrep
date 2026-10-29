@@ -6773,3 +6773,39 @@ input[type="number"] {
 
 /* Keep the session mounted while toggling its surrounding navigation. */
 .focus-shell > [hidden] { display: none !important; }
+
+/* One set of dimensions for vocabulary and grammar, on both layouts. */
+.learning-workspace { display: grid; gap: 22px; width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 0 110px; align-content: start; }
+.learning-overview { display: flex; align-items: center; gap: 25px; padding: 24px; border-radius: 20px; min-height: 190px; }
+.learning-cover { flex-shrink: 0; width: 100px; height: 142px; }
+.learning-cover img { width: 100%; height: 100%; object-fit: contain; }
+.learning-overview h1 { font-size: 28px; line-height: 1.35; margin: 5px 0 10px; }
+.learning-overview p { font-size: 14px; line-height: 1.6; margin: 6px 0; color: var(--muted); }
+.learning-overview .book-progress-track { width: 100%; max-width: 320px; margin-top: 15px; }
+.learning-overview .book-overview-actions, .learning-overview .grammar-course-actions { display: flex; gap: 22px; margin-top: 18px; }
+.learning-workspace .learning-settings { padding: 0; border-radius: 20px; }
+.learning-settings > summary { min-height: 62px; padding: 18px 20px; }
+.learning-actions { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 5px; }
+.learning-actions > .button { min-height: 48px; font: inherit; }
+.learning-actions > .button-secondary { min-width: 130px; }
+.learning-actions > .button-primary { flex: 1; min-width: 160px; }
+.grammar-explanations { margin: 24px 0; }
+.grammar-explanations p { font-size: 17px; line-height: 1.9; white-space: pre-line; margin: 12px 0; }
+.japanese-ruby[lang="ja"] { font-size: inherit; color: inherit; line-height: 2.25; }
+.japanese-ruby ruby { ruby-position: over; ruby-align: center; }
+.japanese-ruby rt { font-size: .55em; font-weight: 400; color: var(--muted); line-height: 1; }
+@media (max-width: 680px) {
+ html { scroll-behavior: auto; }
+ .m2-app { min-height: 100svh; overflow-anchor: none; }
+ .learning-workspace { gap: 18px; min-height: 100svh; padding: 22px 18px calc(110px + env(safe-area-inset-bottom)); background: linear-gradient(180deg, #fbfdfc 0%, #f4faf8 100%); color: #173632; }
+ .learning-workspace .learning-settings { padding: 16px; }
+ .learning-workspace .learning-overview { gap: 18px; padding: 18px; border-radius: 20px; min-height: 158px; }
+ .learning-cover { width: 86px; height: 122px; }
+ .learning-cover img { width: 86px; height: 122px; }
+ .learning-overview h1 { font-size: 24px; }
+ .learning-overview p { font-size: 14px; }
+ .learning-overview .grammar-course-actions, .learning-overview .book-overview-actions { margin-top: 14px; }
+ .learning-settings > summary { padding: 16px; }
+ .learning-actions > .button { padding: 12px 14px; }
+ .learning-actions > .button-secondary { min-width: 100px; }
+}
