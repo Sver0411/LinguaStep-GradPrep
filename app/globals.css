@@ -6881,3 +6881,13 @@ input[type="number"] {
  .word-answer-grid > .reveal-next-language[data-language] { order: 1; min-height: 56px; padding: 16px; }
  .word-cycle-session > .study-next-action { position: sticky; bottom: 12px; min-height: 52px; }
 }
+
+@media (min-width: 681px) {
+ .word-choice-card .answer-explanation { padding: 22px; }
+ .word-choice-card .answer-explanation > strong { font-size: 18px; line-height: 1.6; }
+ .word-choice-card .answer-explanation > p { margin-top: 8px; font-size: 16px; line-height: 1.75; }
+ .word-choice-card .answer-explanation .word-example { margin-top: 20px; padding-top: 16px; }
+ .word-choice-card .answer-explanation .word-example-heading { font-size: 14px; gap: 10px; }
+ .word-choice-card .answer-explanation .word-example > p { margin: 10px 0; font-size: 18px; line-height: 1.9; color: var(--text); }
+ .word-choice-card .answer-explanation .word-example > span { font-size: 16px; line-height: 1.8; color: var(--muted-strong); }
+}
